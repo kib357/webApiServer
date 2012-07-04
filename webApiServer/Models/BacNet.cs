@@ -78,7 +78,7 @@ namespace webApiServer.Models
             Id = id;
         }
 
-        public bool IsExist()
+        public Task<HttpResponseMessage> IsExist()
         {
             throw new NotImplementedException();
         }
