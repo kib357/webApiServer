@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webApiServer", "webApiServer\webApiServer.csproj", "{39CB2C8E-D62D-4009-92CB-CF9FE2FDE765}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webApiServer.Tests", "webApiServer.Tests\webApiServer.Tests.csproj", "{12D5AF4B-E12B-412A-AFDA-802E515659F8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12D5AF4B-E12B-412A-AFDA-802E515659F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12D5AF4B-E12B-412A-AFDA-802E515659F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12D5AF4B-E12B-412A-AFDA-802E515659F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12D5AF4B-E12B-412A-AFDA-802E515659F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39CB2C8E-D62D-4009-92CB-CF9FE2FDE765}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39CB2C8E-D62D-4009-92CB-CF9FE2FDE765}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39CB2C8E-D62D-4009-92CB-CF9FE2FDE765}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39CB2C8E-D62D-4009-92CB-CF9FE2FDE765}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
