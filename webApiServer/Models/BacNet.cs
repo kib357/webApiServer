@@ -38,11 +38,25 @@ namespace webApiServer.Models
     public class BacNetDevice
     {
         public int Id { get; private set; }
-        private readonly List<BacNetObject> _objectList = new List<BacNetObject>(); 
+        public BacNetObjectIndexator Objects { get; set; }
 
         public BacNetDevice(int id)
         {
             Id = id;
+            Objects = new BacNetObjectIndexator(this);
+        }
+
+        
+    }
+
+    public class BacNetObjectIndexator
+    {
+        private readonly List<BacNetObject> _objectList = new List<BacNetObject>();
+        private readonly BacNetDevice _device;
+ 
+        public BacNetObjectIndexator(BacNetDevice device)
+        {
+            _device = device;
         }
 
         public BacNetObject this[string i]
@@ -52,7 +66,7 @@ namespace webApiServer.Models
                 int index = _objectList.FindIndex(d => d.Id == i);
                 if (index < 0)
                 {
-                    var device = new BacNetObject(i);
+                    var device = new BacNetObject(_device, i);
                     _objectList.Add(device);
                     index = _objectList.FindIndex(d => d.Id == i);
                 }
@@ -71,10 +85,12 @@ namespace webApiServer.Models
 
     public class BacNetObject : IBacNetObject
     {
+        private BacNetDevice _device;
         public string Id { get; private set; }
 
-        public BacNetObject(string id)
+        public BacNetObject(BacNetDevice device, string id)
         {
+            _device = device;
             Id = id;
         }
 
@@ -93,11 +109,16 @@ namespace webApiServer.Models
             throw new NotImplementedException();
         }
 
-        public event SubscribeEventHandler SubscribeEvent;
-
-        public void OnSubscribeEvent()
+        private event SubscribeEventHandler _subscribeEvent;
+        public event SubscribeEventHandler SubscribeEvent
         {
-            SubscribeEventHandler handler = SubscribeEvent;
+            add { _subscribeEvent += value; }
+            remove { _subscribeEvent -= value; }
+        }
+
+        private void OnSubscribeEvent()
+        {
+            SubscribeEventHandler handler = _subscribeEvent;
             if (handler != null) handler();
         }
 

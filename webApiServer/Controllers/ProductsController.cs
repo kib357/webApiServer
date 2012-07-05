@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using webApiServer.Models;
 
@@ -20,6 +21,19 @@ namespace webApiServer.Controllers
         public IEnumerable<Product>  GetAllProducts()
         {
             return _products;
+        }
+
+        public Product GetProductByName(string name)
+        {
+            var product = _products.FirstOrDefault(
+                (p) => string.Equals(p.Name, name,
+                    StringComparison.OrdinalIgnoreCase));
+            if (product == null)
+            {
+                var resp = new HttpResponseMessage(HttpStatusCode.NotFound);
+                throw new HttpResponseException(resp);
+            }
+            return product;
         }
 
         public Product GetProductByid(int id)

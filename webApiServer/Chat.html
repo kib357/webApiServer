@@ -17,9 +17,9 @@
             $messages = document.getElementById('messages');
 
         if (typeof (WebSocket) !== 'undefined') {
-            socket = new WebSocket("ws://localhost/SimpleChatApplication/Subscribe.ashx");
+            socket = new WebSocket("ws://localhost/webApiServer/api/bacnet?subscribe");
         } else {
-            socket = new MozWebSocket("ws://localhost/SimpleChatApplication/Subscribe.ashx");
+            socket = new MozWebSocket("ws://localhost/webApiServer/api/bacnet?subscribe");
         }
 
         socket.onmessage = function (msg) {

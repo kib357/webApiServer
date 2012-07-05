@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
 using System.Web.WebSockets;
 
-namespace webApiServer
+namespace webApiServer.Controllers
 {
-    /// <summary>
-    /// Summary description for Subscribe
-    /// </summary>
-    public class Subscribe : IHttpHandler
+    public class BacNetController : ApiController
     {
         // Список всех клиентов
         private static readonly List<WebSocket> Clients = new List<WebSocket>();
@@ -19,22 +20,19 @@ namespace webApiServer
         // Блокировка для обеспечения потокабезопасности
         private static readonly ReaderWriterLockSlim Locker = new ReaderWriterLockSlim();
 
-        #region IHttpHandler Members
-
-        public void ProcessRequest(HttpContext context)
+        public string Get()
         {
+            return "BACnet";
+        }
+
+        public void Get(string subscribe)
+        {
+            var context = HttpContext.Current;
             if (context.IsWebSocketRequest)
                 context.AcceptWebSocketRequest(WebSocketRequest);
-            //context.Response.ContentType = "text/plain";
-            //context.Response.Write("Hello World");
+            var resp = new HttpResponseMessage(HttpStatusCode.SwitchingProtocols);
+            throw new HttpResponseException(resp);
         }
-
-        public bool IsReusable
-        {
-            get { return false; }
-        }
-
-        #endregion
 
         private async Task WebSocketRequest(AspNetWebSocketContext context)
         {

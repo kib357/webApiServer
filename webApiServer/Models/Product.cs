@@ -14,6 +14,8 @@ namespace webApiServer.Models
 
         public Product()
         {
+            var bacnet = new BacNet();
+            bacnet[1700].Objects["AV21"].Create();
         }
     }
 }
