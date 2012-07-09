@@ -1,6 +1,6 @@
 namespace BacNetApi
 {
-    public interface IBacNetservices
+    public interface IBacNetServices
     {
     }
 }

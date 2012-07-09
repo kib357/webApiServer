@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using BacNetTypes;
 
 namespace BacNetApi
 {
@@ -7,9 +8,9 @@ namespace BacNetApi
         event ValueChangedEventHandler ValueChangedEvent;
 
         Task<bool> IsExist();
-        Task<string> Get(int propertyId = 85);
+        object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue);
         Task<bool> Set(object value, int propertyId = 85);        
-        Task<bool> Create();
+        bool Create();
         Task<bool> Delete();
     }
 }

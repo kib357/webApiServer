@@ -1,4 +1,5 @@
-﻿using BacNetApi;
+﻿using System.Net;
+using BacNetApi;
 
 namespace webApiServer.Models
 {
@@ -8,11 +9,5 @@ namespace webApiServer.Models
         public string Name { get; set; }
         public string Category { get; set; }
         public decimal Price { get; set; }
-
-        public Product()
-        {
-            var bacnet = new BacNet();
-            bacnet[1700].Objects["AV21"].Create();
-        }
     }
 }

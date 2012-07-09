@@ -1,8 +1,10 @@
 using System;
 using System.Threading.Tasks;
+using BacNetTypes;
 
 namespace BacNetApi
 {
+    public delegate void ValueChangedEventHandler(string address, string value);
     public class BacNetObject : IBacNetObject
     {
         private BacNetDevice _device;
@@ -21,19 +23,47 @@ namespace BacNetApi
             throw new NotImplementedException();
         }
 
-        public Task<string> Get(int propertyId = 85)
+        public object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
+        {           
+            return _device.ReadProperty(this, propertyId);
+        }
+
+        public T Get<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
         {
-            throw new NotImplementedException();
+            if (_device.ReadProperty(this, propertyId) is T)
+                return (T) _device.ReadProperty(this, propertyId);
+            return default(T);
+        }
+
+        public async Task<object> GetAsync(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
+        {
+            return await Task.Run(() => Get());
+        }
+
+        public async Task<T> GetAsync<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
+        {
+            return await Task.Run(() => Get<T>());
         }
 
         public Task<bool> Set(object value, int propertyId = 85)
         {
             throw new NotImplementedException();
-        }        
+        }
 
-        public Task<bool> Create()
+        public bool Create()
         {
-            throw new NotImplementedException();
+            _device.Initialize();
+            if (_device.Initialized)
+            {
+                _device.CreateObject();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> CreateAsync()
+        {
+            return await Task.Run(() => Create());
         }
 
         public Task<bool> Delete()
