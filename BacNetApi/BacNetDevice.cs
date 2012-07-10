@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using BacNetTypes;
-using BacNetTypes.Primitive;
+using BACsharp;
+using BACsharp.Types.Primitive;
 
 namespace BacNetApi
 {
@@ -11,9 +11,11 @@ namespace BacNetApi
     {        
         private BacNet _network;
         private bool _initialized;
+        private bool _isInitializing;
         private readonly AutoResetEvent _waitForAddress = new AutoResetEvent(false);
+        private DeviceStatus Status;
 
-        public BacNetAddress                 Address { get; set; }
+        public BACnetAddress                 Address { get; set; }
         public uint                          Id { get; private set; }
         public bool                          Initialized { get { return _initialized; } }
         public BacNetObjectIndexer           Objects { get; private set; }
@@ -26,56 +28,60 @@ namespace BacNetApi
             _network = network;
             Objects = new BacNetObjectIndexer(this);
             ServicesSupported = new List<BacnetServicesSupported>();
+            Status = DeviceStatus.NotInitialized;
         }     
    
         public async void InitializeAsync()
         {
-            if (Address == null) await SearchDeviceAsync();
+            /*if (Address == null) await SearchDeviceAsync();
             ServicesSupported = await _network.ReadPropertyAsync(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported) 
                                       as List<BacnetServicesSupported>;
-            _initialized = true; 
+            _initialized = true; */
         }
 
         public void Initialize()
         {
-            if (Initialized) return;
-
+            if (Status == DeviceStatus.Ready || Status == DeviceStatus.Initializing) return;
+            Status = DeviceStatus.Initializing;
             if (Address != null || SearchDevice())
-            {
-                var services = _network.ReadProperty<BacNetBitString>(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
-                if (services != null)
+            {                
+                var services = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
+                if (services is BACnetBitString)
                 {
-                    for (int i = 0; i < services.Value.Length; i++)
+                    var value = Convert.ToString((services as BACnetBitString).Value, 2);
+                    for (int i = 0; i <value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
                     {
-                        if (services.Value[i] == '1')
+                        if (value[i] == '1')
                             ServicesSupported.Add((BacnetServicesSupported)i);
                     }
-                    _initialized = true;
+                    Status = DeviceStatus.Ready;
+                    return;
                 }
             }
+            Status = DeviceStatus.NotInitialized;
         }
 
         private bool SearchDevice()
         {
             _network.WhoIs((ushort)Id,(ushort)Id);
-            _waitForAddress.WaitOne(1000);
+            _waitForAddress.WaitOne(2000);
             return Address != null;
         }
 
-        private Task SearchDeviceAsync()
+        private async Task WaitForInitialization()
         {
-            var minutes = 1;
-            while (Address == null)
-            {
-                _network.WhoIs((ushort)Id,(ushort)Id);
-                Thread.Sleep(TimeSpan.FromSeconds(1));
-                if (Address == null)
-                {
-                    Thread.Sleep(TimeSpan.FromMinutes(minutes));
-                    if (minutes < 127) minutes *= 2;
-                }
-            }
-            return null;
+            await Task.Run(() =>
+                               {
+                                   var minutes = 1;
+                                   while (Status != DeviceStatus.Ready)
+                                   {
+                                       Initialize();
+                                       if (Status == DeviceStatus.Ready) break;
+                                       Thread.Sleep(TimeSpan.FromMinutes(minutes));
+                                       if (minutes < 127) minutes *= 2;
+                                   }
+                                   return null;
+                               });
         }
 
         public void CreateObject()
@@ -83,22 +89,17 @@ namespace BacNetApi
             throw new NotImplementedException();
         }
 
-        public T ReadProperty<T>(BacNetObject bacNetObject, BacnetPropertyId propertyId)
-        {
-            Initialize();
-            if (!Initialized) return default(T);
-            return _network.ReadProperty<T>(Address, Id + "." + bacNetObject.Id, propertyId);
-        }
-
         public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId)
         {
-            return ReadProperty<object>(bacNetObject, propertyId);
+            Initialize();
+            if (!Initialized) return null;
+            return _network.ReadProperty(Address, bacNetObject.Id, propertyId);           
         }
 
-        public void SetAddress(BacNetAddress source, BacnetSegmentation segmentationSupported)
+        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported)
         {
             Address = source;
-            Segmentation = segmentationSupported;
+            Segmentation = (BacnetSegmentation)segmentationSupported.Value;
             _waitForAddress.Set();
         }
     }

@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BACsharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\newBACsharp\BACsharp\bin\Debug\BACsharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,16 +51,6 @@
     <Compile Include="IBacNetObject.cs" />
     <Compile Include="IBacNetservices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\BACsharp\BACSharp\BACSharp.csproj">
-      <Project>{510D4E0B-29C0-44CB-83ED-BECEA483C698}</Project>
-      <Name>BACSharp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BacNetTypes\BacNetTypes.csproj">
-      <Project>{ab94d1e2-4ed0-48fc-9f78-d48528dbc567}</Project>
-      <Name>BacNetTypes</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

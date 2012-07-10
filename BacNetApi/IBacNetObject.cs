@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using BacNetTypes;
+using BACsharp;
 
 namespace BacNetApi
 {
