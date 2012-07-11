@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
@@ -9,15 +11,14 @@ namespace BacNetApi
 {
     public class BacNetDevice 
     {        
-        private BacNet _network;
-        private bool _initialized;
-        private bool _isInitializing;
+        private readonly BacNet                             _network;
+        private DeviceStatus                                _status;
+        private SubscriptionStatus                          _subscriptionStatus;
+        private readonly ObservableCollection<BacNetObject> _subscriptionList;
         private readonly AutoResetEvent _waitForAddress = new AutoResetEvent(false);
-        private DeviceStatus Status;
 
         public BACnetAddress                 Address { get; set; }
-        public uint                          Id { get; private set; }
-        public bool                          Initialized { get { return _initialized; } }
+        public uint                          Id { get; private set; }        
         public BacNetObjectIndexer           Objects { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; } 
@@ -28,37 +29,58 @@ namespace BacNetApi
             _network = network;
             Objects = new BacNetObjectIndexer(this);
             ServicesSupported = new List<BacnetServicesSupported>();
-            Status = DeviceStatus.NotInitialized;
-        }     
-   
-        public async void InitializeAsync()
-        {
-            /*if (Address == null) await SearchDeviceAsync();
-            ServicesSupported = await _network.ReadPropertyAsync(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported) 
-                                      as List<BacnetServicesSupported>;
-            _initialized = true; */
+            _status = DeviceStatus.NotInitialized;
+            _subscriptionStatus = SubscriptionStatus.Stopped;
+            _subscriptionList = new ObservableCollection<BacNetObject>();
+            _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
         }
+
+        private void OnSubscriptionListChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (_subscriptionList.Count > 0 && _subscriptionStatus == SubscriptionStatus.Stopped)
+            {
+                Task.Run(() => StartSubscription());
+            }
+            if (_subscriptionList.Count == 0 && _subscriptionStatus == SubscriptionStatus.Running)
+            {
+                StopSubsciption();
+            }
+        }        
+
+        private async void StartSubscription()
+        {
+            await WaitForInitialization();
+            _subscriptionStatus = SubscriptionStatus.Running;
+        }
+
+        private void StopSubsciption()
+        {
+            _subscriptionStatus = SubscriptionStatus.Stopped;
+        }
+
 
         public void Initialize()
         {
-            if (Status == DeviceStatus.Ready || Status == DeviceStatus.Initializing) return;
-            Status = DeviceStatus.Initializing;
+            if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing) return;
+            _status = DeviceStatus.Initializing;
             if (Address != null || SearchDevice())
             {                
                 var services = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
                 if (services is BACnetBitString)
                 {
-                    var value = Convert.ToString((services as BACnetBitString).Value, 2);
+                    var value = (services as BACnetBitString).Value;
                     for (int i = 0; i <value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
                     {
-                        if (value[i] == '1')
+                        if (value[i])
                             ServicesSupported.Add((BacnetServicesSupported)i);
                     }
-                    Status = DeviceStatus.Ready;
+                    _status = DeviceStatus.Ready;
                     return;
                 }
+                //todo: implement reading of object list when segmentation support will enabled in provider
+                //var objects = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectList);
             }
-            Status = DeviceStatus.NotInitialized;
+            _status = DeviceStatus.NotInitialized;
         }
 
         private bool SearchDevice()
@@ -73,27 +95,28 @@ namespace BacNetApi
             await Task.Run(() =>
                                {
                                    var minutes = 1;
-                                   while (Status != DeviceStatus.Ready)
+                                   while (_status != DeviceStatus.Ready)
                                    {
                                        Initialize();
-                                       if (Status == DeviceStatus.Ready) break;
+                                       if (_status == DeviceStatus.Ready) break;
                                        Thread.Sleep(TimeSpan.FromMinutes(minutes));
                                        if (minutes < 127) minutes *= 2;
                                    }
-                                   return null;
                                });
         }
 
-        public void CreateObject()
+        public bool CreateObject(BacNetObject bacNetObject)
         {
-            throw new NotImplementedException();
+            Initialize();
+            if (_status != DeviceStatus.Ready) return false;
+            return _network.CreateObject(Address, bacNetObject.Id) != null;
         }
 
         public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId)
         {
             Initialize();
-            if (!Initialized) return null;
-            return _network.ReadProperty(Address, bacNetObject.Id, propertyId);           
+            if (_status != DeviceStatus.Ready) return null;
+            return _network.ReadProperty(Address, bacNetObject.Id, propertyId);
         }
 
         public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported)
@@ -101,6 +124,17 @@ namespace BacNetApi
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
             _waitForAddress.Set();
+        }
+
+        public void AddSubscriptionObject(BacNetObject bacNetObject)
+        {
+            _subscriptionList.Add(bacNetObject);
+        }
+
+        public void RemoveSubscriptionObject(BacNetObject bacNetObject)
+        {
+            if (_subscriptionList.Contains(bacNetObject))
+                _subscriptionList.Add(bacNetObject);
         }
     }
 }

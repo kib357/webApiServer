@@ -19,6 +19,12 @@ namespace BacNetApi
         Ready = 2,
     }
 
+    enum SubscriptionStatus
+    {
+        Stopped = 0,
+        Running = 1,
+    }
+
     public class BacNet : IBacNetServices
     {
         private bool                         _initialized;

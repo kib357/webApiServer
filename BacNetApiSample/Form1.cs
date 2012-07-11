@@ -17,12 +17,18 @@ namespace BacNetApiSample
             var s = sender as Button;
             s.Enabled = false;
             var bacnet = new BacNet();
-            bacnet.Initialize(IPAddress.Parse("192.168.0.169"));
-            object k = await bacnet[200].Objects["AV21"].GetAsync();
+            bacnet.Initialize(IPAddress.Parse("192.168.0.106"));
+            //object k = await bacnet[200].Objects["AV21"].GetAsync();
+            bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             //float f = await bacnet[200].Objects["AV21"].GetAsync<float>();
             //object r = await bacnet[200].Objects["AV21"].GetAsync<List<BacNetObject>>();
-            textBox1.Text = k != null ? k.ToString() : "null";
+            //textBox1.Text = k != null ? k.ToString() : "null";
             s.Enabled = true;
+        }
+
+        private void OnBacnetValueChanged(string address, string value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

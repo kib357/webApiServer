@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BACsharp;
@@ -54,13 +55,7 @@ namespace BacNetApi
 
         public bool Create()
         {
-            _device.Initialize();
-            if (_device.Initialized)
-            {
-                _device.CreateObject();
-                return true;
-            }
-            return false;
+            return _device.CreateObject(this);               
         }
 
         public async Task<bool> CreateAsync()
@@ -76,12 +71,23 @@ namespace BacNetApi
         #endregion
 
         #region Events
-
+        private List<ValueChangedEventHandler> _valueChangedSubscribers = new List<ValueChangedEventHandler>();
         private event ValueChangedEventHandler _valueChangedEvent;
         public event ValueChangedEventHandler ValueChangedEvent
         {
-            add { _valueChangedEvent += value; }
-            remove { _valueChangedEvent -= value; }
+            add
+            {
+                _valueChangedEvent += value;
+                _valueChangedSubscribers.Add(value);
+                _device.AddSubscriptionObject(this);
+            }
+            remove
+            {
+                _valueChangedEvent -= value;
+                _valueChangedSubscribers.Remove(value);
+                if (_valueChangedSubscribers.Count == 0)
+                    _device.RemoveSubscriptionObject(this);
+            }
         }
 
         private void OnValueChangedEvent(string address, string value)
