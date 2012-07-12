@@ -18,8 +18,13 @@ namespace BacNetApiSample
             s.Enabled = false;
             var bacnet = new BacNet();
             bacnet.Initialize(IPAddress.Parse("192.168.0.106"));
-            //object k = await bacnet[200].Objects["AV21"].GetAsync();
+            //object k = await bacnet[200].Objects["AV210"].GetAsync();
+            bacnet[200].Objects["AV210"].ValueChangedEvent += OnBacnetValueChanged;
+            /*bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
+            bacnet[200].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            bacnet[200].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
+            bacnet[200].Objects["AV5"].ValueChangedEvent += OnBacnetValueChanged;*/
             //float f = await bacnet[200].Objects["AV21"].GetAsync<float>();
             //object r = await bacnet[200].Objects["AV21"].GetAsync<List<BacNetObject>>();
             //textBox1.Text = k != null ? k.ToString() : "null";
@@ -28,7 +33,7 @@ namespace BacNetApiSample
 
         private void OnBacnetValueChanged(string address, string value)
         {
-            throw new NotImplementedException();
+            textBox1.Text = value;
         }
     }
 }

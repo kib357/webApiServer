@@ -12,8 +12,8 @@ namespace BacNetApi
     public class BacNetDevice 
     {        
         private readonly BacNet                             _network;
-        private DeviceStatus                                _status;
-        private SubscriptionStatus                          _subscriptionStatus;
+        private volatile DeviceStatus                       _status;
+        private volatile SubscriptionStatus                 _subscriptionStatus;
         private readonly ObservableCollection<BacNetObject> _subscriptionList;
         private readonly AutoResetEvent _waitForAddress = new AutoResetEvent(false);
 
@@ -39,9 +39,10 @@ namespace BacNetApi
         {
             if (_subscriptionList.Count > 0 && _subscriptionStatus == SubscriptionStatus.Stopped)
             {
+                _subscriptionStatus = SubscriptionStatus.Initializing;
                 Task.Run(() => StartSubscription());
             }
-            if (_subscriptionList.Count == 0 && _subscriptionStatus == SubscriptionStatus.Running)
+            if (_subscriptionList.Count == 0)
             {
                 StopSubsciption();
             }
@@ -50,6 +51,13 @@ namespace BacNetApi
         private async void StartSubscription()
         {
             await WaitForInitialization();
+            //if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
+            //    COVSubscription();
+            //else
+            //    if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
+            //        RPMPolling();
+            //    else
+                    Task.Run(() => ReadPropertyPolling());
             _subscriptionStatus = SubscriptionStatus.Running;
         }
 
@@ -58,6 +66,27 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
         }
 
+        private void ReadPropertyPolling()
+        {
+            while (_subscriptionStatus == SubscriptionStatus.Running)
+            {
+                foreach (var bacNetObject in _subscriptionList)
+                {
+                    _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
+                }
+                Thread.Sleep(3000);
+            }
+        }
+
+        private void RPMPolling()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void COVSubscription()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Initialize()
         {
@@ -128,6 +157,7 @@ namespace BacNetApi
 
         public void AddSubscriptionObject(BacNetObject bacNetObject)
         {
+            if (!_subscriptionList.Contains(bacNetObject))
             _subscriptionList.Add(bacNetObject);
         }
 

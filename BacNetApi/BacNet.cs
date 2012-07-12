@@ -5,6 +5,7 @@ using System.Threading;
 using BACsharp;
 using BACsharp.AppService;
 using BACsharp.AppService.ConfirmedServices;
+using BACsharp.AppService.ErrorServices;
 using BACsharp.AppService.UnconfirmedServices;
 using BACsharp.DataLink;
 using BACsharp.Types;
@@ -22,7 +23,8 @@ namespace BacNetApi
     enum SubscriptionStatus
     {
         Stopped = 0,
-        Running = 1,
+        Initializing = 1,
+        Running = 2
     }
 
     public class BacNet : IBacNetServices
@@ -94,11 +96,6 @@ namespace BacNetApi
             _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
         }
 
-        /*public async Task<object> ReadPropertyAsync(BacNetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId)
-        {
-            return await Task.Run(() => ReadProperty(bacAddress, address, bacnetPropertyId));
-        }*/
-
         public object ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId)
         {
             var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(address), (int)bacnetPropertyId);
@@ -106,6 +103,12 @@ namespace BacNetApi
             if (readPropertyResponse == null) return null;
             var values = readPropertyResponse.PropertyValues;
             return values.Count == 1 ? (object) values[0] : values;
+        }
+
+        public void BeginReadProperty(BACnetAddress bacAddress, BacNetObject bacObject, BacnetPropertyId bacnetPropertyId)
+        {
+            var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
+            SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest, bacObject, false);
         }
 
         public object WriteProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, BACnetDataType value)
@@ -120,17 +123,43 @@ namespace BacNetApi
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest);
         }
 
-        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest)
+        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true)
         {
             if (!_initialized) throw new Exception("Network provider not initialized");
-            var request = CreateRequest(service);
+            var request = CreateRequest(service, state);
             request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
-            if (request.ResetEvent.WaitOne(3000))
+            if (waitForResponse && request.ResetEvent.WaitOne(3000))
             {
                 RemoveRequest(request);
-                return request.Ack;
+                return request.State;
             }
             return null;
+        }
+
+        private BacNetRequest CreateRequest(BacnetConfirmedServices serviceChoise, object state = null)
+        {
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = new BacNetRequest
+                {
+                    ServiceChoise = serviceChoise,
+                    ResetEvent = new AutoResetEvent(false),
+                    State = state
+                };
+                request.RequestTimeEndedEvent += RemoveRequest;
+                _requests.Add(request);
+            }
+            return request;
+        }
+
+        private void RemoveRequest(BacNetRequest request)
+        {
+            lock (SyncRoot)
+            {
+                request.RequestTimeEndedEvent -= RemoveRequest;
+                _requests.Remove(request);
+            }
         }
 
         private void OnReadPropertyAckReceived(object sender, AppServiceEventArgs e)
@@ -141,43 +170,38 @@ namespace BacNetApi
             int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
             if (index >= 0)
             {
-                _requests[index].Ack = service;
-                _requests[index].ResetEvent.Set();
+                if (_requests[index].State == null)
+                {
+                    _requests[index].State = service;
+                    _requests[index].ResetEvent.Set();                    
+                }
+                if (_requests[index].State is BacNetObject && service.PropertyValues.Count == 1)
+                {
+                    var bacNetObject = _requests[index].State as BacNetObject;
+                    bacNetObject.StringValue = service.PropertyValues[0].ToString();
+                    RemoveRequest(_requests[index]);
+                }
             }
         }
 
         private void OnErrorAckReceived(object sender, AppServiceEventArgs e)
         {
-            /*var apdu = message.Apdu as ErrorAck;
-            if (apdu == null) return;
-            int index = _requests.FindIndex(r => r.InvokeId == apdu.InvokeId && r.ServiceChoise == BacnetConfirmedServices.ReadProperty);
+            var service = e.Service as BaseErrorService;
+            if (service == null) return;
+            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
             if (index >= 0)
-            {
-                _requests[index].Ack = apdu.ErrorCode;
-                _requests[index].ResetEvent.Set();
-            }*/
-        }
-
-        private BacNetRequest CreateRequest(BacnetConfirmedServices serviceChoise)
-        {
-            BacNetRequest request;
-            lock (SyncRoot)
-            {
-                request = new BacNetRequest
+            {                
+                if (_requests[index].State == null)
                 {
-                    ServiceChoise = serviceChoise,
-                    ResetEvent = new AutoResetEvent(false)
-                };
-                _requests.Add(request);
-            }
-            return request;
-        }
-
-        private void RemoveRequest(BacNetRequest request)
-        {
-            lock (SyncRoot)
-            {
-                _requests.Remove(request);
+                    _requests[index].State = service;
+                    _requests[index].ResetEvent.Set();                    
+                }
+                if (_requests[index].State is BacNetObject)
+                {
+                    var bacNetObject = _requests[index].State as BacNetObject;
+                    bacNetObject.StringValue = "Error";
+                    RemoveRequest(_requests[index]);
+                }
             }
         }
     }    

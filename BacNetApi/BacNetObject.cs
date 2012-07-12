@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
 using BACsharp.Types.Primitive;
@@ -12,11 +13,40 @@ namespace BacNetApi
     {
         private BacNetDevice _device;
         public string Id { get; private set; }
+        private SynchronizationContext _synchronizationContext;
+
+        private string _stringValue;
+        public string StringValue
+        {
+            get { return _stringValue; }
+            set
+            {
+                if (CheckValueChanges(value))
+                {
+                    _stringValue = value;
+                    if (_synchronizationContext != null)
+                        _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
+                    else
+                        OnValueChangedEvent(_stringValue);
+                }
+            }
+        }
+
+        private bool CheckValueChanges(string value)
+        {
+            double oldValue, newValue;
+            if (double.TryParse(value.Replace(',', '.'), out newValue) &&
+                double.TryParse(_stringValue, out oldValue) &&
+                Math.Abs(newValue - oldValue) > 0.5)
+                return true;
+            return _stringValue != value;
+        }
 
         public BacNetObject(BacNetDevice device, string id)
         {
             _device = device;
             Id = id;
+            _synchronizationContext = SynchronizationContext.Current;
         }
 
         #region Methods
@@ -90,10 +120,10 @@ namespace BacNetApi
             }
         }
 
-        private void OnValueChangedEvent(string address, string value)
+        private void OnValueChangedEvent(object state)
         {
             ValueChangedEventHandler handler = _valueChangedEvent;
-            if (handler != null) handler(address, value);
+            if (handler != null) handler(_device.Id + "." + Id, state.ToString());
         }
 
         #endregion
