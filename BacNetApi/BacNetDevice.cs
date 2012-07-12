@@ -51,9 +51,9 @@ namespace BacNetApi
         private async void StartSubscription()
         {
             await WaitForInitialization();
-            //if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
-            //    COVSubscription();
-            //else
+            if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
+                Task.Run(() => COVSubscription());
+            else
             //    if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
             //        RPMPolling();
             //    else
@@ -74,21 +74,33 @@ namespace BacNetApi
                 {
                     _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
                 }
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
             }
         }
 
         private void RPMPolling()
         {
             throw new NotImplementedException();
+            while (_subscriptionStatus == SubscriptionStatus.Running)
+            {
+                //_network.ReadPropertyMutiple(Address, _subscriptionList);
+                Thread.Sleep(5000);
+            }
         }
 
         private void COVSubscription()
         {
-            throw new NotImplementedException();
+            while (_subscriptionStatus == SubscriptionStatus.Running)
+            {
+                foreach (var bacNetObject in _subscriptionList)
+                {
+                    _network.SubscribeCOV(Address, bacNetObject);
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1800));
+            }
         }
 
-        public void Initialize()
+        private void Initialize()
         {
             if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing) return;
             _status = DeviceStatus.Initializing;

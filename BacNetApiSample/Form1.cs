@@ -17,9 +17,9 @@ namespace BacNetApiSample
             var s = sender as Button;
             s.Enabled = false;
             var bacnet = new BacNet();
-            bacnet.Initialize(IPAddress.Parse("192.168.0.106"));
+            bacnet.Initialize(IPAddress.Parse("192.168.0.169"));
             //object k = await bacnet[200].Objects["AV210"].GetAsync();
-            bacnet[200].Objects["AV210"].ValueChangedEvent += OnBacnetValueChanged;
+            bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             /*bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             bacnet[200].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;

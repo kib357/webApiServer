@@ -53,10 +53,12 @@ namespace BacNetApi
             _bacNetProvider.OnIAmRequest += OnIamReceived;
             _bacNetProvider.OnReadPropertyAck += OnReadPropertyAckReceived;
             _bacNetProvider.OnError += OnErrorAckReceived;
+            _bacNetProvider.OnSubscribeCOVAck += OnSubscribeCOVAck;
+            _bacNetProvider.OnUnconfirmedCOVNotificationRequest += OnCOVNotification;
             _bacNetProvider.Start();
 
             _initialized = true;
-        }
+        }        
 
         private void OnIamReceived(object sender, AppServiceEventArgs e)
         {
@@ -121,6 +123,12 @@ namespace BacNetApi
         {
             var createObjectRequest = new CreateObjectRequest(BacNetObject.GetObjectIdByString(address), new List<BACnetPropertyValue>());
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest);
+        }
+
+        public object SubscribeCOV(BACnetAddress bacAddress, BacNetObject bacNetObject)
+        {
+            var subscribeCOVRequest = new SubscribeCOVRequest(357, BacNetObject.GetObjectIdByString(bacNetObject.Id), false, 3600);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.SubscribeCOV, subscribeCOVRequest, false);
         }
 
         private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true)
@@ -204,5 +212,35 @@ namespace BacNetApi
                 }
             }
         }
+
+        private void OnSubscribeCOVAck(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as SubscribeCOVAck;
+            if (service == null) return;
+            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
+            if (index >= 0)
+            {
+                _requests[index].State = true;
+                _requests[index].ResetEvent.Set();
+            }
+        }
+
+        private void OnCOVNotification(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as UnconfirmedCOVNotificationRequest;
+            if (service == null) return;
+            var pvPropertyIndex = service.PropertyValues.FindIndex(s => s.PropertyId.Value == 85);
+            if (pvPropertyIndex < 0  || service.PropertyValues[pvPropertyIndex].Values.Count != 1) return;
+            var value = service.PropertyValues[pvPropertyIndex].Values[0].ToString();
+
+            int devIndex = _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance);
+            if (devIndex >= 0)
+            {
+                string objId = BacNetObject.GetStringId((BacnetObjectType) service.ObjectId.ObjectType) +
+                               service.ObjectId.Instance;
+                if (_deviceList[devIndex].Objects.Contains(objId))
+                    _deviceList[devIndex].Objects[objId].StringValue = value;
+            }
+        }        
     }    
 }

@@ -216,5 +216,78 @@ namespace BacNetApi
                     throw new Exception("Not valid string id - unknown object type");
             }
         }
+
+        public static string GetStringId(BacnetObjectType type)
+        {
+            string res = string.Empty;
+            switch (type)
+            {
+                case BacnetObjectType.Accumulator:
+                    res = "AC"; break;
+                case BacnetObjectType.AnalogInput:
+                    res = "AI"; break;
+                case BacnetObjectType.AnalogOutput:
+                    res = "AO"; break;
+                case BacnetObjectType.AnalogValue:
+                    res = "AV"; break;
+                case BacnetObjectType.Averaging:
+                    res = "AR"; break;
+                case BacnetObjectType.BinaryInput:
+                    res = "BI"; break;
+                case BacnetObjectType.BinaryOutput:
+                    res = "BO"; break;
+                case BacnetObjectType.BinaryValue:
+                    res = "BV"; break;
+                case BacnetObjectType.Calendar:
+                    res = "CAL"; break;
+                case BacnetObjectType.Command:
+                    res = "CMD"; break;
+                case BacnetObjectType.Device:
+                    res = "DEV"; break;
+                case BacnetObjectType.Door:
+                    res = "DC"; break;
+                case BacnetObjectType.EventEnrollment:
+                    res = "EE"; break;
+                case BacnetObjectType.EventLog:
+                    res = "EL"; break;
+                case BacnetObjectType.File:
+                    res = "FILE"; break;
+                case BacnetObjectType.GlobalGroup:
+                    res = "GG"; break;
+                case BacnetObjectType.Group:
+                    res = "GR"; break;
+                case BacnetObjectType.LifeSafetyPoint:
+                    res = "LSP"; break;
+                case BacnetObjectType.LifeSafetyZone:
+                    res = "LSZ"; break;
+                case BacnetObjectType.LightingOutput:
+                    res = "LO"; break;
+                case BacnetObjectType.LoadControl:
+                    res = "LC"; break;
+                case BacnetObjectType.Loop:
+                    res = "LOOP"; break;
+                case BacnetObjectType.MultiStateInput:
+                    res = "MI"; break;
+                case BacnetObjectType.MultiStateOutput:
+                    res = "MO"; break;
+                case BacnetObjectType.MultiStateValue:
+                    res = "MV"; break;
+                case BacnetObjectType.NotificationClass:
+                    res = "NC"; break;
+                case BacnetObjectType.Program:
+                    res = "PROG"; break;
+                case BacnetObjectType.PulseConverter:
+                    res = "PC"; break;
+                case BacnetObjectType.Schedule:
+                    res = "SCH"; break;
+                case BacnetObjectType.StructuredView:
+                    res = "SV"; break;
+                case BacnetObjectType.Trendlog:
+                    res = "TL"; break;
+                case BacnetObjectType.TrendLogMultiple:
+                    res = "TLM"; break;
+            }
+            return res;
+        }
     }
 }

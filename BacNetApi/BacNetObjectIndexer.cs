@@ -12,6 +12,11 @@ namespace BacNetApi
             _device = device;
         }
 
+        public bool Contains(string objId)
+        {
+            return _objectList.FindIndex(o => o.Id == objId) >= 0;
+        }
+
         public BacNetObject this[string i]
         {
             get
