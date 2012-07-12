@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BacNetTypes", "BacNetTypes\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BacNetApiSample", "BacNetApiSample\BacNetApiSample.csproj", "{6AC719D8-A1B5-4372-9FD0-473BF0D1EE37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFBacNetApiSample", "WPFBacNetApiSample\WPFBacNetApiSample.csproj", "{AEF1613E-7055-42B9-A3B7-A50B55548ABC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AB94D1E2-4ED0-48FC-9F78-D48528DBC567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB94D1E2-4ED0-48FC-9F78-D48528DBC567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB94D1E2-4ED0-48FC-9F78-D48528DBC567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D42942D4-43B9-4157-AB84-2324E7B4EA0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D42942D4-43B9-4157-AB84-2324E7B4EA0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D42942D4-43B9-4157-AB84-2324E7B4EA0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
