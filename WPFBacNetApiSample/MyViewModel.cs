@@ -33,7 +33,7 @@ namespace WPFBacNetApiSample
         {
             _sensors = new ObservableCollection<sensor>();
             var bacnet = new BacNet();
-            bacnet.Initialize(IPAddress.Parse("192.168.0.169"));            
+            bacnet.Initialize(IPAddress.Parse("192.168.0.101"));            
             bacnet[200].Objects["AV21"].ValueChangedEvent += OnBacnetValueChanged;
             bacnet[200].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             bacnet[200].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;

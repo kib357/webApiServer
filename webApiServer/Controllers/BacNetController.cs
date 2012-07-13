@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.WebSockets;
+using BacNetApi;
+using webApiServer.Models;
 
 namespace webApiServer.Controllers
 {
@@ -17,12 +19,21 @@ namespace webApiServer.Controllers
         // Список всех клиентов
         private static readonly List<WebSocket> Clients = new List<WebSocket>();
 
+        //private static BacNet _network = new BacNet("192.168.0.101");
+
         // Блокировка для обеспечения потокабезопасности
         private static readonly ReaderWriterLockSlim Locker = new ReaderWriterLockSlim();
 
         public string Get()
         {
             return "BACnet";
+        }
+
+        public string GetById(string id)
+        {            
+            //return _network[200].Objects["AV1"].Get().ToString();
+            //object k = Network.Bac[200].Objects["AV1"].Get();
+            return id;//k.ToString();
         }
 
         public void Get(string subscribe)

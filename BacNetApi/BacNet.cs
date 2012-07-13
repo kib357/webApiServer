@@ -38,6 +38,14 @@ namespace BacNetApi
         private byte _invokeId;
         private byte InvokeId { get { return _invokeId++; } }
 
+        public BacNet()
+        {}
+
+        public BacNet(string address)
+        {
+            Initialize(address);
+        }
+
         public void Initialize(string address)
         {
             IPAddress ipAddress;

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Windows;
-using BacNetApi;
+﻿using System.Windows;
 
 namespace WPFBacNetApiSample
 {
