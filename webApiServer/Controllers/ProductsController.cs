@@ -53,6 +53,5 @@ namespace webApiServer.Controllers
                 (p) => string.Equals(p.Category, category,
                     StringComparison.OrdinalIgnoreCase));
         }
-
     }
 }

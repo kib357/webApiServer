@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -32,8 +31,9 @@ namespace webApiServer.Controllers
         public string GetById(string id)
         {            
             //return _network[200].Objects["AV1"].Get().ToString();
-            //object k = Network.Bac[200].Objects["AV1"].Get();
-            return id;//k.ToString();
+            object k = BacNetModel.Network[200].Objects["AV1"].GetAsync().Result;
+            if (k != null) return k.ToString();
+            return "Error";
         }
 
         public void Get(string subscribe)

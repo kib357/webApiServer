@@ -7,10 +7,10 @@ namespace BacNetApi
     {
         event ValueChangedEventHandler ValueChangedEvent;
 
-        Task<bool> IsExist();
+        bool IsExist();
         object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue);
-        Task<bool> Set(object value, int propertyId = 85);        
+        bool Set(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue);
         bool Create();
-        Task<bool> Delete();
+        bool Delete();
     }
 }

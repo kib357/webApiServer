@@ -51,7 +51,7 @@ namespace BacNetApi
 
         #region Methods
 
-        public Task<bool> IsExist()
+        public bool IsExist()
         {
             throw new NotImplementedException();
         }
@@ -75,12 +75,12 @@ namespace BacNetApi
 
         public async Task<T> GetAsync<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
         {
-            return await Task.Run(() => Get<T>());
+            return await Task.Run(() => Get<T>(propertyId));
         }
 
-        public Task<bool> Set(object value, int propertyId = 85)
+        public bool Set(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
         {
-            throw new NotImplementedException();
+            return _device.WriteProperty(this, propertyId, value);
         }
 
         public bool Create()
@@ -93,7 +93,7 @@ namespace BacNetApi
             return await Task.Run(() => Create());
         }
 
-        public Task<bool> Delete()
+        public bool Delete()
         {
             throw new NotImplementedException();
         }

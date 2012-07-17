@@ -178,5 +178,12 @@ namespace BacNetApi
             if (_subscriptionList.Contains(bacNetObject))
                 _subscriptionList.Add(bacNetObject);
         }
+
+        public bool WriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
+        {
+            Initialize();
+            if (_status != DeviceStatus.Ready) return false;
+            return _network.WriteProperty(Address, bacNetObject, propertyId, value);
+        }
     }
 }
