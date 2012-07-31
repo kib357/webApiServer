@@ -153,11 +153,11 @@ namespace BacNetApi
             return _network.CreateObject(Address, bacNetObject.Id) != null;
         }
 
-        public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId)
+        public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
         {
             Initialize();
             if (_status != DeviceStatus.Ready) return null;
-            return _network.ReadProperty(Address, bacNetObject.Id, propertyId);
+            return _network.ReadProperty(Address, bacNetObject.Id, propertyId, arrayIndex);
         }
 
         public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported)

@@ -21,11 +21,24 @@
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
-            <StackPanel Orientation="Horizontal">
-                <TextBox Width="100" Text="{Binding Address}"/>
-                <TextBox Width="100" Text="{Binding Value}"/>                
-            </StackPanel>
-            <Button Content="Set" Command="{Binding SetValueCommand}"/>
+        </ListView>
+        <StackPanel Orientation="Horizontal">
+            <TextBox Width="100" Text="{Binding Address}"/>
+            <TextBox Width="100" Text="{Binding Value}"/>
+        </StackPanel>
+        <Button Content="Set" Command="{Binding SetValueCommand}"/>
+        <Button Content="Get" Command="{Binding GetValueCommand}"/>
+        <ListView ItemsSource="{Binding Sensors}" Width="500" Background="#AAAAAA" Name="schListView">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Path=SchValues}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
         </ListView>
     </StackPanel>
 </Window>

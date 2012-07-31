@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows;
+using BACsharp;
 using BacNetApi;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
@@ -61,20 +62,57 @@ namespace WPFBacNetApiSample
             }
         }
 
+        private List<string> _schValues;
+        public List<string> SchValues
+        {
+            get { return _schValues; }
+            set
+            {
+                if (_schValues != value)
+                {
+                    _schValues = value;
+                    RaisePropertyChanged("SchValues");
+                }
+            }
+        }
+
         public DelegateCommand SetValueCommand { get; set; }
+        public DelegateCommand GetValueCommand { get; set; }
 
         private BacNet _bacnet;
 
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.109");
+            _bacnet = new BacNet("192.168.0.134");
             Thread.Sleep(100);
             _bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[600].Objects["MV1"].ValueChangedEvent += OnBacnetValueChanged;
+            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
+            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
+            
+            
             SetValueCommand = new DelegateCommand(SetValue);
+            GetValueCommand = new DelegateCommand(GetValue);
+            SchValues = new List<string>();
+        }
+
+        private void GetValue()
+        {
+            /*for (int i = 0; i < 8; i++)
+            {
+                var tmp = _bacnet[600].Objects["SCH1"].Get((BacnetPropertyId) 123, i);
+                if (tmp != null)
+                    if (SchValues.Contains(tmp.ToString()))
+                        SchValues[SchValues.IndexOf(tmp.ToString())] = tmp.ToString();
+                    else
+                        SchValues.Add(tmp.ToString());
+            }*/
+            var tmp = _bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123, 1);
+            string res = tmp.ToString();
         }
 
         private void SetValue()

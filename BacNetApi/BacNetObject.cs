@@ -56,9 +56,9 @@ namespace BacNetApi
             throw new NotImplementedException();
         }
 
-        public object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
+        public object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue, int arrayIndex = -1)
         {           
-            return _device.ReadProperty(this, propertyId);
+            return _device.ReadProperty(this, propertyId, arrayIndex);
         }
 
         public T Get<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)

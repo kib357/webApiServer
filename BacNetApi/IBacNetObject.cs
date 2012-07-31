@@ -8,7 +8,7 @@ namespace BacNetApi
         event ValueChangedEventHandler ValueChangedEvent;
 
         bool IsExist();
-        object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue);
+        object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue, int arrayIndex = -1);
         bool Set(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue);
         bool Create();
         bool Delete();

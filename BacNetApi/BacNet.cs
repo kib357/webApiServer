@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using BACsharp;
 using BACsharp.AppService;
@@ -28,6 +29,8 @@ namespace BacNetApi
         Running = 2
     }
 
+    public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
+
     public class BacNet : IBacNetServices
     {
         private bool                         _initialized;
@@ -35,6 +38,7 @@ namespace BacNetApi
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
         private static readonly object       SyncRoot = new Object();
+        public event NotificationEventHandler NotificationEvent;
 
         public BacNet(string address)
         {
@@ -58,6 +62,7 @@ namespace BacNetApi
             _bacNetProvider.OnError += OnErrorAckReceived;
             _bacNetProvider.OnSubscribeCOVAck += OnSubscribeCOVAck;
             _bacNetProvider.OnUnconfirmedCOVNotificationRequest += OnCOVNotification;
+            _bacNetProvider.OnUnconfirmedEventNotificationRequest += OnEventNotification;
             _bacNetProvider.Start();
 
             _initialized = true;
@@ -101,9 +106,9 @@ namespace BacNetApi
             _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
         }
 
-        internal object ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId)
+        internal object ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, int arrayIndex = -1)
         {
-            var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(address), (int)bacnetPropertyId);
+            var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(address), (int)bacnetPropertyId, arrayIndex);
             var readPropertyResponse = SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest) as ReadPropertyAck;
             if (readPropertyResponse == null) return null;
             var values = readPropertyResponse.PropertyValues;
@@ -119,9 +124,43 @@ namespace BacNetApi
         internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value)
         {
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
-            BACnetDataType valueByType = new BACnetReal();
+            BACnetDataType valueByType = ConvertValueToBacnet(bacNetObject.Id, value);
             var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType);
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest) == null;
+        }
+
+        private BACnetDataType ConvertValueToBacnet(string bacNetObjectId, object value)
+        {
+            string stringValue = ((string) value).ToLower();
+            var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
+            objType = objType.ToUpper();
+            if (objType == "AI" || objType == "AO" || objType == "AV")
+            {
+                float res;
+                float.TryParse(stringValue, out res);
+                return new BACnetReal(res);
+            }
+            if (objType == "BI" || objType == "BO" || objType == "BV")
+            {
+                bool res;
+                bool.TryParse(stringValue, out res);
+                if (stringValue == "1")
+                    res = true;
+                if (stringValue == "0")
+                    res = false;
+                if (stringValue.ToLower() == "on")
+                    res = true;
+                if (stringValue.ToLower() == "off")
+                    res = false;
+                return new BACnetEnumerated(res ? 1 : 0);
+            }
+            if (objType == "MI" || objType == "MO" || objType == "MV")
+            {
+                uint res;
+                uint.TryParse(stringValue, out res);
+                return new BACnetUnsigned(res);
+            }
+            return null;
         }
 
         internal object CreateObject(BACnetAddress bacAddress, string address)
@@ -247,6 +286,15 @@ namespace BacNetApi
                 if (_deviceList[devIndex].Objects.Contains(objId))
                     _deviceList[devIndex].Objects[objId].StringValue = value;
             }
-        }        
+        }
+
+        private void OnEventNotification(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as UnconfirmedEventNotificationRequest;
+            if (service == null) return;
+
+            NotificationEventHandler handler = NotificationEvent;
+            if (handler != null) handler(service);
+        }
     }    
 }
