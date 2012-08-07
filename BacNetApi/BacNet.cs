@@ -131,17 +131,19 @@ namespace BacNetApi
 
         private BACnetDataType ConvertValueToBacnet(string bacNetObjectId, object value)
         {
-            string stringValue = ((string) value).ToLower();
+            
             var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
             objType = objType.ToUpper();
             if (objType == "AI" || objType == "AO" || objType == "AV")
             {
+                var stringValue = ((string)value).ToLower();
                 float res;
                 float.TryParse(stringValue, out res);
                 return new BACnetReal(res);
             }
             if (objType == "BI" || objType == "BO" || objType == "BV")
             {
+                var stringValue = ((string)value).ToLower();
                 bool res;
                 bool.TryParse(stringValue, out res);
                 if (stringValue == "1")
@@ -156,9 +158,14 @@ namespace BacNetApi
             }
             if (objType == "MI" || objType == "MO" || objType == "MV")
             {
+                var stringValue = ((string)value).ToLower();
                 uint res;
                 uint.TryParse(stringValue, out res);
                 return new BACnetUnsigned(res);
+            }
+            if(objType == "SCH")
+            {
+                return value as BACnetWeeklySchedule;
             }
             return null;
         }

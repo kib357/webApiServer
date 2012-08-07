@@ -6,6 +6,8 @@ using System.Net;
 using System.Threading;
 using System.Windows;
 using BACsharp;
+using BACsharp.Types.Constructed;
+using BACsharp.Types.Primitive;
 using BacNetApi;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
@@ -111,8 +113,36 @@ namespace WPFBacNetApiSample
                     else
                         SchValues.Add(tmp.ToString());
             }*/
-            var tmp = _bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123, 1);
-            string res = tmp.ToString();
+            /*var tmp = _bacnet[600].Objects["SCH1"].Get(BacnetPropertyId.WeeklySchedule);
+            string res = tmp.ToString();*/
+            BACnetWeeklySchedule bws = new BACnetWeeklySchedule();
+            List<BACnetTimeValue> days = new List<BACnetTimeValue>();
+            var startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 10, 0, 0);
+            var end = new TimeSpan(3, 0, 0);
+            var endTime = startTime + end;
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
+            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 15, 0, 0);
+            end = new TimeSpan(2, 0, 0);
+            endTime = startTime + end;
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
+            bws.DailySchedule.Add(0, days);
+
+            days = new List<BACnetTimeValue>();
+            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 8, 0, 0);
+            end = new TimeSpan(2, 0, 0);
+            endTime = startTime + end;
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
+            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 12, 0, 0);
+            end = new TimeSpan(5, 0, 0);
+            endTime = startTime + end;
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
+            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
+            bws.DailySchedule.Add(1, days);
+
+            _bacnet[600].Objects["SCH1"].Set(bws, (BacnetPropertyId)123);
         }
 
         private void SetValue()
