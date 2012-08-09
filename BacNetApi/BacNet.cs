@@ -124,12 +124,12 @@ namespace BacNetApi
         internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value)
         {
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
-            BACnetDataType valueByType = ConvertValueToBacnet(bacNetObject.Id, value);
+            BACnetDataType valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
             var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType);
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest) == null;
         }
 
-        private BACnetDataType ConvertValueToBacnet(string bacNetObjectId, object value)
+        private BACnetDataType ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
         {
             
             var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
@@ -165,7 +165,10 @@ namespace BacNetApi
             }
             if(objType == "SCH")
             {
-                return value as BACnetWeeklySchedule;
+                if (propertyId == BacnetPropertyId.WeeklySchedule)
+                    return value as BACnetWeeklySchedule;
+                if (propertyId == BacnetPropertyId.ListOfObjectPropertyReferences)
+                    return value as ListOfObjectPropertyReferences;
             }
             return null;
         }
@@ -174,6 +177,12 @@ namespace BacNetApi
         {
             var createObjectRequest = new CreateObjectRequest(BacNetObject.GetObjectIdByString(address), new List<BACnetPropertyValue>());
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest);
+        }
+
+        internal object DeleteObject(BACnetAddress bacAddress, string address)
+        {
+            var deleteObjectRequest = new DeleteObjectRequest(BacNetObject.GetObjectIdByString(address));
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.DeleteObject, deleteObjectRequest);
         }
 
         internal object SubscribeCOV(BACnetAddress bacAddress, BacNetObject bacNetObject)

@@ -95,7 +95,7 @@ namespace BacNetApi
 
         public bool Delete()
         {
-            throw new NotImplementedException();
+            return _device.DeleteObject(this);
         }
 
         #endregion

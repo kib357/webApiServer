@@ -153,6 +153,13 @@ namespace BacNetApi
             return _network.CreateObject(Address, bacNetObject.Id) != null;
         }
 
+        public bool DeleteObject(BacNetObject bacNetObject)
+        {
+            Initialize();
+            if (_status != DeviceStatus.Ready) return false;
+            return _network.DeleteObject(Address, bacNetObject.Id) != null;
+        }
+
         public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
         {
             Initialize();

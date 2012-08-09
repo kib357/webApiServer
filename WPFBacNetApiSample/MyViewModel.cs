@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Windows;
 using BACsharp;
+using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
@@ -115,34 +116,31 @@ namespace WPFBacNetApiSample
             }*/
             /*var tmp = _bacnet[600].Objects["SCH1"].Get(BacnetPropertyId.WeeklySchedule);
             string res = tmp.ToString();*/
-            BACnetWeeklySchedule bws = new BACnetWeeklySchedule();
-            List<BACnetTimeValue> days = new List<BACnetTimeValue>();
-            var startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 10, 0, 0);
-            var end = new TimeSpan(3, 0, 0);
-            var endTime = startTime + end;
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
-            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 15, 0, 0);
-            end = new TimeSpan(2, 0, 0);
-            endTime = startTime + end;
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
-            bws.DailySchedule.Add(0, days);
-
-            days = new List<BACnetTimeValue>();
-            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 8, 0, 0);
-            end = new TimeSpan(2, 0, 0);
-            endTime = startTime + end;
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
-            startTime = new DateTime(DateTime.MinValue.Year, DateTime.MinValue.Month, DateTime.MinValue.Day, 12, 0, 0);
-            end = new TimeSpan(5, 0, 0);
-            endTime = startTime + end;
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(startTime.Hour, startTime.Minute, startTime.Second, startTime.Millisecond / 10), Value = new BACnetReal((float)5.0) });
-            days.Add(new BACnetTimeValue { Time = new BACnetTime(endTime.Hour, endTime.Minute, endTime.Second, endTime.Millisecond / 10), Value = new BACnetNull() });
-            bws.DailySchedule.Add(1, days);
-
-            _bacnet[600].Objects["SCH1"].Set(bws, (BacnetPropertyId)123);
+            /*var res = _bacnet[600].Objects["SCH1"].Get(BacnetPropertyId.ListOfObjectPropertyReferences);
+            List<string> tmp = new List<string>();
+            if(res is List<BACnetDataType>)
+                foreach (var obj in res as List<BACnetDataType>)
+                {
+                    tmp.Add(obj.ToString());
+                }
+            else tmp.Add(res.ToString());
+            var newControlledObjects = new ListOfObjectPropertyReferences();
+            BACnetDeviceObjectPropertyReference obj1 = new BACnetDeviceObjectPropertyReference();
+            obj1.ObjectId.ObjectType = (int)BacnetObjectType.BinaryValue;
+            obj1.ObjectId.Instance = 1;
+            obj1.PropertyId = new BACnetEnumerated((int)BacnetPropertyId.PresentValue, 1);
+            newControlledObjects.Objects.Add(obj1);
+            _bacnet[600].Objects["SCH1"].Set(newControlledObjects, BacnetPropertyId.ListOfObjectPropertyReferences);
+            var res1 = _bacnet[600].Objects["SCH1"].Get(BacnetPropertyId.ListOfObjectPropertyReferences);*/
+            BacNetDevice dev = new BacNetDevice(600, _bacnet);
+            BacNetObject obj = new BacNetObject(dev, "SCH2");
+            _bacnet[600].Objects["SCH3"].Create();
+            _bacnet[600].Objects["SCH2"].Create();
+            /*tmp = new List<string>();
+            foreach (var obj in res as List<BACnetDataType>)
+            {
+                tmp.Add(obj.ToString());
+            }*/
         }
 
         private void SetValue()
