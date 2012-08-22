@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -74,7 +75,7 @@ namespace BacNetApi
             if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device &&
                 _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance) >= 0)
             {
-                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport);
+                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
             }
         }
 
@@ -121,29 +122,30 @@ namespace BacNetApi
             SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest, bacObject, false);
         }
 
-        internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value)
+        internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value, ApduSettings settings)
         {
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
-            BACnetDataType valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
-            var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest) == null;
+            List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
+            var writePropertyRequest = new WritePropertyRequest2(objId, (int)bacnetPropertyId, valueByType);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest, null, true, settings) == null;
         }
 
-        private BACnetDataType ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
+        private List<BACnetDataType> ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
         {
-            
+            if (propertyId == BacnetPropertyId.ObjectName)
+                return new List<BACnetDataType> { value as BACnetCharacterString };
             var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
             objType = objType.ToUpper();
             if (objType == "AI" || objType == "AO" || objType == "AV")
             {
-                var stringValue = ((string)value).ToLower();
+                var stringValue = value.ToString();
                 float res;
                 float.TryParse(stringValue, out res);
-                return new BACnetReal(res);
+                return new List<BACnetDataType> {new BACnetReal(res)};
             }
             if (objType == "BI" || objType == "BO" || objType == "BV")
             {
-                var stringValue = ((string)value).ToLower();
+                var stringValue = value.ToString();
                 bool res;
                 bool.TryParse(stringValue, out res);
                 if (stringValue == "1")
@@ -154,21 +156,21 @@ namespace BacNetApi
                     res = true;
                 if (stringValue.ToLower() == "off")
                     res = false;
-                return new BACnetEnumerated(res ? 1 : 0);
+                return new List<BACnetDataType> {new BACnetEnumerated(res ? 1 : 0)};
             }
             if (objType == "MI" || objType == "MO" || objType == "MV")
             {
-                var stringValue = ((string)value).ToLower();
+                var stringValue = value.ToString();
                 uint res;
                 uint.TryParse(stringValue, out res);
-                return new BACnetUnsigned(res);
+                return new List<BACnetDataType>{new BACnetUnsigned(res)};
             }
             if(objType == "SCH")
             {
                 if (propertyId == BacnetPropertyId.WeeklySchedule)
-                    return value as BACnetWeeklySchedule;
+                    return value as List<BACnetDataType>;
                 if (propertyId == BacnetPropertyId.ListOfObjectPropertyReferences)
-                    return value as ListOfObjectPropertyReferences;
+                    return (value as List<BACnetDeviceObjectPropertyReference>).Cast<BACnetDataType>().ToList();
             }
             return null;
         }
@@ -191,11 +193,14 @@ namespace BacNetApi
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.SubscribeCOV, subscribeCOVRequest, false);
         }
 
-        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true)
+        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
         {
             if (!_initialized) throw new Exception("Network provider not initialized");
             var request = CreateRequest(service, state);
-            request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
+            if (settings != null)
+                request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest, settings);
+            else
+                request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
             if (waitForResponse)
             {
                 request.ResetEvent.WaitOne(3000);

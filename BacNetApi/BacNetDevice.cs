@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
+using BACsharp.AppService;
 using BACsharp.Types.Primitive;
 
 namespace BacNetApi
@@ -21,7 +22,8 @@ namespace BacNetApi
         public uint                          Id { get; private set; }        
         public BacNetObjectIndexer           Objects { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
-        public List<BacnetServicesSupported> ServicesSupported { get; set; } 
+        public List<BacnetServicesSupported> ServicesSupported { get; set; }
+        public ApduSettings                  ApduSetting { get; set; }
 
         public BacNetDevice(uint id, BacNet network)
         {
@@ -167,10 +169,11 @@ namespace BacNetApi
             return _network.ReadProperty(Address, bacNetObject.Id, propertyId, arrayIndex);
         }
 
-        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported)
+        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
         {
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
+            ApduSetting = settings;
             _waitForAddress.Set();
         }
 
@@ -190,7 +193,7 @@ namespace BacNetApi
         {
             Initialize();
             if (_status != DeviceStatus.Ready) return false;
-            return _network.WriteProperty(Address, bacNetObject, propertyId, value);
+            return _network.WriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
     }
 }
