@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
 using BACsharp.AppService;
+using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 
 namespace BacNetApi
@@ -17,6 +18,7 @@ namespace BacNetApi
         private volatile SubscriptionStatus                 _subscriptionStatus;
         private readonly ObservableCollection<BacNetObject> _subscriptionList;
         private readonly AutoResetEvent _waitForAddress = new AutoResetEvent(false);
+        private static readonly object SyncRoot = new Object();
 
         public BACnetAddress                 Address { get; set; }
         public uint                          Id { get; private set; }        
@@ -94,9 +96,12 @@ namespace BacNetApi
         {
             while (_subscriptionStatus == SubscriptionStatus.Running)
             {
-                foreach (var bacNetObject in _subscriptionList)
+                lock (SyncRoot)
                 {
-                    _network.SubscribeCOV(Address, bacNetObject);
+                    foreach (var bacNetObject in _subscriptionList)
+                    {
+                        _network.SubscribeCOV(Address, bacNetObject);
+                    }
                 }
                 Thread.Sleep(TimeSpan.FromSeconds(1800));
             }
@@ -135,24 +140,24 @@ namespace BacNetApi
 
         private async Task WaitForInitialization()
         {
-            await Task.Run(() =>
-                               {
-                                   var minutes = 1;
-                                   while (_status != DeviceStatus.Ready)
-                                   {
-                                       Initialize();
-                                       if (_status == DeviceStatus.Ready) break;
-                                       Thread.Sleep(TimeSpan.FromMinutes(minutes));
-                                       if (minutes < 127) minutes *= 2;
-                                   }
-                               });
+            await Task.Factory.StartNew(() =>
+            {
+                var minutes = 1;
+                while (_status != DeviceStatus.Ready)
+                {
+                    Initialize();
+                    if (_status == DeviceStatus.Ready) break;
+                    Thread.Sleep(TimeSpan.FromMinutes(minutes));
+                    if (minutes < 127) minutes *= 2;
+                }
+            }, TaskCreationOptions.LongRunning);
         }
 
-        public bool CreateObject(BacNetObject bacNetObject)
+        public bool CreateObject(BacNetObject bacNetObject, List<BACnetPropertyValue> data)
         {
             Initialize();
             if (_status != DeviceStatus.Ready) return false;
-            return _network.CreateObject(Address, bacNetObject.Id) != null;
+            return _network.CreateObject(Address, bacNetObject.Id, data, ApduSetting) != null;
         }
 
         public bool DeleteObject(BacNetObject bacNetObject)
@@ -179,14 +184,20 @@ namespace BacNetApi
 
         public void AddSubscriptionObject(BacNetObject bacNetObject)
         {
-            if (!_subscriptionList.Contains(bacNetObject))
-            _subscriptionList.Add(bacNetObject);
+            lock (SyncRoot)
+            {
+                if (!_subscriptionList.Contains(bacNetObject))
+                    _subscriptionList.Add(bacNetObject);
+            }
         }
 
         public void RemoveSubscriptionObject(BacNetObject bacNetObject)
         {
-            if (_subscriptionList.Contains(bacNetObject))
-                _subscriptionList.Add(bacNetObject);
+            lock (SyncRoot)
+            {
+                if (_subscriptionList.Contains(bacNetObject))
+                    _subscriptionList.Add(bacNetObject);   
+            }
         }
 
         public bool WriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
@@ -194,6 +205,22 @@ namespace BacNetApi
             Initialize();
             if (_status != DeviceStatus.Ready) return false;
             return _network.WriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
+        }
+
+        /// <summary>
+        /// Метод для записи свойств нескольких объектов
+        /// </summary>
+        /// <param name="objectIdWithValues">
+        /// Список объектов, каждый из которых содержит список свойств со значениями
+        /// </param>
+        /// <returns>
+        /// true - если запись прошла успешно, иначе false
+        /// </returns>
+        public bool WritePropertyMultiple(Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues)
+        {
+            Initialize();
+            if (_status != DeviceStatus.Ready) return false;
+            return _network.WritePropertyMultiple(Address, objectIdWithValues, ApduSetting);
         }
     }
 }

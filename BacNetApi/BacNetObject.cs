@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
+using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 
 namespace BacNetApi
@@ -37,7 +38,7 @@ namespace BacNetApi
             double oldValue, newValue;
             if (double.TryParse(value.Replace(',', '.'), out newValue) &&
                 double.TryParse(_stringValue, out oldValue) &&
-                Math.Abs(newValue - oldValue) > 0.5)
+                Math.Abs(newValue - oldValue) > 0.1)
                 return true;
             return _stringValue != value;
         }
@@ -83,14 +84,16 @@ namespace BacNetApi
             return _device.WriteProperty(this, propertyId, value);
         }
 
-        public bool Create()
+        public bool Create(List<BACnetPropertyValue> data = null)
         {
-            return _device.CreateObject(this);               
+            if (data == null)
+                data = new List<BACnetPropertyValue>();
+            return _device.CreateObject(this, data);               
         }
 
-        public async Task<bool> CreateAsync()
+        public async Task<bool> CreateAsync(List<BACnetPropertyValue> data)
         {
-            return await Task.Run(() => Create());
+            return await Task.Run(() => Create(data));
         }
 
         public bool Delete()

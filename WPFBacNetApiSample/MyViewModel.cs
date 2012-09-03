@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
+using System.Xml.Linq;
 using BACsharp;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
@@ -30,10 +32,12 @@ namespace WPFBacNetApiSample
             Thread.Sleep(100);
             _bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
+            //GetBacnetAddresses();
             
             
             SetValueCommand = new DelegateCommand(SetValue);
@@ -46,6 +50,7 @@ namespace WPFBacNetApiSample
             /*List<BACnetDataType> propertyValues = new List<BACnetDataType>();
             propertyValues.Add(new BACnetDailySchedule()); //1
             BACnetDailySchedule dailySchedule = new BACnetDailySchedule();
+            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(0, 0, 0, 0), new BACnetNull()));
             dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(9, 30, 0, 0), new BACnetEnumerated(1)));
             dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(13, 30, 0, 0), new BACnetNull()));
             propertyValues.Add(dailySchedule); // 2
@@ -53,14 +58,70 @@ namespace WPFBacNetApiSample
             propertyValues.Add(new BACnetDailySchedule()); //4
             propertyValues.Add(new BACnetDailySchedule()); //5
             propertyValues.Add(new BACnetDailySchedule()); //6
-            propertyValues.Add(new BACnetDailySchedule()); //7*/
+            propertyValues.Add(new BACnetDailySchedule()); //7
             var val = new List<string> { "600.AV2" };
-            var bacval = new List<BACnetDeviceObjectPropertyReference>();
+            var bacval = new List<BACnetDataType>();
             foreach (var v in val)
             {
                 bacval.Add(GetPropertyReferensFromString(v));
             }
-            var tmp = _bacnet[600].Objects["SCH301"].Set(bacval, (BacnetPropertyId)54);
+            List<BACnetPropertyValue> list = new List<BACnetPropertyValue>();
+            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.WeeklySchedule, propertyValues));
+            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ListOfObjectPropertyReferences, bacval));
+            var lst = new List<BACnetDataType>{new BACnetCharacterString("qwe")};
+            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ObjectName, lst));
+            var tmp = _bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
+            var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
+            var val = new Dictionary<BacnetPropertyId, object>();
+            val.Add(BacnetPropertyId.ObjectName, "AnalogValue1");
+            val.Add(BacnetPropertyId.PresentValue, 10);
+            values.Add("AV1", val);
+            val = new Dictionary<BacnetPropertyId, object>();
+            val.Add(BacnetPropertyId.ObjectName, "AnalogValue2");
+            val.Add(BacnetPropertyId.PresentValue, 10);
+            values.Add("AV2", val);
+
+            _bacnet[600].WritePropertyMultiple(values);
+        }
+
+        private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
+        {
+            var path = @"D:\dict";
+            foreach (string fileName in Directory.GetFiles(path).Where(f => f.EndsWith(".xaml")))
+            {
+                XDocument doc;
+                using (var sr = new StreamReader(fileName))
+                {
+                    doc = XDocument.Load(sr);
+                }
+                foreach (var descendant in doc.Root.Descendants())
+                {
+                    foreach (var xAttribute in descendant.Attributes())
+                    {
+                        if (xAttribute.Name.LocalName.ToLower().Contains("address"))
+                        {
+                            var addrList = xAttribute.Value.Split(',');
+                            foreach (var addr in addrList)
+                            {
+                                AddBacnetObject(addr);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void AddBacnetObject(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address) || !address.Contains('.')) return;
+
+            uint instance;
+            if (uint.TryParse(address.Split('.')[0].Trim(), out instance))
+            {
+                string objAddress = address.Split('.')[1].Trim();
+
+                    _bacnet[instance].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
+            }
         }
 
         private void SetValue()

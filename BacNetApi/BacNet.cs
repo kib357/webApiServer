@@ -38,7 +38,7 @@ namespace BacNetApi
         private BaseAppServiceProvider       _bacNetProvider;
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
-        private static readonly object       SyncRoot = new Object();
+        private static readonly object         SyncRoot = new Object();
         public event NotificationEventHandler NotificationEvent;
 
         public BacNet(string address)
@@ -104,7 +104,12 @@ namespace BacNetApi
 
         internal void WhoIs(ushort startAddress, ushort endAddress)
         {
-            _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
+            lock (SyncRoot)
+            {
+                //это такой специальный слип, который чтобы дельта не тупила когда мы её хуизами закидываем
+                Thread.Sleep(100);
+                _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
+            }            
         }
 
         internal object ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, int arrayIndex = -1)
@@ -130,10 +135,30 @@ namespace BacNetApi
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest, null, true, settings) == null;
         }
 
+        internal bool WritePropertyMultiple(BACnetAddress bacAddress, Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues, ApduSettings settings)
+        {
+            var dataToWrite = new Dictionary<BACnetObjectId, List<BACnetPropertyValue>>();
+            foreach (var obj in objectIdWithValues)
+            {
+                var objId = BacNetObject.GetObjectIdByString(obj.Key);
+                var values = new List<BACnetPropertyValue>();
+                foreach (var val in obj.Value)
+                {
+                    var propertyId = val.Key;
+                    var valueByType = ConvertValueToBacnet(obj.Key, val.Value, propertyId);
+                    var valueToAdd = new BACnetPropertyValue((int)propertyId, valueByType);
+                    values.Add(valueToAdd);
+                }
+                dataToWrite.Add(objId, values);
+            }
+            var writePropertyMultipleRequest = new WritePropertyMultipleRequest(dataToWrite);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyMultipleRequest, null, true, settings) == null;
+        }
+
         private List<BACnetDataType> ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
         {
             if (propertyId == BacnetPropertyId.ObjectName)
-                return new List<BACnetDataType> { value as BACnetCharacterString };
+                return new List<BACnetDataType> {new BACnetCharacterString(value as string)};
             var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
             objType = objType.ToUpper();
             if (objType == "AI" || objType == "AO" || objType == "AV")
@@ -175,10 +200,10 @@ namespace BacNetApi
             return null;
         }
 
-        internal object CreateObject(BACnetAddress bacAddress, string address)
+        internal object CreateObject(BACnetAddress bacAddress, string address, List<BACnetPropertyValue> data, ApduSettings settings)
         {
-            var createObjectRequest = new CreateObjectRequest(BacNetObject.GetObjectIdByString(address), new List<BACnetPropertyValue>());
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest);
+            var createObjectRequest = new CreateObjectRequest(BacNetObject.GetObjectIdByString(address), data);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest, settings:settings);
         }
 
         internal object DeleteObject(BACnetAddress bacAddress, string address)
@@ -275,6 +300,11 @@ namespace BacNetApi
                     var bacNetObject = _requests[index].State as BacNetObject;
                     bacNetObject.StringValue = "Error";
                     RemoveRequest(_requests[index]);
+                }
+                if (_requests[index].State is bool && (_requests[index].State as bool?) == false)
+                {
+                    _requests[index].State = false;
+                    _requests[index].ResetEvent.Set();
                 }
             }
         }
