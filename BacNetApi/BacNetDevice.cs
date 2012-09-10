@@ -44,7 +44,7 @@ namespace BacNetApi
             if (_subscriptionList.Count > 0 && _subscriptionStatus == SubscriptionStatus.Stopped)
             {
                 _subscriptionStatus = SubscriptionStatus.Initializing;
-                Task.Run(() => StartSubscription());
+                Task.Factory.StartNew(StartSubscription, TaskCreationOptions.LongRunning);
             }
             if (_subscriptionList.Count == 0)
             {
@@ -55,14 +55,14 @@ namespace BacNetApi
         private async void StartSubscription()
         {
             await WaitForInitialization();
+            _subscriptionStatus = SubscriptionStatus.Running;
             if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
-                Task.Run(() => COVSubscription());
+                COVSubscription();
             else
             //    if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
             //        RPMPolling();
             //    else
-                    Task.Run(() => ReadPropertyPolling());
-            _subscriptionStatus = SubscriptionStatus.Running;
+                ReadPropertyPolling();
         }
 
         private void StopSubsciption()

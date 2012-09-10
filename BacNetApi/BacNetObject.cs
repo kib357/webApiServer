@@ -189,8 +189,8 @@ namespace BacNetApi
                     return BacnetObjectType.LifeSafetyPoint;
                 case "LSZ":
                     return BacnetObjectType.LifeSafetyZone;
-                case "LO":
-                    return BacnetObjectType.LightingOutput;
+                /*case "LO":
+                    return BacnetObjectType.LightingOutput;*/
                 case "LC":
                     return BacnetObjectType.LoadControl;
                 case "LOOP":
@@ -263,8 +263,8 @@ namespace BacNetApi
                     res = "LSP"; break;
                 case BacnetObjectType.LifeSafetyZone:
                     res = "LSZ"; break;
-                case BacnetObjectType.LightingOutput:
-                    res = "LO"; break;
+                /*case BacnetObjectType.LightingOutput:
+                    res = "LO"; break;*/
                 case BacnetObjectType.LoadControl:
                     res = "LC"; break;
                 case BacnetObjectType.Loop:

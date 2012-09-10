@@ -131,7 +131,7 @@ namespace BacNetApi
         {
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
             List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
-            var writePropertyRequest = new WritePropertyRequest2(objId, (int)bacnetPropertyId, valueByType);
+            var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType);
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest, null, true, settings) == null;
         }
 

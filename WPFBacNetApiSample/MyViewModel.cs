@@ -30,14 +30,18 @@ namespace WPFBacNetApiSample
             _sensors = new ObservableCollection<sensor>();
             _bacnet = new BacNet("192.168.0.121");
             Thread.Sleep(100);
-            _bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[1700].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[1700].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[1701].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
-            //GetBacnetAddresses();
+            GetBacnetAddresses();
             
             
             SetValueCommand = new DelegateCommand(SetValue);
@@ -71,7 +75,7 @@ namespace WPFBacNetApiSample
             var lst = new List<BACnetDataType>{new BACnetCharacterString("qwe")};
             list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ObjectName, lst));
             var tmp = _bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
-            var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
+            /*var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
             var val = new Dictionary<BacnetPropertyId, object>();
             val.Add(BacnetPropertyId.ObjectName, "AnalogValue1");
             val.Add(BacnetPropertyId.PresentValue, 10);
@@ -81,7 +85,7 @@ namespace WPFBacNetApiSample
             val.Add(BacnetPropertyId.PresentValue, 10);
             values.Add("AV2", val);
 
-            _bacnet[600].WritePropertyMultiple(values);
+            _bacnet[600].WritePropertyMultiple(values);*/
         }
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
@@ -94,6 +98,7 @@ namespace WPFBacNetApiSample
                 {
                     doc = XDocument.Load(sr);
                 }
+                var addresses = new Dictionary<uint, List<string>>();
                 foreach (var descendant in doc.Root.Descendants())
                 {
                     foreach (var xAttribute in descendant.Attributes())
@@ -103,7 +108,18 @@ namespace WPFBacNetApiSample
                             var addrList = xAttribute.Value.Split(',');
                             foreach (var addr in addrList)
                             {
-                                AddBacnetObject(addr);
+                                uint instance;
+                                if (!uint.TryParse(addr.Split('.')[0].Trim(), out instance)) continue;
+                                string objAddress = addr.Split('.')[1].Trim();
+                                if (addresses.ContainsKey(instance))
+                                {
+                                    if (!addresses[instance].Contains(objAddress))
+                                        addresses[instance].Add(objAddress);
+                                }
+                                else
+                                    addresses.Add(instance, new List<string>{objAddress});
+                                AddBacnetObjects(addresses);
+                                //AddBacnetObject(addr);
                             }
                         }
                     }
@@ -121,6 +137,21 @@ namespace WPFBacNetApiSample
                 string objAddress = address.Split('.')[1].Trim();
 
                     _bacnet[instance].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
+            }
+        }
+
+        public void AddBacnetObjects(Dictionary<uint, List<string>> addresses)
+        {
+            if (addresses == null) return;
+
+            foreach (var address in addresses)
+            {
+                if (address.Value == null) continue;
+                foreach (var objAddress in address.Value)
+                {
+                    _bacnet[address.Key].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
+                }
+                //Thread.Sleep(100);
             }
         }
 
