@@ -16,14 +16,15 @@ using BACsharp.Types.Primitive;
 
 namespace BacNetApi
 {
-    enum DeviceStatus
+    public enum DeviceStatus
     {
         NotInitialized = 0,
         Initializing = 1,
         Ready = 2,
+        Fault = 3
     }
 
-    enum SubscriptionStatus
+    public enum SubscriptionStatus
     {
         Stopped = 0,
         Initializing = 1,
@@ -31,6 +32,7 @@ namespace BacNetApi
     }
 
     public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
+    public delegate void NetworkModelChangedEventHandler();
 
     public class BacNet : IBacNetServices
     {
@@ -40,6 +42,14 @@ namespace BacNetApi
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
         private static readonly object         SyncRoot = new Object();
         public event NotificationEventHandler NotificationEvent;
+
+        public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
+
+        internal void OnNetworkModelChangedEvent()
+        {
+            NetworkModelChangedEventHandler handler = NetworkModelChangedEvent;
+            if (handler != null) handler();
+        }
 
         public BacNet(string address)
         {
@@ -56,10 +66,11 @@ namespace BacNetApi
         private void StartProvider(IPAddress address)
         {
             if (_initialized) return;
-
-            _bacNetProvider = new BaseAppServiceProvider(new DataLinkPort(address));            
+            var s = BACnetInit.SegmentationSupported;
+            _bacNetProvider = new BaseAppServiceProvider(new DataLinkPort(address));                        
             _bacNetProvider.OnIAmRequest += OnIamReceived;
             _bacNetProvider.OnReadPropertyAck += OnReadPropertyAckReceived;
+            _bacNetProvider.OnReadPropertyMultipleAck += OnReadPropertyMultipleAckReceived;
             _bacNetProvider.OnError += OnErrorAckReceived;
             _bacNetProvider.OnSubscribeCOVAck += OnSubscribeCOVAck;
             _bacNetProvider.OnUnconfirmedCOVNotificationRequest += OnCOVNotification;
@@ -67,17 +78,7 @@ namespace BacNetApi
             _bacNetProvider.Start();
 
             _initialized = true;
-        }       
-
-        private void OnIamReceived(object sender, AppServiceEventArgs e)
-        {
-            var service = e.Service as IAmRequest;
-            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device &&
-                _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance) >= 0)
-            {
-                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
-            }
-        }
+        }                
 
         public BacNetDevice this[uint i]
         {
@@ -102,12 +103,19 @@ namespace BacNetApi
             }
         }
 
+        public List<BacNetDevice> SubscribedDevices
+        {
+            get { return _deviceList.Where(d => d.SubscriptionState == SubscriptionStatus.Running).ToList(); }
+        }
+
+        #region Requests
+
         internal void WhoIs(ushort startAddress, ushort endAddress)
         {
             lock (SyncRoot)
             {
                 //это такой специальный слип, который чтобы дельта не тупила когда мы её хуизами закидываем
-                Thread.Sleep(100);
+                Thread.Sleep(30);
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
             }            
         }
@@ -125,6 +133,18 @@ namespace BacNetApi
         {
             var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
             SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest, bacObject, false);
+        }
+
+        internal void BeginReadPropertyMultiple(BACnetAddress bacAddress, List<BacNetObject> objectList, ApduSettings settings)
+        {
+            var objList = new Dictionary<BACnetObjectId, List<BACnetPropertyReference>>();
+            foreach (var bacObject in objectList)
+            {
+                objList.Add(BacNetObject.GetObjectIdByString(bacObject.Id), 
+                    new List<BACnetPropertyReference>{new BACnetPropertyReference((int)BacnetPropertyId.PresentValue)});
+            }
+            var readPropertyMultipleRequest = new ReadPropertyMultipleRequest(objList);
+            SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadPropMultiple, readPropertyMultipleRequest, objectList, false, settings);
         }
 
         internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value, ApduSettings settings)
@@ -210,13 +230,17 @@ namespace BacNetApi
         {
             var deleteObjectRequest = new DeleteObjectRequest(BacNetObject.GetObjectIdByString(address));
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.DeleteObject, deleteObjectRequest);
-        }
+        }        
 
         internal object SubscribeCOV(BACnetAddress bacAddress, BacNetObject bacNetObject)
         {
             var subscribeCOVRequest = new SubscribeCOVRequest(357, BacNetObject.GetObjectIdByString(bacNetObject.Id), false, 3600);
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.SubscribeCOV, subscribeCOVRequest, false);
         }
+
+        #endregion
+
+        #region Request services
 
         private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
         {
@@ -261,6 +285,20 @@ namespace BacNetApi
             }
         }
 
+        #endregion
+
+        #region Acknowledgements
+
+        private void OnIamReceived(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as IAmRequest;
+            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device &&
+                _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance) >= 0)
+            {
+                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
+            }
+        }
+
         private void OnReadPropertyAckReceived(object sender, AppServiceEventArgs e)
         {
             
@@ -283,6 +321,38 @@ namespace BacNetApi
             }
         }
 
+        private void OnReadPropertyMultipleAckReceived(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as ReadPropertyMultipleAck;
+            if (service == null) return;
+            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
+            if (index >= 0)
+            {
+                if (_requests[index].State == null)
+                {                    
+                }
+                if (_requests[index].State is List<BacNetObject>)
+                {
+                    var objectList = _requests[index].State as List<BacNetObject>;
+                    foreach (var bacObject in objectList)
+                    {
+                        var objId = BacNetObject.GetObjectIdByString(bacObject.Id);
+
+                        foreach (var readAccessResult in service.ReadAccessResults)
+                        {
+                            if (readAccessResult.Key.Instance == objId.Instance && readAccessResult.Key.ObjectType == objId.ObjectType)
+                            {
+                                var resObject = readAccessResult.Value;
+                                if (resObject.Count > 0 && resObject[0].Values.Count > 0)
+                                    bacObject.StringValue = resObject.First().Values.First().ToString();
+                            }
+                        }                            
+                    }
+                    RemoveRequest(_requests[index]);
+                }
+            }
+        }
+
         private void OnErrorAckReceived(object sender, AppServiceEventArgs e)
         {
             var service = e.Service as BaseErrorService;
@@ -294,17 +364,17 @@ namespace BacNetApi
                 {
                     _requests[index].State = service;
                     _requests[index].ResetEvent.Set();                    
+                }                
+                if (_requests[index].State is bool && (_requests[index].State as bool?) == false)
+                {
+                    _requests[index].State = false;
+                    _requests[index].ResetEvent.Set();
                 }
                 if (_requests[index].State is BacNetObject)
                 {
                     var bacNetObject = _requests[index].State as BacNetObject;
                     bacNetObject.StringValue = "Error";
                     RemoveRequest(_requests[index]);
-                }
-                if (_requests[index].State is bool && (_requests[index].State as bool?) == false)
-                {
-                    _requests[index].State = false;
-                    _requests[index].ResetEvent.Set();
                 }
             }
         }
@@ -347,5 +417,7 @@ namespace BacNetApi
             NotificationEventHandler handler = NotificationEvent;
             if (handler != null) handler(service);
         }
+
+        #endregion
     }    
 }

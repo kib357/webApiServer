@@ -16,6 +16,8 @@ namespace BacNetApi
         public string Id { get; private set; }
         private SynchronizationContext _synchronizationContext;
 
+        public DateTime LastUpdated { get; private set; }
+
         private string _stringValue;
         public string StringValue
         {
@@ -25,6 +27,7 @@ namespace BacNetApi
                 if (CheckValueChanges(value))
                 {
                     _stringValue = value;
+                    _device.LastUpdated = LastUpdated = DateTime.Now;
                     if (_synchronizationContext != null)
                         _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
                     else

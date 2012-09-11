@@ -28,7 +28,8 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.121");
+            _bacnet = new BacNet("192.168.0.123");
+            _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             Thread.Sleep(100);
             /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
@@ -43,10 +44,31 @@ namespace WPFBacNetApiSample
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
             GetBacnetAddresses();
             
+            //_bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
+            //_bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
             
             SetValueCommand = new DelegateCommand(SetValue);
             GetValueCommand = new DelegateCommand(GetValue);
             SchValues = new List<string>();
+        }
+
+        private void OnNetworkModelChanged()
+        {
+            Devices = new ObservableCollection<BacNetDevice>(_bacnet.SubscribedDevices);
+        }
+
+        private ObservableCollection<BacNetDevice> _devices;
+        public ObservableCollection<BacNetDevice> Devices
+        {
+            get { return _devices; }
+            set
+            {
+                if (_devices != value)
+                {
+                    _devices = value;
+                    RaisePropertyChanged("Devices");
+                }
+            }
         }
 
         private void GetValue()
@@ -90,7 +112,7 @@ namespace WPFBacNetApiSample
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
         {
-            var path = @"D:\dict";
+            var path = @"C:\dict";
             foreach (string fileName in Directory.GetFiles(path).Where(f => f.EndsWith(".xaml")))
             {
                 XDocument doc;

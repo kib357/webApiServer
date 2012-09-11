@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
@@ -17,27 +18,137 @@ namespace BacNetApi
         private volatile DeviceStatus                       _status;
         private volatile SubscriptionStatus                 _subscriptionStatus;
         private readonly ObservableCollection<BacNetObject> _subscriptionList;
-        private readonly AutoResetEvent _waitForAddress = new AutoResetEvent(false);
-        private static readonly object SyncRoot = new Object();
+        private readonly AutoResetEvent                     _waitForAddress = new AutoResetEvent(false);
+        private static readonly object                      SyncRoot = new Object();
+        private volatile bool                               _trackState;
 
         public BACnetAddress                 Address { get; set; }
-        public uint                          Id { get; private set; }        
+        public uint                          Id { get; private set; }
+        public string                        Title { get; private set; }
+        public DeviceStatus                  Status { get { return _status; } }
+        public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
         public BacNetObjectIndexer           Objects { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
-        public ApduSettings                  ApduSetting { get; set; }
+        public ApduSettings                  ApduSetting { get; set; }        
 
         public BacNetDevice(uint id, BacNet network)
         {
             Id = id;
+            Title = string.Empty;
             _network = network;
-            Objects = new BacNetObjectIndexer(this);
-            ServicesSupported = new List<BacnetServicesSupported>();
+            Objects = new BacNetObjectIndexer(this);            
             _status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
         }
+
+        private DateTime _lastUpdated;
+        public DateTime LastUpdated
+        {
+            get { return _lastUpdated; }
+            internal set
+            {
+                if (_lastUpdated != DateTime.MinValue && value - _lastUpdated < TimeSpan.FromSeconds(5)) return;
+                _lastUpdated = value;
+                _network.OnNetworkModelChangedEvent();
+            }
+        }
+
+        #region Initialization
+
+        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
+        {
+            Address = source;
+            Segmentation = (BacnetSegmentation)segmentationSupported.Value;
+            ApduSetting = settings;
+            _waitForAddress.Set();            
+        }
+
+        public void ReadSupportedServices()
+        {
+            if (Address == null) throw new Exception("Attemping to read services list before getting device address");
+            var services = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
+            if (services is BACnetBitString)
+            {
+                ServicesSupported = new List<BacnetServicesSupported>();
+                var value = (services as BACnetBitString).Value;
+                for (int i = 0; i < value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
+                {
+                    if (value[i])
+                        ServicesSupported.Add((BacnetServicesSupported)i);
+                }                
+                _status = DeviceStatus.Ready;                
+            }
+        }
+
+        private void Initialize()
+        {
+            if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing) return;
+            _status = DeviceStatus.Initializing;
+            if (Address == null)
+            {
+                _network.WhoIs((ushort) Id, (ushort) Id);
+                _waitForAddress.WaitOne(3000);
+            }
+            if (Address != null)
+                ReadSupportedServices();
+            if (_status == DeviceStatus.Ready)
+            {
+                _trackState = true;
+                Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
+            }
+            else
+                _status = DeviceStatus.NotInitialized;
+        }        
+
+        private async Task WaitForInitialization()
+        {
+            await Task.Factory.StartNew(() =>
+            {
+                var minutes = 1;
+                while(true)
+                {
+                    Initialize();
+                    if (_status == DeviceStatus.Ready) break;
+                    Thread.Sleep(TimeSpan.FromMinutes(minutes));
+                    if (minutes < 127) minutes *= 2;
+                }
+            }, TaskCreationOptions.LongRunning);
+        }
+
+        private void TrackDeviceState()
+        {
+            while (_trackState)
+            {
+                var name = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
+                if (name is BACnetCharacterString)
+                {
+                    var newTitle = ((BACnetCharacterString) name).Value;
+                    if (Title != newTitle)
+                    {
+                        Title = newTitle;
+                        _status = DeviceStatus.Ready;
+                        LastUpdated = DateTime.Now;
+                        _network.OnNetworkModelChangedEvent();
+                    }
+                }
+                else
+                {
+                    if (_status != DeviceStatus.Fault)
+                    {
+                        _status = DeviceStatus.Fault;
+                        _network.OnNetworkModelChangedEvent();
+                    }
+                }
+                Thread.Sleep(10000);
+            }
+        }
+
+        #endregion
+
+        #region Subscription
 
         private void OnSubscriptionListChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -59,9 +170,9 @@ namespace BacNetApi
             if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
                 COVSubscription();
             else
-            //    if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
-            //        RPMPolling();
-            //    else
+                if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
+                    RPMPolling();
+                else
                 ReadPropertyPolling();
         }
 
@@ -74,21 +185,26 @@ namespace BacNetApi
         {
             while (_subscriptionStatus == SubscriptionStatus.Running)
             {
-                foreach (var bacNetObject in _subscriptionList)
+                lock (SyncRoot)
                 {
-                    _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
+                    foreach (var bacNetObject in _subscriptionList)
+                    {
+                        _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
+                    }
                 }
-                Thread.Sleep(5000);
+                Thread.Sleep(10000);
             }
         }
 
         private void RPMPolling()
         {
-            throw new NotImplementedException();
             while (_subscriptionStatus == SubscriptionStatus.Running)
             {
-                //_network.ReadPropertyMutiple(Address, _subscriptionList);
-                Thread.Sleep(5000);
+                lock (SyncRoot)
+                {
+                    _network.BeginReadPropertyMultiple(Address, _subscriptionList.ToList(), ApduSetting);
+                }
+                Thread.Sleep(10000);
             }
         }
 
@@ -107,51 +223,27 @@ namespace BacNetApi
             }
         }
 
-        private void Initialize()
+        public void AddSubscriptionObject(BacNetObject bacNetObject)
         {
-            if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing) return;
-            _status = DeviceStatus.Initializing;
-            if (Address != null || SearchDevice())
-            {                
-                var services = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
-                if (services is BACnetBitString)
-                {
-                    var value = (services as BACnetBitString).Value;
-                    for (int i = 0; i <value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
-                    {
-                        if (value[i])
-                            ServicesSupported.Add((BacnetServicesSupported)i);
-                    }
-                    _status = DeviceStatus.Ready;
-                    return;
-                }
-                //todo: implement reading of object list when segmentation support will enabled in provider
-                //var objects = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectList);
-            }
-            _status = DeviceStatus.NotInitialized;
-        }
-
-        private bool SearchDevice()
-        {
-            _network.WhoIs((ushort)Id,(ushort)Id);
-            _waitForAddress.WaitOne(2000);
-            return Address != null;
-        }
-
-        private async Task WaitForInitialization()
-        {
-            await Task.Factory.StartNew(() =>
+            lock (SyncRoot)
             {
-                var minutes = 1;
-                while (_status != DeviceStatus.Ready)
-                {
-                    Initialize();
-                    if (_status == DeviceStatus.Ready) break;
-                    Thread.Sleep(TimeSpan.FromMinutes(minutes));
-                    if (minutes < 127) minutes *= 2;
-                }
-            }, TaskCreationOptions.LongRunning);
+                if (!_subscriptionList.Contains(bacNetObject))
+                    _subscriptionList.Add(bacNetObject);
+            }
         }
+
+        public void RemoveSubscriptionObject(BacNetObject bacNetObject)
+        {
+            lock (SyncRoot)
+            {
+                if (_subscriptionList.Contains(bacNetObject))
+                    _subscriptionList.Add(bacNetObject);
+            }
+        }
+
+        #endregion        
+
+        #region Services
 
         public bool CreateObject(BacNetObject bacNetObject, List<BACnetPropertyValue> data)
         {
@@ -172,33 +264,7 @@ namespace BacNetApi
             Initialize();
             if (_status != DeviceStatus.Ready) return null;
             return _network.ReadProperty(Address, bacNetObject.Id, propertyId, arrayIndex);
-        }
-
-        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
-        {
-            Address = source;
-            Segmentation = (BacnetSegmentation)segmentationSupported.Value;
-            ApduSetting = settings;
-            _waitForAddress.Set();
-        }
-
-        public void AddSubscriptionObject(BacNetObject bacNetObject)
-        {
-            lock (SyncRoot)
-            {
-                if (!_subscriptionList.Contains(bacNetObject))
-                    _subscriptionList.Add(bacNetObject);
-            }
-        }
-
-        public void RemoveSubscriptionObject(BacNetObject bacNetObject)
-        {
-            lock (SyncRoot)
-            {
-                if (_subscriptionList.Contains(bacNetObject))
-                    _subscriptionList.Add(bacNetObject);   
-            }
-        }
+        }        
 
         public bool WriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
         {
@@ -222,5 +288,7 @@ namespace BacNetApi
             if (_status != DeviceStatus.Ready) return false;
             return _network.WritePropertyMultiple(Address, objectIdWithValues, ApduSetting);
         }
+
+        #endregion
     }
 }
