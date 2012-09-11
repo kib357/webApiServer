@@ -126,7 +126,7 @@ namespace BacNetApi
                 if (name is BACnetCharacterString)
                 {
                     var newTitle = ((BACnetCharacterString) name).Value;
-                    if (Title != newTitle)
+                    if (Title != newTitle || _status != DeviceStatus.Ready)
                     {
                         Title = newTitle;
                         _status = DeviceStatus.Ready;
@@ -139,6 +139,7 @@ namespace BacNetApi
                     if (_status != DeviceStatus.Fault)
                     {
                         _status = DeviceStatus.Fault;
+                        LastUpdated = DateTime.Now;
                         _network.OnNetworkModelChangedEvent();
                     }
                 }

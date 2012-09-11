@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -113,6 +114,7 @@ namespace WPFBacNetApiSample
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
         {
             var path = @"C:\dict";
+            var addresses = new Dictionary<uint, List<string>>();
             foreach (string fileName in Directory.GetFiles(path).Where(f => f.EndsWith(".xaml")))
             {
                 XDocument doc;
@@ -120,7 +122,7 @@ namespace WPFBacNetApiSample
                 {
                     doc = XDocument.Load(sr);
                 }
-                var addresses = new Dictionary<uint, List<string>>();
+
                 foreach (var descendant in doc.Root.Descendants())
                 {
                     foreach (var xAttribute in descendant.Attributes())
@@ -139,18 +141,18 @@ namespace WPFBacNetApiSample
                                         addresses[instance].Add(objAddress);
                                 }
                                 else
-                                    addresses.Add(instance, new List<string>{objAddress});
-                                AddBacnetObjects(addresses);
-                                //AddBacnetObject(addr);
+                                    addresses.Add(instance, new List<string>{objAddress});                                
                             }
                         }
                     }
                 }
             }
+            AddBacnetObjects(addresses);
         }
 
         public void AddBacnetObject(string address)
         {
+            
             if (string.IsNullOrWhiteSpace(address) || !address.Contains('.')) return;
 
             uint instance;
@@ -159,11 +161,12 @@ namespace WPFBacNetApiSample
                 string objAddress = address.Split('.')[1].Trim();
 
                     _bacnet[instance].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
-            }
+            }            
         }
 
         public void AddBacnetObjects(Dictionary<uint, List<string>> addresses)
         {
+            var start = DateTime.Now;
             if (addresses == null) return;
 
             foreach (var address in addresses)

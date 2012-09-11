@@ -12,9 +12,9 @@ namespace BacNetApi
     public delegate void ValueChangedEventHandler(string address, string value);
     public class BacNetObject : IBacNetObject
     {
-        private BacNetDevice _device;
+        private readonly BacNetDevice _device;
         public string Id { get; private set; }
-        private SynchronizationContext _synchronizationContext;
+        private readonly SynchronizationContext _synchronizationContext;
 
         public DateTime LastUpdated { get; private set; }
 
@@ -107,7 +107,7 @@ namespace BacNetApi
         #endregion
 
         #region Events
-        private List<ValueChangedEventHandler> _valueChangedSubscribers = new List<ValueChangedEventHandler>();
+        private readonly List<ValueChangedEventHandler> _valueChangedSubscribers = new List<ValueChangedEventHandler>();
         private event ValueChangedEventHandler _valueChangedEvent;
         public event ValueChangedEventHandler ValueChangedEvent
         {

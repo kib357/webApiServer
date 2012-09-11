@@ -66,7 +66,6 @@ namespace BacNetApi
         private void StartProvider(IPAddress address)
         {
             if (_initialized) return;
-            var s = BACnetInit.SegmentationSupported;
             _bacNetProvider = new BaseAppServiceProvider(new DataLinkPort(address));                        
             _bacNetProvider.OnIAmRequest += OnIamReceived;
             _bacNetProvider.OnReadPropertyAck += OnReadPropertyAckReceived;
@@ -214,7 +213,8 @@ namespace BacNetApi
             {
                 if (propertyId == BacnetPropertyId.WeeklySchedule)
                     return value as List<BACnetDataType>;
-                if (propertyId == BacnetPropertyId.ListOfObjectPropertyReferences)
+                if (propertyId == BacnetPropertyId.ListOfObjectPropertyReferences &&
+                    value is List<BACnetDeviceObjectPropertyReference>)
                     return (value as List<BACnetDeviceObjectPropertyReference>).Cast<BACnetDataType>().ToList();
             }
             return null;
