@@ -37,12 +37,14 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="200"/>
-                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Path=Id}" Grid.Column="0"/>
                                 <TextBlock Text="{Binding Path=Title}" Grid.Column="1"/>
                                 <TextBlock Text="{Binding Path=LastUpdated}" Grid.Column="2"/>
+                                <TextBlock Text="{Binding Path=Status}" Grid.Column="3"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
