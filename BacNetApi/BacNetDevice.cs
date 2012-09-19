@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
 using BACsharp.AppService;
+using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 
@@ -19,7 +20,7 @@ namespace BacNetApi
         private volatile SubscriptionStatus                 _subscriptionStatus;
         private readonly ObservableCollection<BacNetObject> _subscriptionList;
         private readonly AutoResetEvent                     _waitForAddress = new AutoResetEvent(false);
-        private static readonly object                      SyncRoot = new Object();
+        public readonly object                              SyncRoot = new Object();
         private volatile bool                               _trackState;
 
         public BACnetAddress                 Address { get; set; }
@@ -28,6 +29,7 @@ namespace BacNetApi
         public DeviceStatus                  Status { get { return _status; } }
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
         public BacNetObjectIndexer           Objects { get; private set; }
+        public List<string>                  ObjectList { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
         public ApduSettings                  ApduSetting { get; set; }        
@@ -37,7 +39,8 @@ namespace BacNetApi
             Id = id;
             Title = string.Empty;
             _network = network;
-            Objects = new BacNetObjectIndexer(this);            
+            Objects = new BacNetObjectIndexer(this);
+            ObjectList = new List<string>();
             _status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
@@ -118,10 +121,12 @@ namespace BacNetApi
             }, TaskCreationOptions.LongRunning);
         }
 
+        private int _trackCount = 0;
         private void TrackDeviceState()
         {
             while (_trackState)
             {
+                _trackCount++;
                 var name = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
                 if (name is BACnetCharacterString)
                 {
@@ -143,7 +148,25 @@ namespace BacNetApi
                         _network.OnNetworkModelChangedEvent();
                     }
                 }
-                Thread.Sleep(10000);
+                if (_trackCount % 6 == 0 || _trackCount == 1)
+                    GetObjectList();
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+            }
+        }
+
+        private void GetObjectList()
+        {
+            ObjectList.Clear();
+            var responce = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectList);
+            if (responce is List<BACnetDataType>)
+            {
+                var objectList = responce as List<BACnetDataType>;
+                foreach (var baCnetDataType in objectList)
+                {
+                    var baCnetObjectId = baCnetDataType as BACnetObjectId;
+                    if (baCnetObjectId != null)
+                        ObjectList.Add(baCnetObjectId.ToString2());
+                }
             }
         }
 

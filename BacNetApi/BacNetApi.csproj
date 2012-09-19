@@ -42,11 +42,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\StringValueAttribute.cs" />
     <Compile Include="BacNet.cs" />
     <Compile Include="BacNetDevice.cs" />
     <Compile Include="BacNetObject.cs" />
     <Compile Include="BacNetObjectIndexer.cs" />
     <Compile Include="BacNetRequest.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="IBacNetObject.cs" />
     <Compile Include="IBacNetservices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

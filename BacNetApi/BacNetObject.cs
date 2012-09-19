@@ -24,10 +24,10 @@ namespace BacNetApi
             get { return _stringValue; }
             set
             {
+                _device.LastUpdated = LastUpdated = DateTime.Now;
                 if (CheckValueChanges(value))
                 {
-                    _stringValue = value;
-                    _device.LastUpdated = LastUpdated = DateTime.Now;
+                    _stringValue = value;                    
                     if (_synchronizationContext != null)
                         _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
                     else

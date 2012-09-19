@@ -17,6 +17,11 @@ namespace BacNetApi
             return _objectList.FindIndex(o => o.Id == objId) >= 0;
         }
 
+        public List<BacNetObject> ToList()
+        {
+            return _objectList;
+        }
+
         public BacNetObject this[string i]
         {
             get

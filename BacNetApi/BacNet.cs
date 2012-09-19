@@ -13,15 +13,20 @@ using BACsharp.DataLink;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
+using BacNetApi.Attributes;
 
 namespace BacNetApi
 {
     public enum DeviceStatus
     {
-        NotInitialized = 0,
-        Initializing = 1,
-        Ready = 2,
-        Fault = 3
+        [StringValue("NotInitialized")]
+        NotInitialized,
+        [StringValue("Initializing")]
+        Initializing,
+        [StringValue("Ready")]
+        Ready,
+        [StringValue("Fault")]
+        Fault
     }
 
     public enum SubscriptionStatus
@@ -40,7 +45,7 @@ namespace BacNetApi
         private BaseAppServiceProvider       _bacNetProvider;
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
-        private static readonly object         SyncRoot = new Object();
+        public readonly object               SyncRoot = new Object();
         public event NotificationEventHandler NotificationEvent;
 
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
@@ -102,9 +107,14 @@ namespace BacNetApi
             }
         }
 
-        public List<BacNetDevice> SubscribedDevices
+        public List<BacNetDevice> OnlineSubscribedDevices
         {
             get { return _deviceList.Where(d => d.SubscriptionState == SubscriptionStatus.Running).ToList(); }
+        }
+
+        public List<BacNetDevice> SubscribedDevices
+        {
+            get { return _deviceList.Where(d => d.SubscriptionState != SubscriptionStatus.Stopped).ToList(); }
         }
 
         #region Requests
@@ -150,7 +160,7 @@ namespace BacNetApi
         {
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
             List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
-            var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType);
+            var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType, priority:10);
             return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest, null, true, settings) == null;
         }
 
@@ -165,7 +175,7 @@ namespace BacNetApi
                 {
                     var propertyId = val.Key;
                     var valueByType = ConvertValueToBacnet(obj.Key, val.Value, propertyId);
-                    var valueToAdd = new BACnetPropertyValue((int)propertyId, valueByType);
+                    var valueToAdd = new BACnetPropertyValue((int)propertyId, valueByType, priority:10);
                     values.Add(valueToAdd);
                 }
                 dataToWrite.Add(objId, values);
