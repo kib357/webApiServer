@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace BacNetApi
         private readonly SynchronizationContext _synchronizationContext;
 
         public DateTime LastUpdated { get; private set; }
+        private DateTime _lastNewValue = DateTime.MinValue;
 
         private string _stringValue;
         public string StringValue
@@ -24,10 +26,12 @@ namespace BacNetApi
             get { return _stringValue; }
             set
             {
-                _device.LastUpdated = LastUpdated = DateTime.Now;
-                if (CheckValueChanges(value))
+                if (_lastNewValue == DateTime.MinValue) _lastNewValue = DateTime.Now;
+                _device.LastUpdated = LastUpdated = DateTime.Now;                
+                if (CheckValueChanges(value) || LastUpdated - _lastNewValue > TimeSpan.FromMinutes(60))
                 {
-                    _stringValue = value;                    
+                    _stringValue = value;
+                    _lastNewValue = DateTime.Now;
                     if (_synchronizationContext != null)
                         _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
                     else
@@ -38,9 +42,10 @@ namespace BacNetApi
 
         private bool CheckValueChanges(string value)
         {
+            var formatInfo = new NumberFormatInfo { NumberDecimalSeparator = "," };
             double oldValue, newValue;
-            if (double.TryParse(value.Replace(',', '.'), out newValue) &&
-                double.TryParse(_stringValue, out oldValue) &&
+            if (double.TryParse(value.Replace('.', ','), NumberStyles.Any, formatInfo, out newValue) &&
+                double.TryParse(_stringValue.Replace('.',','), NumberStyles.Any, formatInfo, out oldValue) &&
                 Math.Abs(newValue - oldValue) > 0.1)
                 return true;
             return _stringValue != value;
