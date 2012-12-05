@@ -26,7 +26,9 @@ namespace BacNetApi
         [StringValue("Ready")]
         Ready,
         [StringValue("Fault")]
-        Fault
+        Fault,
+        [StringValue("NotFound")]
+        NotFound
     }
 
     public enum SubscriptionStatus

@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using BACsharp;
 using BACsharp.AppService;
 using BACsharp.Types;
@@ -22,6 +23,7 @@ namespace BacNetApi
         private readonly AutoResetEvent                     _waitForAddress = new AutoResetEvent(false);
         public readonly object                              SyncRoot = new Object();
         private volatile bool                               _trackState;
+        private readonly DispatcherTimer                    _reInitializeTimer;
 
         public BACnetAddress                 Address { get; set; }
         public uint                          Id { get; private set; }
@@ -45,6 +47,16 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
+
+            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 1, 0, 0) };
+            _reInitializeTimer.Tick += ReInitializeDevice;
+            _reInitializeTimer.Start();
+        }
+
+        private void ReInitializeDevice(object sender, EventArgs e)
+        {
+            if (_status == DeviceStatus.NotFound)
+                Initialize(true);
         }
 
         private DateTime _lastUpdated;
@@ -86,9 +98,12 @@ namespace BacNetApi
             }
         }
 
-        private void Initialize()
+        private void Initialize(bool reInitialize = false)
         {
-            if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing) return;
+            if (!reInitialize)
+                if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing || _status == DeviceStatus.NotFound) return;
+            if(reInitialize)
+                _reInitializeTimer.Stop();
             _status = DeviceStatus.Initializing;
             if (Address == null)
             {
@@ -103,8 +118,11 @@ namespace BacNetApi
                 Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
             }
             else
-                _status = DeviceStatus.NotInitialized;
-        }        
+            {
+                _status = DeviceStatus.NotFound;
+                _reInitializeTimer.Start();
+            }
+        }
 
         private async Task WaitForInitialization()
         {
