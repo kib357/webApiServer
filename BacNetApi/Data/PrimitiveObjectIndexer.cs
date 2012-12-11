@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 
-namespace BacNetApi
+namespace BacNetApi.Data
 {
-    public class BacNetObjectIndexer
+    public class PrimitiveObjectIndexer
     {
-        private readonly List<BacNetObject> _objectList = new List<BacNetObject>();
+        private readonly List<PrimitiveObject> _objectList = new List<PrimitiveObject>();
         private readonly BacNetDevice _device;
  
-        public BacNetObjectIndexer(BacNetDevice device)
+        public PrimitiveObjectIndexer(BacNetDevice device)
         {
             _device = device;
         }
@@ -17,19 +17,19 @@ namespace BacNetApi
             return _objectList.FindIndex(o => o.Id == objId) >= 0;
         }
 
-        public List<BacNetObject> ToList()
+        public List<PrimitiveObject> ToList()
         {
             return _objectList;
         }
 
-        public BacNetObject this[string i]
+        public PrimitiveObject this[string i]
         {
             get
             {
                 int index = _objectList.FindIndex(d => d.Id == i);
                 if (index < 0)
                 {
-                    var device = new BacNetObject(_device, i);
+                    var device = new PrimitiveObject(_device, i);
                     _objectList.Add(device);
                     index = _objectList.FindIndex(d => d.Id == i);
                 }

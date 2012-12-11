@@ -13,7 +13,9 @@ using BACsharp.DataLink;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
+using BacNetApi.AccessControl;
 using BacNetApi.Attributes;
+using BacNetApi.Data;
 
 namespace BacNetApi
 {
@@ -74,13 +76,13 @@ namespace BacNetApi
         {
             if (_initialized) return;
             _bacNetProvider = new BaseAppServiceProvider(new DataLinkPort(address));                        
-            _bacNetProvider.OnIAmRequest += OnIamReceived;
-            _bacNetProvider.OnReadPropertyAck += OnReadPropertyAckReceived;
-            _bacNetProvider.OnReadPropertyMultipleAck += OnReadPropertyMultipleAckReceived;
-            _bacNetProvider.OnError += OnErrorAckReceived;
-            _bacNetProvider.OnSubscribeCOVAck += OnSubscribeCOVAck;
-            _bacNetProvider.OnUnconfirmedCOVNotificationRequest += OnCOVNotification;
-            _bacNetProvider.OnUnconfirmedEventNotificationRequest += OnEventNotification;
+            _bacNetProvider.IAmRequestEvent += OnIamReceived;
+            _bacNetProvider.ReadPropertyAckEvent += OnReadPropertyAckReceived;
+            _bacNetProvider.ReadPropertyMultipleAckEvent += OnReadPropertyMultipleAckReceived;
+            _bacNetProvider.ErrorEvent += OnErrorAckReceived;
+            _bacNetProvider.SubscribeCOVAckEvent += OnSubscribeCOVAck;
+            _bacNetProvider.UnconfirmedCOVNotificationRequestEvent += OnCOVNotification;
+            _bacNetProvider.UnconfirmedEventNotificationRequestEvent += OnEventNotification;
             _bacNetProvider.Start();
 
             _initialized = true;
@@ -131,19 +133,18 @@ namespace BacNetApi
             }            
         }
 
-        internal object ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, int arrayIndex = -1)
+        internal List<BACnetDataType> ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, int arrayIndex = -1)
         {
             var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(address), (int)bacnetPropertyId, arrayIndex);
-            var readPropertyResponse = SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest) as ReadPropertyAck;
+            var readPropertyResponse = SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest) as ReadPropertyAck;
             if (readPropertyResponse == null) return null;
-            var values = readPropertyResponse.PropertyValues;
-            return values.Count == 1 ? (object) values[0] : values;
+            return readPropertyResponse.PropertyValues;
         }
 
         internal void BeginReadProperty(BACnetAddress bacAddress, BacNetObject bacObject, BacnetPropertyId bacnetPropertyId)
         {
             var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
-            SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, readPropertyRequest, bacObject, false);
+            SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest, bacObject, false);
         }
 
         internal void BeginReadPropertyMultiple(BACnetAddress bacAddress, List<BacNetObject> objectList, ApduSettings settings)
@@ -155,7 +156,7 @@ namespace BacNetApi
                     new List<BACnetPropertyReference>{new BACnetPropertyReference((int)BacnetPropertyId.PresentValue)});
             }
             var readPropertyMultipleRequest = new ReadPropertyMultipleRequest(objList);
-            SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadPropMultiple, readPropertyMultipleRequest, objectList, false, settings);
+            SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadPropMultiple, readPropertyMultipleRequest, objectList, false, settings);
         }
 
         internal bool WriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value, ApduSettings settings)
@@ -163,7 +164,7 @@ namespace BacNetApi
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
             List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
             var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType, priority:10);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyRequest, null, true, settings) == null;
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, writePropertyRequest, null, true, settings) == null;
         }
 
         internal bool WritePropertyMultiple(BACnetAddress bacAddress, Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues, ApduSettings settings)
@@ -183,7 +184,7 @@ namespace BacNetApi
                 dataToWrite.Add(objId, values);
             }
             var writePropertyMultipleRequest = new WritePropertyMultipleRequest(dataToWrite);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.ReadProperty, writePropertyMultipleRequest, null, true, settings) == null;
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, writePropertyMultipleRequest, null, true, settings) == null;
         }
 
         private List<BACnetDataType> ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
@@ -221,7 +222,7 @@ namespace BacNetApi
                 uint.TryParse(stringValue, out res);
                 return new List<BACnetDataType>{new BACnetUnsigned(res)};
             }
-            if(objType == "SCH")
+            if (objType == "SCH")
             {
                 if (propertyId == BacnetPropertyId.WeeklySchedule)
                     return value as List<BACnetDataType>;
@@ -229,32 +230,47 @@ namespace BacNetApi
                     value is List<BACnetDeviceObjectPropertyReference>)
                     return (value as List<BACnetDeviceObjectPropertyReference>).Cast<BACnetDataType>().ToList();
             }
+            if (objType == "CU")
+            {
+                if (propertyId == BacnetPropertyId.CardList &&
+                    value is List<Card>)
+                {
+                    var list = new List<BACnetDataType>();
+                    foreach (var card in value as List<Card>)
+                    {
+                        list.Add(new BACnetEnumerated((int)card.SiteCode, 0));
+                        list.Add(new BACnetEnumerated((int)card.Number, 1));
+                        list.Add(new BACnetEnumerated((int)card.Status, 2));
+                    }
+                    return list.ToList();
+                }
+            }
             return null;
         }
 
         internal object CreateObject(BACnetAddress bacAddress, string address, List<BACnetPropertyValue> data, ApduSettings settings)
         {
             var createObjectRequest = new CreateObjectRequest(BacNetObject.GetObjectIdByString(address), data);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.CreateObject, createObjectRequest, settings:settings);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.CreateObject, createObjectRequest, settings:settings);
         }
 
         internal object DeleteObject(BACnetAddress bacAddress, string address)
         {
             var deleteObjectRequest = new DeleteObjectRequest(BacNetObject.GetObjectIdByString(address));
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.DeleteObject, deleteObjectRequest);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.DeleteObject, deleteObjectRequest);
         }        
 
         internal object SubscribeCOV(BACnetAddress bacAddress, BacNetObject bacNetObject)
         {
             var subscribeCOVRequest = new SubscribeCOVRequest(357, BacNetObject.GetObjectIdByString(bacNetObject.Id), false, 3600);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedServices.SubscribeCOV, subscribeCOVRequest, false);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOV, subscribeCOVRequest, false);
         }
 
         #endregion
 
         #region Request services
 
-        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedServices service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
+        private object SendConfirmedRequest(BACnetAddress bacAddress, BacnetConfirmedService service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
         {
             if (!_initialized) throw new Exception("Network provider not initialized");
             var request = CreateRequest(service, state);
@@ -271,7 +287,7 @@ namespace BacNetApi
             return null;
         }
 
-        private BacNetRequest CreateRequest(BacnetConfirmedServices serviceChoise, object state = null)
+        private BacNetRequest CreateRequest(BacnetConfirmedService serviceChoise, object state = null)
         {
             BacNetRequest request;
             lock (SyncRoot)
@@ -324,9 +340,9 @@ namespace BacNetApi
                     _requests[index].State = service;
                     _requests[index].ResetEvent.Set();                    
                 }
-                if (_requests[index].State is BacNetObject && service.PropertyValues.Count == 1)
+                if (_requests[index].State is PrimitiveObject && service.PropertyValues.Count == 1)
                 {
-                    var bacNetObject = _requests[index].State as BacNetObject;
+                    var bacNetObject = _requests[index].State as PrimitiveObject;
                     bacNetObject.StringValue = service.PropertyValues[0].ToString();
                     RemoveRequest(_requests[index]);
                 }
@@ -343,9 +359,9 @@ namespace BacNetApi
                 if (_requests[index].State == null)
                 {                    
                 }
-                if (_requests[index].State is List<BacNetObject>)
+                if (_requests[index].State is List<PrimitiveObject>)
                 {
-                    var objectList = _requests[index].State as List<BacNetObject>;
+                    var objectList = _requests[index].State as List<PrimitiveObject>;
                     foreach (var bacObject in objectList)
                     {
                         var objId = BacNetObject.GetObjectIdByString(bacObject.Id);
@@ -382,9 +398,9 @@ namespace BacNetApi
                     _requests[index].State = false;
                     _requests[index].ResetEvent.Set();
                 }
-                if (_requests[index].State is BacNetObject)
+                if (_requests[index].State is PrimitiveObject)
                 {
-                    var bacNetObject = _requests[index].State as BacNetObject;
+                    var bacNetObject = _requests[index].State as PrimitiveObject;
                     bacNetObject.StringValue = "Error";
                     RemoveRequest(_requests[index]);
                 }

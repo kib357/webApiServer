@@ -11,6 +11,8 @@ using BACsharp.AppService;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
+using BacNetApi.AccessControl;
+using BacNetApi.Data;
 
 namespace BacNetApi
 {
@@ -30,7 +32,8 @@ namespace BacNetApi
         public string                        Title { get; private set; }
         public DeviceStatus                  Status { get { return _status; } }
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
-        public BacNetObjectIndexer           Objects { get; private set; }
+        public PrimitiveObjectIndexer           Objects { get; private set; }
+        public UserIndexer                   Users { get; private set; }
         public List<string>                  ObjectList { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
@@ -41,7 +44,8 @@ namespace BacNetApi
             Id = id;
             Title = string.Empty;
             _network = network;
-            Objects = new BacNetObjectIndexer(this);
+            Objects = new PrimitiveObjectIndexer(this);
+            Users = new UserIndexer(this);
             ObjectList = new List<string>();
             _status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
@@ -84,7 +88,9 @@ namespace BacNetApi
         public void ReadSupportedServices()
         {
             if (Address == null) throw new Exception("Attemping to read services list before getting device address");
-            var services = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
+            var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
+            if (data.Count != 1) return;
+            var services = data[0];
             if (services is BACnetBitString)
             {
                 ServicesSupported = new List<BacnetServicesSupported>();
@@ -145,10 +151,11 @@ namespace BacNetApi
             while (_trackState)
             {
                 _trackCount++;
-                var name = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
-                if (name is BACnetCharacterString)
+                var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
+                if (data.Count == 1 && data[0] is BACnetCharacterString)
                 {
-                    var newTitle = ((BACnetCharacterString) name).Value;
+                    var name = data[0] as BACnetCharacterString;
+                    var newTitle = name.Value;
                     if (Title != newTitle || _status != DeviceStatus.Ready)
                     {
                         Title = newTitle;
@@ -301,7 +308,7 @@ namespace BacNetApi
             return _network.DeleteObject(Address, bacNetObject.Id) != null;
         }
 
-        public object ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
+        public List<BACnetDataType> ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
         {
             Initialize();
             if (_status != DeviceStatus.Ready) return null;

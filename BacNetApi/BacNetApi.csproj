@@ -43,17 +43,20 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessControl\User.cs" />
+    <Compile Include="AccessControl\UserIndexer.cs" />
     <Compile Include="Attributes\StringValueAttribute.cs" />
     <Compile Include="BacNet.cs" />
     <Compile Include="BacNetDevice.cs" />
     <Compile Include="BacNetObject.cs" />
-    <Compile Include="BacNetObjectIndexer.cs" />
+    <Compile Include="Data\PrimitiveObjectIndexer.cs" />
     <Compile Include="BacNetRequest.cs" />
+    <Compile Include="Data\PrimitiveObject.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
-    <Compile Include="IBacNetObject.cs" />
     <Compile Include="IBacNetservices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

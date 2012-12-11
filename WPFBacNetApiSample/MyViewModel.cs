@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Xml.Linq;
 using BACsharp;
-using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
@@ -29,7 +26,7 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.123");
+            _bacnet = new BacNet("192.168.0.168");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             Thread.Sleep(100);
             /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
@@ -43,8 +40,13 @@ namespace WPFBacNetApiSample
             _bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
             //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
-            GetBacnetAddresses();
-            
+            //GetBacnetAddresses();
+            var dev = _bacnet[100].Objects["AV1"].Get();
+            Thread.Sleep(500);
+            var users = _bacnet[100].Users.Get();
+            _bacnet[100].Users[1].WriteCard();
+            var k = _bacnet[100].Users[1].Cards;
+            var g = _bacnet[100].Users[1].AccessGroups;
             //_bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
             //_bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
             

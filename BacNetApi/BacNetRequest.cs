@@ -9,7 +9,7 @@ namespace BacNetApi
     public class BacNetRequest
     {
         public int InvokeId { get; set; }
-        public BacnetConfirmedServices ServiceChoise { get; set; }
+        public BacnetConfirmedService ServiceChoise { get; set; }
         public AutoResetEvent ResetEvent { get; set; }
         public object State { get; set; }
         public event RequestTimeEndedEventHandler RequestTimeEndedEvent;

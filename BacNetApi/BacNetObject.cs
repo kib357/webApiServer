@@ -10,129 +10,13 @@ using BACsharp.Types.Primitive;
 namespace BacNetApi
 {
     public delegate void ValueChangedEventHandler(string address, string value);
-    public class BacNetObject : IBacNetObject
+    public abstract class BacNetObject
     {
-        private readonly BacNetDevice _device;
-        public string Id { get; private set; }
-        private readonly SynchronizationContext _synchronizationContext;
+        protected BacNetDevice _device;
+        public string Id { get; set; }
+        protected SynchronizationContext _synchronizationContext;
 
-        public DateTime LastUpdated { get; private set; }
-
-        private string _stringValue;
-        public string StringValue
-        {
-            get { return _stringValue; }
-            set
-            {
-                _device.LastUpdated = LastUpdated = DateTime.Now;
-                if (CheckValueChanges(value))
-                {
-                    _stringValue = value;                    
-                    if (_synchronizationContext != null)
-                        _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
-                    else
-                        OnValueChangedEvent(_stringValue);
-                }
-            }
-        }
-
-        private bool CheckValueChanges(string value)
-        {
-            double oldValue, newValue;
-            if (double.TryParse(value.Replace(',', '.'), out newValue) &&
-                double.TryParse(_stringValue, out oldValue) &&
-                Math.Abs(newValue - oldValue) > 0.1)
-                return true;
-            return _stringValue != value;
-        }
-
-        public BacNetObject(BacNetDevice device, string id)
-        {
-            _device = device;
-            Id = id;
-            _synchronizationContext = SynchronizationContext.Current;
-        }
-
-        #region Methods
-
-        public bool IsExist()
-        {
-            throw new NotImplementedException();
-        }
-
-        public object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue, int arrayIndex = -1)
-        {           
-            return _device.ReadProperty(this, propertyId, arrayIndex);
-        }
-
-        public T Get<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            if (_device.ReadProperty(this, propertyId) is T)
-                return (T) _device.ReadProperty(this, propertyId);
-            return default(T);
-        }
-
-        public async Task<object> GetAsync(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            return await Task.Run(() => Get(propertyId));
-        }
-
-        public async Task<T> GetAsync<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            return await Task.Run(() => Get<T>(propertyId));
-        }
-
-        public bool Set(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            return _device.WriteProperty(this, propertyId, value);
-        }
-
-        public bool Create(List<BACnetPropertyValue> data = null)
-        {
-            if (data == null)
-                data = new List<BACnetPropertyValue>();
-            return _device.CreateObject(this, data);               
-        }
-
-        public async Task<bool> CreateAsync(List<BACnetPropertyValue> data)
-        {
-            return await Task.Run(() => Create(data));
-        }
-
-        public bool Delete()
-        {
-            return _device.DeleteObject(this);
-        }
-
-        #endregion
-
-        #region Events
-        private readonly List<ValueChangedEventHandler> _valueChangedSubscribers = new List<ValueChangedEventHandler>();
-        private event ValueChangedEventHandler _valueChangedEvent;
-        public event ValueChangedEventHandler ValueChangedEvent
-        {
-            add
-            {
-                _valueChangedEvent += value;
-                _valueChangedSubscribers.Add(value);
-                _device.AddSubscriptionObject(this);
-            }
-            remove
-            {
-                _valueChangedEvent -= value;
-                _valueChangedSubscribers.Remove(value);
-                if (_valueChangedSubscribers.Count == 0)
-                    _device.RemoveSubscriptionObject(this);
-            }
-        }
-
-        private void OnValueChangedEvent(object state)
-        {
-            ValueChangedEventHandler handler = _valueChangedEvent;
-            if (handler != null) handler(_device.Id + "." + Id, state.ToString());
-        }
-
-        #endregion
+        public DateTime LastUpdated { get; protected set; }
 
         public static BACnetObjectId GetObjectIdByString(string objectId)
         {
@@ -174,6 +58,8 @@ namespace BacNetApi
                     return BacnetObjectType.Calendar;
                 case "CMD":
                     return BacnetObjectType.Command;
+                case "CU":
+                    return BacnetObjectType.CardUser;
                 case "DEV":
                     return BacnetObjectType.Device;
                 case "DC":
@@ -230,6 +116,8 @@ namespace BacNetApi
             {
                 case BacnetObjectType.Accumulator:
                     res = "AC"; break;
+                case BacnetObjectType.AccessGroup:
+                    res = "AG"; break;
                 case BacnetObjectType.AnalogInput:
                     res = "AI"; break;
                 case BacnetObjectType.AnalogOutput:
@@ -248,6 +136,8 @@ namespace BacNetApi
                     res = "CAL"; break;
                 case BacnetObjectType.Command:
                     res = "CMD"; break;
+                case BacnetObjectType.CardUser:
+                    res = "CU"; break;
                 case BacnetObjectType.Device:
                     res = "DEV"; break;
                 case BacnetObjectType.Door:
