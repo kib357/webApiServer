@@ -18,8 +18,8 @@
                                 <ColumnDefinition Width="200"/>
                                 <ColumnDefinition Width="200"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{Binding Path=Address}" Grid.Column="0"/>
-                            <TextBlock Text="{Binding Path=Value}" Grid.Column="1"/>
+                            <TextBlock Text="{Binding Path=Address}" Grid.Column="0" FontSize="32"/>
+                                <TextBlock Text="{Binding Path=Value}" Grid.Column="1" FontSize="32"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

@@ -42,6 +42,8 @@ namespace BacNetApi
 
         private bool CheckValueChanges(string value)
         {
+            if (_stringValue == null)
+                return true;
             var formatInfo = new NumberFormatInfo { NumberDecimalSeparator = "," };
             double oldValue, newValue;
             if (double.TryParse(value.Replace('.', ','), NumberStyles.Any, formatInfo, out newValue) &&

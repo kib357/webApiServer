@@ -25,32 +25,46 @@ namespace WPFBacNetApiSample
         public DelegateCommand GetValueCommand { get; set; }
 
         private BacNet _bacnet;
+        private string ll;
 
         public MyViewModel()
         {
+            //ll = 100;
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.123");
+            _bacnet = new BacNet("10.81.32.211");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             Thread.Sleep(100);
-            /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1700].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1700].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1701].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
-            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
-            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
-            GetBacnetAddresses();
-            
-            //_bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
-            //_bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
             
             SetValueCommand = new DelegateCommand(SetValue);
             GetValueCommand = new DelegateCommand(GetValue);
+
+            var tmpList = new List<uint>();
+            tmpList.Add(1100);
+            tmpList.Add(1200);
+            tmpList.Add(1400);
+            tmpList.Add(1500);
+
+            //_bacnet.FindSeveral(tmpList);
+            //var tmp = _bacnet[1600].Objects["BI1101"].Get();
+            _bacnet[1400].Objects["BI1102"].ValueChangedEvent += OnBacnetValueChanged;
+            _bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
             SchValues = new List<string>();
+            object obj = _bacnet[17811].Objects["AO1104"].Get();
+            ll = obj.ToString();
+
+            TestDali();
+
+        }
+
+        private void TestDali()
+        {
+            int time = 1000;
+            while (true)
+            {
+                ll = ll == "0" ? "100" : "0";
+                _bacnet[17811].Objects["AO1104"].Set(ll);
+                Thread.Sleep(time);
+            }
         }
 
         private void OnNetworkModelChanged()
@@ -74,46 +88,14 @@ namespace WPFBacNetApiSample
 
         private void GetValue()
         {
-            /*List<BACnetDataType> propertyValues = new List<BACnetDataType>();
-            propertyValues.Add(new BACnetDailySchedule()); //1
-            BACnetDailySchedule dailySchedule = new BACnetDailySchedule();
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(0, 0, 0, 0), new BACnetNull()));
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(9, 30, 0, 0), new BACnetEnumerated(1)));
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(13, 30, 0, 0), new BACnetNull()));
-            propertyValues.Add(dailySchedule); // 2
-            propertyValues.Add(new BACnetDailySchedule()); //3
-            propertyValues.Add(new BACnetDailySchedule()); //4
-            propertyValues.Add(new BACnetDailySchedule()); //5
-            propertyValues.Add(new BACnetDailySchedule()); //6
-            propertyValues.Add(new BACnetDailySchedule()); //7
-            var val = new List<string> { "600.AV2" };
-            var bacval = new List<BACnetDataType>();
-            foreach (var v in val)
-            {
-                bacval.Add(GetPropertyReferensFromString(v));
-            }
-            List<BACnetPropertyValue> list = new List<BACnetPropertyValue>();
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.WeeklySchedule, propertyValues));
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ListOfObjectPropertyReferences, bacval));
-            var lst = new List<BACnetDataType>{new BACnetCharacterString("qwe")};
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ObjectName, lst));
-            var tmp = _bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
-            /*var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
-            var val = new Dictionary<BacnetPropertyId, object>();
-            val.Add(BacnetPropertyId.ObjectName, "AnalogValue1");
-            val.Add(BacnetPropertyId.PresentValue, 10);
-            values.Add("AV1", val);
-            val = new Dictionary<BacnetPropertyId, object>();
-            val.Add(BacnetPropertyId.ObjectName, "AnalogValue2");
-            val.Add(BacnetPropertyId.PresentValue, 10);
-            values.Add("AV2", val);
-
-            _bacnet[600].WritePropertyMultiple(values);*/
+            var q = _bacnet.DeviceList;
+            var tmp = 0;
         }
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
         {
             var path = @"C:\dict";
+            if(!Directory.Exists(path)) return;
             var addresses = new Dictionary<uint, List<string>>();
             foreach (string fileName in Directory.GetFiles(path).Where(f => f.EndsWith(".xaml")))
             {
@@ -182,7 +164,9 @@ namespace WPFBacNetApiSample
 
         private void SetValue()
         {
-            try
+            ll = ll == "0" ? "100" : "0";
+            _bacnet[17811].Objects["AO1104"].Set(ll);
+            /*try
             {
                 var address = Address.Split('.');
                 _bacnet[Convert.ToUInt32(address[0])].Objects[address[1]].Set(Value);
@@ -190,7 +174,7 @@ namespace WPFBacNetApiSample
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-            }
+            }*/
         }
 
         private void OnBacnetValueChanged(string address, string value)

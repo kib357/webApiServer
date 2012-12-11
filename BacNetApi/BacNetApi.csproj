@@ -49,6 +49,7 @@
     <Compile Include="BacNetObject.cs" />
     <Compile Include="BacNetObjectIndexer.cs" />
     <Compile Include="BacNetRequest.cs" />
+    <Compile Include="DeviceFinder.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="IBacNetObject.cs" />
     <Compile Include="IBacNetservices.cs" />

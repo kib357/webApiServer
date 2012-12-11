@@ -17,20 +17,6 @@ using BacNetApi.Attributes;
 
 namespace BacNetApi
 {
-    public enum DeviceStatus
-    {
-        [StringValue("NotInitialized")]
-        NotInitialized,
-        [StringValue("Initializing")]
-        Initializing,
-        [StringValue("Ready")]
-        Ready,
-        [StringValue("Fault")]
-        Fault,
-        [StringValue("NotFound")]
-        NotFound
-    }
-
     public enum SubscriptionStatus
     {
         Stopped = 0,
@@ -40,6 +26,7 @@ namespace BacNetApi
 
     public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
     public delegate void NetworkModelChangedEventHandler();
+    public delegate void DeviceListChangedEventHandler(List<BacNetDevice> changedDevices);
 
     public class BacNet : IBacNetServices
     {
@@ -47,10 +34,20 @@ namespace BacNetApi
         private BaseAppServiceProvider       _bacNetProvider;
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
+        private DeviceFinder                 _deviceFinder;
+        private BacnetDeviceComparer         _deviceComparer = new BacnetDeviceComparer();
+        public List<BacNetDevice>            DeviceList { get { return _deviceList; } }
         public readonly object               SyncRoot = new Object();
         public event NotificationEventHandler NotificationEvent;
-
+        
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
+        public event DeviceListChangedEventHandler DeviceListChangedEvent;
+
+        internal void OnDeviceListChangedEvent(List<BacNetDevice> changedDevices)
+        {
+            DeviceListChangedEventHandler handler = DeviceListChangedEvent;
+            if (handler != null) handler(changedDevices);
+        }
 
         internal void OnNetworkModelChangedEvent()
         {
@@ -82,7 +79,7 @@ namespace BacNetApi
             _bacNetProvider.OnUnconfirmedCOVNotificationRequest += OnCOVNotification;
             _bacNetProvider.OnUnconfirmedEventNotificationRequest += OnEventNotification;
             _bacNetProvider.Start();
-
+            _deviceFinder = new DeviceFinder(this);
             _initialized = true;
         }                
 
@@ -95,6 +92,7 @@ namespace BacNetApi
                 {
                     var device = new BacNetDevice(i, this);
                     _deviceList.Add(device);
+                    _deviceList.Sort(_deviceComparer);
                     index = _deviceList.FindIndex(d => d.Id == i);
                 }
                 return _deviceList[index];
@@ -106,6 +104,7 @@ namespace BacNetApi
                     _deviceList.Add(value);
                 else
                     _deviceList[index] = value;
+                _deviceList.Sort(_deviceComparer);
             }
         }
 
@@ -117,6 +116,24 @@ namespace BacNetApi
         public List<BacNetDevice> SubscribedDevices
         {
             get { return _deviceList.Where(d => d.SubscriptionState != SubscriptionStatus.Stopped).ToList(); }
+        }
+
+        public void FindSeveral(List<uint> deviceList)
+        {
+            var devicesToFind = new List<BacNetDevice>();
+            foreach (var deviceId in deviceList)
+            {
+                int index = _deviceList.FindIndex(d => d.Id == deviceId);
+                if (index < 0)
+                {
+                    var device = new BacNetDevice(deviceId, this);
+                    _deviceList.Add(device);
+                    index = _deviceList.FindIndex(d => d.Id == deviceId);
+                }
+                devicesToFind.Add(_deviceList[index]);
+            }
+            _deviceList.Sort(_deviceComparer);
+            OnDeviceListChangedEvent(devicesToFind);
         }
 
         #region Requests
@@ -304,10 +321,15 @@ namespace BacNetApi
         private void OnIamReceived(object sender, AppServiceEventArgs e)
         {
             var service = e.Service as IAmRequest;
-            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device &&
-                _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance) >= 0)
+            if (service != null && service.DeviceId.ObjectType == (int) BacnetObjectType.Device)
             {
-                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
+                if (_deviceList.FindIndex(d => d.Id == (uint) service.DeviceId.Instance) < 0)
+                {
+                    var device = new BacNetDevice((uint) service.DeviceId.Instance, this);
+                    _deviceList.Add(device);
+                }
+                this[(uint) service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport,
+                                                                      service.GetApduSettings());
             }
         }
 

@@ -11,9 +11,24 @@ using BACsharp.AppService;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
+using BacNetApi.Attributes;
 
 namespace BacNetApi
 {
+    public enum DeviceStatus
+    {
+        [StringValue("NotInitialized")]
+        NotInitialized,
+        [StringValue("Initializing")]
+        Initializing,
+        [StringValue("Ready")]
+        Ready,
+        [StringValue("Fault")]
+        Fault,
+        [StringValue("NotFound")]
+        NotFound
+    }
+
     public class BacNetDevice 
     {        
         private readonly BacNet                             _network;
@@ -28,13 +43,21 @@ namespace BacNetApi
         public BACnetAddress                 Address { get; set; }
         public uint                          Id { get; private set; }
         public string                        Title { get; private set; }
-        public DeviceStatus                  Status { get { return _status; } }
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
         public BacNetObjectIndexer           Objects { get; private set; }
         public List<string>                  ObjectList { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
-        public ApduSettings                  ApduSetting { get; set; }        
+        public ApduSettings                  ApduSetting { get; set; }
+        public DeviceStatus                  Status
+        {
+            get { return _status; }
+            set
+            {
+                if (!Equals(_status, value))
+                    _status = value;
+            }
+        }
 
         public BacNetDevice(uint id, BacNet network)
         {
@@ -47,6 +70,7 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
+            DeviceFinder.FoundDeviceChangedEvent += DeviceFound;
 
             _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 1, 0, 0) };
             _reInitializeTimer.Tick += ReInitializeDevice;
@@ -114,6 +138,7 @@ namespace BacNetApi
                 ReadSupportedServices();
             if (_status == DeviceStatus.Ready)
             {
+                //делается в процедуре DeviceFound
                 _trackState = true;
                 Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
             }
@@ -122,6 +147,13 @@ namespace BacNetApi
                 _status = DeviceStatus.NotFound;
                 _reInitializeTimer.Start();
             }
+        }
+
+        private void DeviceFound(uint deviceId)
+        {
+            if (deviceId != Id) return;
+            _trackState = true;
+            Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
         }
 
         private async Task WaitForInitialization()
@@ -332,5 +364,18 @@ namespace BacNetApi
         }
 
         #endregion
+    }
+
+
+
+    public class BacnetDeviceComparer : IComparer<BacNetDevice>
+    {
+        public int Compare(BacNetDevice x, BacNetDevice y)
+        {
+            if (x.Id > y.Id) return 1;
+            if (x.Id == y.Id) return 0;
+            if (x.Id < y.Id) return -1;
+            return 0;
+        }
     }
 }
