@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using BACsharp;
@@ -29,24 +30,34 @@ namespace BacNetApi.AccessControl
         {
             get
             {
-                var data = (_device.ReadProperty(this, BacnetPropertyId.CardList) as List<BACnetDataType>).Cast<BACnetUknownData>().ToList();
-                if (data == null || data.Count % 3 != 0) return null;
-                var cards = new List<Card>();
-                for (int i = 0; i < data.Count/3; i++)
-                {
-                    var card = new Card();
-                    card.SiteCode = BytesConverter.DecodeUnsigned(data[0 + i * 3].Value, 0, data[0 + i * 3].Value.Length);
-                    card.Number = BytesConverter.DecodeUnsigned(data[1 + i * 3].Value, 0, data[1 + i * 3].Value.Length);
-                    card.Status = (CardStatuses)BytesConverter.DecodeUnsigned(data[2 + i * 3].Value, 0, data[2 + i * 3].Value.Length);
-                    cards.Add(card);
-                }
-                _cards = cards;
+                if (_cards == null) RefreshCards();
                 return _cards;
             }
-            set
+            set { _cards = value; }
+        }
+
+        public void RefreshCards()
+        {
+            var data = _device.ReadProperty(this, BacnetPropertyId.CardList).Cast<BACnetUknownData>().ToList();
+            if (data.Count % 3 != 0) throw new Exception("Invalid card data on controller");
+            var cards = new List<Card>();
+            for (int i = 0; i < data.Count / 3; i++)
             {
-                
+                var card = new Card();
+                card.SiteCode = BytesConverter.DecodeUnsigned(data[0 + i * 3].Value, 0, data[0 + i * 3].Value.Length);
+                card.Number = BytesConverter.DecodeUnsigned(data[1 + i * 3].Value, 0, data[1 + i * 3].Value.Length);
+                card.Status = (CardStatuses)BytesConverter.DecodeUnsigned(data[2 + i * 3].Value, 0, data[2 + i * 3].Value.Length);
+                cards.Add(card);
             }
+            _cards = cards;
+        }
+
+        public void SubmitCards()
+        {
+            if (_cards != null)
+                _device.WriteProperty(this, BacnetPropertyId.CardList, _cards);
+            else
+                throw new Exception("Cannot submit - card list is null");
         }
 
         private List<uint> _accessGroups;
@@ -54,15 +65,25 @@ namespace BacNetApi.AccessControl
         {
             get
             {
-                var data = _device.ReadProperty(this, BacnetPropertyId.AccessGroups);
-                var groups = data.Cast<BACnetObjectId>().Select(o => (uint)o.Instance).ToList();
-                _accessGroups = groups;
+                if (_accessGroups == null) RefreshAccessGroups();
                 return _accessGroups;
             }
-            set
-            {
+            set { _accessGroups = value; }
+        }
 
-            }
+        public void RefreshAccessGroups()
+        {
+            var data = _device.ReadProperty(this, BacnetPropertyId.AccessGroups);
+            var groups = data.Cast<BACnetObjectId>().Select(o => (uint)o.Instance).ToList();
+            _accessGroups = groups;
+        }
+
+        public void SubmitAccessGroups()
+        {
+            if (_accessGroups != null)
+                _device.WriteProperty(this, BacnetPropertyId.AccessGroups, _accessGroups);
+            else
+                throw new Exception("Cannot submit - access group list is null");
         }
 
         public User(BacNetDevice device, uint id)

@@ -244,6 +244,29 @@ namespace BacNetApi
                     }
                     return list.ToList();
                 }
+                if (propertyId == BacnetPropertyId.AccessGroups &&
+                    value is List<uint>)
+                {
+                    var list = new List<BACnetObjectId>();
+                    foreach (var ag in value as List<uint>)
+                        list.Add(new BACnetObjectId((int)BacnetObjectType.AccessGroup, (int)ag));
+                    return list.Cast<BACnetDataType>().ToList();
+                }
+            }
+            if (objType == "AG")
+            {
+                //if (propertyId == BacnetPropertyId.CardList &&
+                //    value is List<Card>)
+                //{
+                //    var list = new List<BACnetDataType>();
+                //    foreach (var card in value as List<Card>)
+                //    {
+                //        list.Add(new BACnetEnumerated((int)card.SiteCode, 0));
+                //        list.Add(new BACnetEnumerated((int)card.Number, 1));
+                //        list.Add(new BACnetEnumerated((int)card.Status, 2));
+                //    }
+                //    return list.ToList();
+                //}
             }
             return null;
         }
