@@ -324,6 +324,13 @@ namespace BacNetApi
             return _network.WriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
 
+        public void BeginWriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
+        {
+            Initialize();
+            if (_status != DeviceStatus.Ready) return;
+            _network.BeginWriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
+        }
+
         /// <summary>
         /// Метод для записи свойств нескольких объектов
         /// </summary>

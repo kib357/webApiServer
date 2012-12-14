@@ -83,16 +83,12 @@ namespace BacNetApi.Data
             throw new NotImplementedException();
         }
 
-        public object Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue, int arrayIndex = -1)
+        public string Get(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue, int arrayIndex = -1)
         {
-            return _device.ReadProperty(this, propertyId, arrayIndex);
-        }
-
-        public T Get<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            //if (_device.ReadProperty(this, propertyId) is T)
-                //return (T)_device.ReadProperty(this, propertyId);
-            return default(T);
+            var value = _device.ReadProperty(this, propertyId, arrayIndex);
+            if (value != null && value.Count != 1)
+                throw new Exception("Constructed property - cannot read via standard get method");
+            return value != null ? value[0].ToString() : null;
         }
 
         public async Task<object> GetAsync(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
@@ -100,14 +96,14 @@ namespace BacNetApi.Data
             return await Task.Run(() => Get(propertyId));
         }
 
-        public async Task<T> GetAsync<T>(BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
-        {
-            return await Task.Run(() => Get<T>(propertyId));
-        }
-
         public bool Set(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
         {
             return _device.WriteProperty(this, propertyId, value);
+        }
+
+        public void BeginSet(object value, BacnetPropertyId propertyId = BacnetPropertyId.PresentValue)
+        {
+            _device.BeginWriteProperty(this, propertyId, value);
         }
 
         #endregion

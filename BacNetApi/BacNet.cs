@@ -164,7 +164,15 @@ namespace BacNetApi
             var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
             List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
             var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType, priority:10);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, writePropertyRequest, null, true, settings) == null;
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.WriteProperty, writePropertyRequest, null, true, settings) == null;
+        }
+
+        internal void BeginWriteProperty(BACnetAddress bacAddress, BacNetObject bacNetObject, BacnetPropertyId bacnetPropertyId, object value, ApduSettings settings)
+        {
+            var objId = BacNetObject.GetObjectIdByString(bacNetObject.Id);
+            List<BACnetDataType> valueByType = ConvertValueToBacnet(bacNetObject.Id, value, bacnetPropertyId);
+            var writePropertyRequest = new WritePropertyRequest(objId, (int)bacnetPropertyId, valueByType, priority: 10);
+            SendConfirmedRequest(bacAddress, BacnetConfirmedService.WriteProperty, writePropertyRequest, null, false, settings);
         }
 
         internal bool WritePropertyMultiple(BACnetAddress bacAddress, Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues, ApduSettings settings)
@@ -184,7 +192,7 @@ namespace BacNetApi
                 dataToWrite.Add(objId, values);
             }
             var writePropertyMultipleRequest = new WritePropertyMultipleRequest(dataToWrite);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, writePropertyMultipleRequest, null, true, settings) == null;
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.WritePropMultiple, writePropertyMultipleRequest, null, true, settings) == null;
         }
 
         private List<BACnetDataType> ConvertValueToBacnet(string bacNetObjectId, object value, BacnetPropertyId propertyId)
