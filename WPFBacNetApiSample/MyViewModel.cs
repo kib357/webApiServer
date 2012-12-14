@@ -11,6 +11,7 @@ using BACsharp;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
+using BacNetApi.AccessControl;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 
@@ -44,9 +45,18 @@ namespace WPFBacNetApiSample
             var dev = _bacnet[100].Objects["AV1"].Get();
             Thread.Sleep(500);
             var users = _bacnet[100].Users.Get();
-            _bacnet[100].Users[1].WriteCard();
+            //_bacnet[100].Users[1].WriteCard();
             var k = _bacnet[100].Users[1].Cards;
-            var g = _bacnet[100].Users[1].AccessGroups;
+            //var g = _bacnet[100].Users[1].AccessGroups;
+            _bacnet[100].Users[1].AccessGroups.Add(3);
+            _bacnet[100].Users[1].SubmitAccessGroups();
+            //_bacnet[100].Users[1].AccessGroups.Clear();
+            //_bacnet[100].Users[1].SubmitAccessGroups();
+            _bacnet[100].Users[1].Cards.Clear();
+            _bacnet[100].Users[1].Cards.Add(new Card() {Number = 123456, SiteCode = 11, Status = 0});
+            _bacnet[100].Users[1].Cards.Add(new Card() { Number = 654321, SiteCode = 11, Status = 0 });
+            _bacnet[100].Users[1].Cards.Add(new Card() { Number = 200000, SiteCode = 11, Status = 0 });
+            _bacnet[100].Users[1].SubmitCards();
             //_bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
             //_bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
             

@@ -55,7 +55,9 @@ namespace BacNetApi.AccessControl
         public void SubmitCards()
         {
             if (_cards != null)
-                _device.WriteProperty(this, BacnetPropertyId.CardList, _cards);
+            {
+                WriteUsingWpm(BacnetPropertyId.CardList, _cards);
+            }
             else
                 throw new Exception("Cannot submit - card list is null");
         }
@@ -81,7 +83,9 @@ namespace BacNetApi.AccessControl
         public void SubmitAccessGroups()
         {
             if (_accessGroups != null)
-                _device.WriteProperty(this, BacnetPropertyId.AccessGroups, _accessGroups);
+            {                
+                WriteUsingWpm(BacnetPropertyId.AccessGroups, _accessGroups);
+            }
             else
                 throw new Exception("Cannot submit - access group list is null");
         }
@@ -91,15 +95,6 @@ namespace BacNetApi.AccessControl
             _device = device;
             Id = "CU" + id;
             _synchronizationContext = SynchronizationContext.Current;
-        }
-
-        public void WriteCard()
-        {
-            var c = new Card();
-            c.SiteCode = 12;
-            c.Number = 242242;
-            c.Status = 0;
-            _device.WriteProperty(this , BacnetPropertyId.CardList, new List<Card> {c});
         }
     }
 }

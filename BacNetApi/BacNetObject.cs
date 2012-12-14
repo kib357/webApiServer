@@ -185,5 +185,13 @@ namespace BacNetApi
             }
             return res;
         }
+
+        protected void WriteUsingWpm(BacnetPropertyId property, object data)
+        {
+            var d = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
+            var d1 = new Dictionary<BacnetPropertyId, object> { { property, data } };
+            d.Add(Id, d1);
+            _device.WritePropertyMultiple(d);
+        }
     }
 }

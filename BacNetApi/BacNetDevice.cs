@@ -152,7 +152,7 @@ namespace BacNetApi
             {
                 _trackCount++;
                 var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
-                if (data.Count == 1 && data[0] is BACnetCharacterString)
+                if (data != null && data.Count == 1 && data[0] is BACnetCharacterString)
                 {
                     var name = data[0] as BACnetCharacterString;
                     var newTitle = name.Value;
