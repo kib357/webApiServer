@@ -16,6 +16,40 @@ namespace BacNetApi
         public string Id { get; set; }
         protected SynchronizationContext _synchronizationContext;        
 
+        public string Name
+        {
+            get
+            {
+                return _device.ReadProperty(this, BacnetPropertyId.ObjectName)[0].ToString();
+            }
+            set { WriteUsingWpm(BacnetPropertyId.ObjectName, value); }
+        }
+
+        protected void WriteUsingWpm(BacnetPropertyId property, object data)
+        {
+            var d = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
+            var d1 = new Dictionary<BacnetPropertyId, object> { { property, data } };
+            d.Add(Id, d1);
+            _device.WritePropertyMultiple(d);
+        }
+
+        public bool Create(List<BACnetPropertyValue> data = null)
+        {
+            if (data == null)
+                data = new List<BACnetPropertyValue>();
+            return _device.CreateObject(this, data);
+        }
+
+        public async Task<bool> CreateAsync(List<BACnetPropertyValue> data)
+        {
+            return await Task.Run(() => Create(data));
+        }
+
+        public bool Delete()
+        {
+            return _device.DeleteObject(this);
+        }
+
         public static BACnetObjectId GetObjectIdByString(string objectId)
         {
             objectId = objectId.ToUpper();
@@ -184,14 +218,6 @@ namespace BacNetApi
                     res = "TLM"; break;
             }
             return res;
-        }
-
-        protected void WriteUsingWpm(BacnetPropertyId property, object data)
-        {
-            var d = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
-            var d1 = new Dictionary<BacnetPropertyId, object> { { property, data } };
-            d.Add(Id, d1);
-            _device.WritePropertyMultiple(d);
         }
     }
 }

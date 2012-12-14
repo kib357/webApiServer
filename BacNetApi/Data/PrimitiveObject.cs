@@ -110,23 +110,6 @@ namespace BacNetApi.Data
             return _device.WriteProperty(this, propertyId, value);
         }
 
-        public bool Create(List<BACnetPropertyValue> data = null)
-        {
-            if (data == null)
-                data = new List<BACnetPropertyValue>();
-            return _device.CreateObject(this, data);
-        }
-
-        public async Task<bool> CreateAsync(List<BACnetPropertyValue> data)
-        {
-            return await Task.Run(() => Create(data));
-        }
-
-        public bool Delete()
-        {
-            return _device.DeleteObject(this);
-        }
-
         #endregion
     }
 }

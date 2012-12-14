@@ -53,6 +53,9 @@ namespace WPFBacNetApiSample
             //_bacnet[100].Users[1].WriteCard();
             var k = _bacnet[100].Users[1].Cards;
             //var g = _bacnet[100].Users[1].AccessGroups;
+            var name = _bacnet[100].Users[1].Name;
+            _bacnet[100].Users[1].Name = name + " вот";
+
             _bacnet[100].Users[1].AccessGroups.Add(3);
             _bacnet[100].Users[1].SubmitAccessGroups();
             //_bacnet[100].Users[1].AccessGroups.Clear();
