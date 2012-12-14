@@ -14,9 +14,7 @@ namespace BacNetApi
     {
         protected BacNetDevice _device;
         public string Id { get; set; }
-        protected SynchronizationContext _synchronizationContext;
-
-        public DateTime LastUpdated { get; protected set; }
+        protected SynchronizationContext _synchronizationContext;        
 
         public static BACnetObjectId GetObjectIdByString(string objectId)
         {
@@ -40,6 +38,8 @@ namespace BacNetApi
             {
                 case "AC":
                     return BacnetObjectType.Accumulator;
+                case "AG":
+                    return BacnetObjectType.AccessGroup;
                 case "AI":
                     return BacnetObjectType.AnalogInput;
                 case "AO":

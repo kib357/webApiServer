@@ -45,6 +45,11 @@ namespace WPFBacNetApiSample
             var dev = _bacnet[100].Objects["AV1"].Get();
             Thread.Sleep(500);
             var users = _bacnet[100].Users.Get();
+            var areas = _bacnet[100].AccessGroups[1].Areas;
+            _bacnet[100].AccessGroups[1].SubmitAreas();
+            var exceptions = _bacnet[100].AccessGroups[1].Exceptions;
+            _bacnet[100].AccessGroups[1].Exceptions.Add(new AccessArea() {InstanceNumber = 206002, Type = BacnetObjectType.Door});
+            _bacnet[100].AccessGroups[1].SubmitExceptions();
             //_bacnet[100].Users[1].WriteCard();
             var k = _bacnet[100].Users[1].Cards;
             //var g = _bacnet[100].Users[1].AccessGroups;

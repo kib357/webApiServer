@@ -34,6 +34,7 @@ namespace BacNetApi
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
         public PrimitiveObjectIndexer           Objects { get; private set; }
         public UserIndexer                   Users { get; private set; }
+        public AccessGroupIndexer            AccessGroups { get; private set; }
         public List<string>                  ObjectList { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
@@ -46,6 +47,7 @@ namespace BacNetApi
             _network = network;
             Objects = new PrimitiveObjectIndexer(this);
             Users = new UserIndexer(this);
+            AccessGroups = new AccessGroupIndexer(this);
             ObjectList = new List<string>();
             _status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;

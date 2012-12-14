@@ -255,18 +255,28 @@ namespace BacNetApi
             }
             if (objType == "AG")
             {
-                //if (propertyId == BacnetPropertyId.CardList &&
-                //    value is List<Card>)
-                //{
-                //    var list = new List<BACnetDataType>();
-                //    foreach (var card in value as List<Card>)
-                //    {
-                //        list.Add(new BACnetEnumerated((int)card.SiteCode, 0));
-                //        list.Add(new BACnetEnumerated((int)card.Number, 1));
-                //        list.Add(new BACnetEnumerated((int)card.Status, 2));
-                //    }
-                //    return list.ToList();
-                //}
+                if ((propertyId == BacnetPropertyId.AccessAreas || propertyId == BacnetPropertyId.AccessAreasExceptions) &&
+                    value is List<AccessArea>)
+                {
+                    var list = new List<BACnetDataType>();
+                    foreach (var area in value as List<AccessArea>)
+                    {
+                        var objectId = new BACnetObjectId((int)area.Type, (int)area.InstanceNumber, 0);
+                        var areaSequence = new Sequence(new List<BACnetDataType>() { objectId, new BACnetEnumerated(85, 1) }, 0);
+                        Sequence scheduleSequence;
+                        if (area.ScheduleId != 0)
+                        {
+                            var scheduleId = new BACnetObjectId((int)BacnetObjectType.Schedule, (int)area.ScheduleId, 0);
+                            scheduleSequence = new Sequence(new List<BACnetDataType>() { scheduleId, new BACnetEnumerated(85, 1) }, 1);
+                        }
+                        else
+                            scheduleSequence = new Sequence(new List<BACnetDataType>() 
+                                { new BACnetUnsigned(0xFFFFFFFF, 0), new BACnetUnsigned(0x3FFFFE, 1), new BACnetUnsigned(0x023FFFFF, 2) }, 1);
+                        list.Add(areaSequence);
+                        list.Add(scheduleSequence);
+                    }
+                    return list.ToList();
+                }
             }
             return null;
         }

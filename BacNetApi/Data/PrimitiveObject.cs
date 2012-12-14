@@ -11,6 +11,8 @@ namespace BacNetApi.Data
 {
     public class PrimitiveObject : BacNetObject
     {
+        public DateTime LastUpdated { get; protected set; }
+
         public PrimitiveObject(BacNetDevice device, string id)
         {
             _device = device;

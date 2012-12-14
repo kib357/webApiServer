@@ -43,6 +43,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AccessControl\AccessGroup.cs" />
+    <Compile Include="AccessControl\AccessGroupIndexer.cs" />
     <Compile Include="AccessControl\User.cs" />
     <Compile Include="AccessControl\UserIndexer.cs" />
     <Compile Include="Attributes\StringValueAttribute.cs" />

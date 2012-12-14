@@ -25,6 +25,13 @@ namespace BacNetApi.AccessControl
 
     public class User : BacNetObject
     {
+        public User(BacNetDevice device, uint id)
+        {
+            _device = device;
+            Id = "CU" + id;
+            _synchronizationContext = SynchronizationContext.Current;
+        }
+
         private List<Card> _cards; 
         public List<Card> Cards
         {
@@ -88,13 +95,6 @@ namespace BacNetApi.AccessControl
             }
             else
                 throw new Exception("Cannot submit - access group list is null");
-        }
-
-        public User(BacNetDevice device, uint id)
-        {
-            _device = device;
-            Id = "CU" + id;
-            _synchronizationContext = SynchronizationContext.Current;
         }
     }
 }
