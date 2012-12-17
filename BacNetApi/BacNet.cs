@@ -389,19 +389,23 @@ namespace BacNetApi
             
             var service = e.Service as ReadPropertyAck;
             if (service == null) return;
-            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
-            if (index >= 0)
+            BacNetRequest request;
+            lock (SyncRoot)
             {
-                if (_requests[index].State == null)
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);   
+            }            
+            if (request != null)
+            {
+                if (request.State == null)
                 {
-                    _requests[index].State = service;
-                    _requests[index].ResetEvent.Set();                    
+                    request.State = service;
+                    request.ResetEvent.Set();                    
                 }
-                if (_requests[index].State is PrimitiveObject && service.PropertyValues.Count == 1)
+                if (request.State is PrimitiveObject && service.PropertyValues.Count == 1)
                 {
-                    var bacNetObject = _requests[index].State as PrimitiveObject;
+                    var bacNetObject = request.State as PrimitiveObject;
                     bacNetObject.StringValue = service.PropertyValues[0].ToString();
-                    RemoveRequest(_requests[index]);
+                    RemoveRequest(request);
                 }
             }
         }
@@ -410,15 +414,19 @@ namespace BacNetApi
         {
             var service = e.Service as ReadPropertyMultipleAck;
             if (service == null) return;
-            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
-            if (index >= 0)
+            BacNetRequest request;
+            lock (SyncRoot)
             {
-                if (_requests[index].State == null)
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            } 
+            if (request != null)
+            {
+                if (request.State == null)
                 {                    
                 }
-                if (_requests[index].State is List<PrimitiveObject>)
+                if (request.State is List<PrimitiveObject>)
                 {
-                    var objectList = _requests[index].State as List<PrimitiveObject>;
+                    var objectList = request.State as List<PrimitiveObject>;
                     foreach (var bacObject in objectList)
                     {
                         var objId = BacNetObject.GetObjectIdByString(bacObject.Id);
@@ -433,7 +441,7 @@ namespace BacNetApi
                             }
                         }                            
                     }
-                    RemoveRequest(_requests[index]);
+                    RemoveRequest(request);
                 }
             }
         }
@@ -442,24 +450,28 @@ namespace BacNetApi
         {
             var service = e.Service as BaseErrorService;
             if (service == null) return;
-            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
-            if (index >= 0)
-            {                
-                if (_requests[index].State == null)
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                if (request.State == null)
                 {
-                    _requests[index].State = service;
-                    _requests[index].ResetEvent.Set();                    
-                }                
-                if (_requests[index].State is bool && (_requests[index].State as bool?) == false)
-                {
-                    _requests[index].State = false;
-                    _requests[index].ResetEvent.Set();
+                    request.State = service;
+                    request.ResetEvent.Set();                    
                 }
-                if (_requests[index].State is PrimitiveObject)
+                if (request.State is bool && (request.State as bool?) == false)
                 {
-                    var bacNetObject = _requests[index].State as PrimitiveObject;
+                    request.State = false;
+                    request.ResetEvent.Set();
+                }
+                if (request.State is PrimitiveObject)
+                {
+                    var bacNetObject = request.State as PrimitiveObject;
                     bacNetObject.StringValue = "Error";
-                    RemoveRequest(_requests[index]);
+                    RemoveRequest(request);
                 }
             }
         }
@@ -468,11 +480,15 @@ namespace BacNetApi
         {
             var service = e.Service as SubscribeCOVAck;
             if (service == null) return;
-            int index = _requests.FindIndex(r => r.InvokeId == e.InvokeID);
-            if (index >= 0)
+            BacNetRequest request;
+            lock (SyncRoot)
             {
-                _requests[index].State = true;
-                _requests[index].ResetEvent.Set();
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                request.State = true;
+                request.ResetEvent.Set();
             }
         }
 
