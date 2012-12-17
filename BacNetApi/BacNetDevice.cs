@@ -42,7 +42,7 @@ namespace BacNetApi
         public DeviceStatus Status
         {
             get { return _status; }
-            private set
+            internal set
             {
                 _network.OnNetworkModelChangedEvent();
                 _status = value;
@@ -62,10 +62,9 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
-            _network.Finder.SearchDevice(Id);
-
-            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 10, 0) };
+            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 10) };
             _reInitializeTimer.Tick += ReInitializeDevice;
+            _reInitializeTimer.Start();
         }
 
         private DateTime _lastUpdated;
@@ -87,10 +86,9 @@ namespace BacNetApi
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
             ApduSetting = settings;
-            Initialize();            
         }
 
-        private void ReadSupportedServices()
+        internal void ReadSupportedServices()
         {
             if (Address == null) throw new Exception("Attemping to read services list before getting device address");
             var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
@@ -119,6 +117,7 @@ namespace BacNetApi
         {
             if (_status == DeviceStatus.Initializing || _status == DeviceStatus.Standby || _status == DeviceStatus.Online) return;
             Status = DeviceStatus.Initializing;
+            _network.Finder.SearchDevice(Id);
             if (Address != null)
                 ReadSupportedServices();
             if (_status == DeviceStatus.Standby)
@@ -130,6 +129,15 @@ namespace BacNetApi
             {
                 Status = DeviceStatus.NotInitialized;
                 _reInitializeTimer.Start();
+            }
+        }
+
+        internal void StartTracking()
+        {
+            if (_trackState == false)
+            {
+                _trackState = true;
+                Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
             }
         }
 

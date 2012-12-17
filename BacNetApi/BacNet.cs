@@ -95,12 +95,13 @@ namespace BacNetApi
         {
             get
             {
+                BacNetDevice dev;
                 lock (SyncRoot)
                 {
                     if (_deviceList.FindIndex(d => d.Id == i) < 0)
-                        _deviceList.Add(new BacNetDevice(i, this));                    
+                        _deviceList.Add(new BacNetDevice(i, this));
+                    dev = _deviceList.FirstOrDefault(d => d.Id == i);
                 }
-                var dev = _deviceList.FirstOrDefault(d => d.Id == i);
                 return dev;                   
             }
             set
@@ -371,14 +372,14 @@ namespace BacNetApi
             var service = e.Service as IAmRequest;
             if (service != null && service.DeviceId.ObjectType == (int) BacnetObjectType.Device)
             {
-                Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
-                                                                 service.SegmentationSupport, service.GetApduSettings());
-                //lock (SyncRoot)
-                //{
-                //    if (!iam.Contains((uint)service.DeviceId.Instance))
-                //        iam.Add((uint)service.DeviceId.Instance);
-                //    IamCount = iam.Count;
-                //}
+                Task.Factory.StartNew(() => Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
+                                                                 service.SegmentationSupport, service.GetApduSettings()));
+                lock (SyncRoot)
+                {
+                    if (!iam.Contains((uint)service.DeviceId.Instance))
+                        iam.Add((uint)service.DeviceId.Instance);
+                    IamCount = Finder._finded.Count; //iam.Count;
+                }
                 OnNetworkModelChangedEvent();
             }
         }

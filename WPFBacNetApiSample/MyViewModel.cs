@@ -27,7 +27,7 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.168");//"10.81.32.211");
+            _bacnet = new BacNet("10.81.32.211");//"192.168.0.168");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             //Thread.Sleep(100);
             /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
