@@ -25,24 +25,24 @@ namespace BacNetApi
         public DeviceFinder(BacNet network)
         {
             _network = network;
-            _search.CollectionChanged += SearchListChanged;
-            _network.WhoIs();
-            Task.Factory.StartNew(ReadServices, TaskCreationOptions.LongRunning);
+            //_search.CollectionChanged += SearchListChanged;
+            Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(ReadServices, TaskCreationOptions.LongRunning);            
         }
 
-        private void SearchListChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            var s = sender as ObservableCollection<uint>;
-            if (s != null && s.Count > 0 && !Searching)
-            {
-                Searching = true;
-                Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);                
-            }
-            else
-            {
-                Searching = false;
-            }
-        }
+        //private void SearchListChanged(object sender, NotifyCollectionChangedEventArgs e)
+        //{
+        //    var s = sender as ObservableCollection<uint>;
+        //    if (s != null && s.Count > 0 && !Searching)
+        //    {
+        //        Searching = true;
+        //        Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);                
+        //    }
+        //    else
+        //    {
+        //        Searching = false;
+        //    }
+        //}
 
         public void SearchDevice(uint instance)
         {
@@ -84,25 +84,11 @@ namespace BacNetApi
                     iterationDevices =
                         new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded);
                 }
-
                 foreach (var d in iterationDevices)
                 {
-                    //var data = _network.ReadProperty(d.Value.Item1, d.Key + ".DEV" + d.Key, BacnetPropertyId.ProtocolServicesSupported);
-                    //if (data == null || data.Count != 1) continue;
-                    //var services = data[0];
-                    //if (!(services is BACnetBitString)) continue;
-                    //_network[d.Key].ServicesSupported = new List<BacnetServicesSupported>();
-                    //var value = (services as BACnetBitString).Value;
-                    //for (int i = 0; i < value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
-                    //{
-                    //    if (value[i])
-                    //        _network[d.Key].ServicesSupported.Add((BacnetServicesSupported)i);                            
-                    //}
-                    //_network[d.Key].Status = DeviceStatus.Standby;
                     if (_network[d.Key].Status == DeviceStatus.NotInitialized)
                         _network[d.Key].ReadSupportedServices();
                 }
-
                 foreach (var d in iterationDevices)
                 {
                     if (_network[d.Key].Status == DeviceStatus.Standby)
@@ -113,20 +99,27 @@ namespace BacNetApi
 
         private void Search()
         {
+            _network.WhoIs();
+            Thread.Sleep(TimeSpan.FromSeconds(5));
             while (true)
             {
-                Thread.Sleep(TimeSpan.FromSeconds(15));
-                if (!Searching) return;
                 List<uint> iterationDevices;
                 lock (SyncRoot)
                 {
-                    iterationDevices = new List<uint>(_search);
+                    iterationDevices =
+                        new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded).Keys.OrderBy(k => k).ToList();
                 }
 
-                foreach (var iterationDevice in iterationDevices)
+                for (int i = 0; i < iterationDevices.Count; i += 2)
                 {
-                    _network.WhoIs((ushort) iterationDevice, (ushort) iterationDevice);
-                }                
+                    uint diff = iterationDevices[i + 1] - iterationDevices[i];
+                    if (diff > 1)
+                    {
+                        _network.WhoIs((ushort) (iterationDevices[i] + 1), (ushort) (iterationDevices[i + 1] - 1));
+                        Thread.Sleep(TimeSpan.FromSeconds(1));
+                    }
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(30));
             }
         }
     }

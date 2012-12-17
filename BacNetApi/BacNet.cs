@@ -134,9 +134,9 @@ namespace BacNetApi
 
         #region Requests
 
-        internal void WhoIs(ushort startAddress = 0, ushort endAddress = 0)
+        public void WhoIs(ushort startAddress = 0, ushort endAddress = 0)
         {
-            if (startAddress != 0 && endAddress != 0)
+            if (startAddress >= 0 && endAddress > startAddress)
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
             else
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest());
