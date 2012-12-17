@@ -33,7 +33,7 @@ namespace WPFBacNetApiSample
             _sensors = new ObservableCollection<sensor>();
             Bacnet = new BacNet("10.81.32.199");//192.168.0.168");
             Bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
-            Thread.Sleep(100);
+            //Thread.Sleep(100);
             /*Bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             Bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
             Bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
@@ -89,6 +89,7 @@ namespace WPFBacNetApiSample
         private void OnNetworkModelChanged()
         {
             Devices = new ObservableCollection<BacNetDevice>(Bacnet.OnlineDevices);
+            IamCount = _bacnet.IamCount;
         }
 
         private ObservableCollection<BacNetDevice> _devices;
@@ -109,6 +110,20 @@ namespace WPFBacNetApiSample
         public int DeviceCount
         {
             get { return _devices.Count; }
+        }
+
+        private int _iamCount;
+        public int IamCount
+        {
+            get { return _iamCount; }
+            set
+            {
+                if (_iamCount != value)
+                {
+                    _iamCount = value;
+                    RaisePropertyChanged("IamCount");
+                }
+            }
         }
 
         private void GetValue()

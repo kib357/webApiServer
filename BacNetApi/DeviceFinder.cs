@@ -56,15 +56,15 @@ namespace BacNetApi
 
         public void DeviceLocated(uint instance, BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
         {
-            lock (SyncRoot)
-            {
-                if (_search.Contains(instance))
-                    _search.Remove(instance);
-                if (!_finded.ContainsKey(instance))
-                    _finded.Add(instance, new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported,settings));
-                else
-                    _finded[instance] = new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings);
-            }
+            //lock (SyncRoot)
+            //{
+            //    if (_search.Contains(instance))
+            //        _search.Remove(instance);
+            //    if (!_finded.ContainsKey(instance))
+            //        _finded.Add(instance, new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported,settings));
+            //    else
+            //        _finded[instance] = new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings);
+            //}
             _network[instance].SetAddress(source, segmentationSupported, settings);
         }
 
