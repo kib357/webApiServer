@@ -29,8 +29,7 @@ namespace BacNetApi
 
         public BACnetAddress                 Address { get; set; }
         public uint                          Id { get; private set; }
-        public string                        Title { get; private set; }
-        public DeviceStatus                  Status { get { return _status; } }
+        public string                        Title { get; private set; }        
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
         public PrimitiveObjectIndexer           Objects { get; private set; }
         public UserIndexer                   Users { get; private set; }
@@ -38,7 +37,17 @@ namespace BacNetApi
         public List<string>                  ObjectList { get; private set; }
         public BacnetSegmentation            Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
-        public ApduSettings                  ApduSetting { get; set; }        
+        public ApduSettings                  ApduSetting { get; set; }
+
+        public DeviceStatus Status
+        {
+            get { return _status; }
+            private set
+            {
+                _network.OnNetworkModelChangedEvent();
+                _status = value;
+            }
+        }
 
         public BacNetDevice(uint id, BacNet network)
         {
@@ -49,7 +58,7 @@ namespace BacNetApi
             Users = new UserIndexer(this);
             AccessGroups = new AccessGroupIndexer(this);
             ObjectList = new List<string>();
-            _status = DeviceStatus.NotInitialized;
+            Status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
@@ -61,7 +70,7 @@ namespace BacNetApi
 
         private void ReInitializeDevice(object sender, EventArgs e)
         {
-            if (_status == DeviceStatus.NotFound)
+            if (Status == DeviceStatus.NotFound)
                 Initialize(true);
         }
 
@@ -84,10 +93,12 @@ namespace BacNetApi
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
             ApduSetting = settings;
+            if (Status != DeviceStatus.Online)
+                Status = DeviceStatus.Ready;
             _waitForAddress.Set();            
         }
 
-        public void ReadSupportedServices()
+        private void ReadSupportedServices()
         {
             if (Address == null) throw new Exception("Attemping to read services list before getting device address");
             var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
@@ -102,20 +113,20 @@ namespace BacNetApi
                     if (value[i])
                         ServicesSupported.Add((BacnetServicesSupported)i);
                 }                
-                _status = DeviceStatus.Ready;                
+                Status = DeviceStatus.Online;                
             }
         }
 
         private void Initialize(bool reInitialize = false)
         {
             if (!reInitialize)
-                if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing || _status == DeviceStatus.NotFound) return;
+                if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing || _status == DeviceStatus.NotFound || _status == DeviceStatus.Online) return;
             if(reInitialize)
                 _reInitializeTimer.Stop();
-            _status = DeviceStatus.Initializing;
+            Status = DeviceStatus.Initializing;
             if (Address == null)
             {
-                _network.WhoIs((ushort) Id, (ushort) Id);
+                _network.Finder.SearchDevice(Id);
                 _waitForAddress.WaitOne(3000);
             }
             if (Address != null)
@@ -127,7 +138,7 @@ namespace BacNetApi
             }
             else
             {
-                _status = DeviceStatus.NotFound;
+                Status = DeviceStatus.NotFound;
                 _reInitializeTimer.Start();
             }
         }
@@ -161,7 +172,7 @@ namespace BacNetApi
                     if (Title != newTitle || _status != DeviceStatus.Ready)
                     {
                         Title = newTitle;
-                        _status = DeviceStatus.Ready;
+                        Status = DeviceStatus.Online;
                         LastUpdated = DateTime.Now;
                         _network.OnNetworkModelChangedEvent();
                     }
@@ -170,7 +181,7 @@ namespace BacNetApi
                 {
                     if (_status != DeviceStatus.Fault)
                     {
-                        _status = DeviceStatus.Fault;
+                        Status = DeviceStatus.Fault;
                         LastUpdated = DateTime.Now;
                         _network.OnNetworkModelChangedEvent();
                     }

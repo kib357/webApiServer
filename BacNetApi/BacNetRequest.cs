@@ -5,8 +5,8 @@ using BACsharp;
 
 namespace BacNetApi
 {
-    public delegate void RequestTimeEndedEventHandler(BacNetRequest request);
-    public class BacNetRequest
+    internal delegate void RequestTimeEndedEventHandler(BacNetRequest request);
+    internal class BacNetRequest
     {
         public int InvokeId { get; set; }
         public BacnetConfirmedService ServiceChoise { get; set; }

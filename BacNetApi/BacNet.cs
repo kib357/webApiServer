@@ -27,6 +27,8 @@ namespace BacNetApi
         Initializing,
         [StringValue("Ready")]
         Ready,
+        [StringValue("Online")]
+        Online,
         [StringValue("Fault")]
         Fault,
         [StringValue("NotFound")]
@@ -50,6 +52,7 @@ namespace BacNetApi
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
         public readonly object               SyncRoot = new Object();
+        internal readonly DeviceFinder       Finder;
         public event NotificationEventHandler NotificationEvent;
 
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
@@ -63,6 +66,7 @@ namespace BacNetApi
         public BacNet(string address)
         {
             InitializeProvider(address);
+            Finder = new DeviceFinder(this);
         }
 
         private void InitializeProvider(string address)
@@ -116,6 +120,11 @@ namespace BacNetApi
             get { return _deviceList.Where(d => d.SubscriptionState == SubscriptionStatus.Running).ToList(); }
         }
 
+        public List<BacNetDevice> OnlineDevices
+        {
+            get { return _deviceList; } //.Where(d => d.Status == DeviceStatus.Ready).ToList(); }
+            }
+
         public List<BacNetDevice> SubscribedDevices
         {
             get { return _deviceList.Where(d => d.SubscriptionState != SubscriptionStatus.Stopped).ToList(); }
@@ -123,14 +132,12 @@ namespace BacNetApi
 
         #region Requests
 
-        internal void WhoIs(ushort startAddress, ushort endAddress)
+        internal void WhoIs(ushort startAddress = 0, ushort endAddress = 0)
         {
-            lock (SyncRoot)
-            {
-                //это такой специальный слип, который чтобы дельта не тупила когда мы её хуизами закидываем
-                Thread.Sleep(30);
+            if (startAddress != 0 && endAddress != 0)
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
-            }            
+            else
+                _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest());
         }
 
         internal List<BACnetDataType> ReadProperty(BACnetAddress bacAddress, string address, BacnetPropertyId bacnetPropertyId, int arrayIndex = -1)
@@ -361,10 +368,9 @@ namespace BacNetApi
         private void OnIamReceived(object sender, AppServiceEventArgs e)
         {
             var service = e.Service as IAmRequest;
-            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device &&
-                _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance) >= 0)
+            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device)
             {
-                this[(uint)service.DeviceId.Instance].SetAddress(e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
+                Finder.DeviceLocated((uint)service.DeviceId.Instance, e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
             }
         }
 

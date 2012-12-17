@@ -33,6 +33,9 @@
     <Reference Include="BACSharp">
       <HintPath>..\ExternalLibs\BACSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Nini">
+      <HintPath>..\packages\Trove.Nini.1.1.0.0\lib\net20\Nini.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -54,11 +57,14 @@
     <Compile Include="Data\PrimitiveObjectIndexer.cs" />
     <Compile Include="BacNetRequest.cs" />
     <Compile Include="Data\PrimitiveObject.cs" />
+    <Compile Include="DeviceFinder.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="IBacNetservices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
