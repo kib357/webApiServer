@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using BACsharp;
 using BACsharp.AppService;
 using BACsharp.AppService.ConfirmedServices;
@@ -25,14 +26,12 @@ namespace BacNetApi
         NotInitialized,
         [StringValue("Initializing")]
         Initializing,
-        [StringValue("Ready")]
-        Ready,
+        [StringValue("Standby")]
+        Standby,
         [StringValue("Online")]
         Online,
         [StringValue("Fault")]
-        Fault,
-        [StringValue("NotFound")]
-        NotFound
+        Fault
     }
 
     public enum SubscriptionStatus
@@ -96,14 +95,13 @@ namespace BacNetApi
         {
             get
             {
-                int index = _deviceList.FindIndex(d => d.Id == i);
-                if (index < 0)
+                lock (SyncRoot)
                 {
-                    var device = new BacNetDevice(i, this);
-                    _deviceList.Add(device);
-                    index = _deviceList.FindIndex(d => d.Id == i);
+                    if (_deviceList.FindIndex(d => d.Id == i) < 0)
+                        _deviceList.Add(new BacNetDevice(i, this));                    
                 }
-                return _deviceList[index];
+                var dev = _deviceList.FirstOrDefault(d => d.Id == i);
+                return dev;                   
             }
             set
             {
@@ -115,6 +113,9 @@ namespace BacNetApi
             }
         }
 
+        public int IamCount { get;set; }
+        private List<uint> iam = new List<uint>();
+
         public List<BacNetDevice> OnlineSubscribedDevices
         {
             get { return _deviceList.Where(d => d.SubscriptionState == SubscriptionStatus.Running).ToList(); }
@@ -122,7 +123,7 @@ namespace BacNetApi
 
         public List<BacNetDevice> OnlineDevices
         {
-            get { return _deviceList; } //.Where(d => d.Status == DeviceStatus.Ready).ToList(); }
+            get { return _deviceList; } //.Where(d => d.Status == DeviceStatus.Standby).ToList(); }
             }
 
         public List<BacNetDevice> SubscribedDevices
@@ -368,9 +369,17 @@ namespace BacNetApi
         private void OnIamReceived(object sender, AppServiceEventArgs e)
         {
             var service = e.Service as IAmRequest;
-            if (service != null && service.DeviceId.ObjectType == (int)BacnetObjectType.Device)
+            if (service != null && service.DeviceId.ObjectType == (int) BacnetObjectType.Device)
             {
-                Finder.DeviceLocated((uint)service.DeviceId.Instance, e.BacnetAddress, service.SegmentationSupport, service.GetApduSettings());
+                Task.Factory.StartNew(() => Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
+                                                                 service.SegmentationSupport, service.GetApduSettings()));
+                lock (SyncRoot)
+                {
+                    if (!iam.Contains((uint)service.DeviceId.Instance))
+                        iam.Add((uint)service.DeviceId.Instance);
+                    IamCount = iam.Count;
+                }
+                OnNetworkModelChangedEvent();
             }
         }
 

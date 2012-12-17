@@ -62,16 +62,10 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
+            _network.Finder.SearchDevice(Id);
 
             _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 1, 0, 0) };
             _reInitializeTimer.Tick += ReInitializeDevice;
-            _reInitializeTimer.Start();
-        }
-
-        private void ReInitializeDevice(object sender, EventArgs e)
-        {
-            if (Status == DeviceStatus.NotFound)
-                Initialize(true);
         }
 
         private DateTime _lastUpdated;
@@ -93,52 +87,48 @@ namespace BacNetApi
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
             ApduSetting = settings;
-            if (Status != DeviceStatus.Online)
-                Status = DeviceStatus.Ready;
-            _waitForAddress.Set();            
+            Initialize();            
         }
 
         private void ReadSupportedServices()
         {
             if (Address == null) throw new Exception("Attemping to read services list before getting device address");
             var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ProtocolServicesSupported);
-            if (data.Count != 1) return;
+            if (data == null || data.Count != 1) return;
             var services = data[0];
-            if (services is BACnetBitString)
+            if (!(services is BACnetBitString)) return;
+            ServicesSupported = new List<BacnetServicesSupported>();
+            var value = (services as BACnetBitString).Value;
+            for (int i = 0; i < value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
             {
-                ServicesSupported = new List<BacnetServicesSupported>();
-                var value = (services as BACnetBitString).Value;
-                for (int i = 0; i < value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
-                {
-                    if (value[i])
-                        ServicesSupported.Add((BacnetServicesSupported)i);
-                }                
-                Status = DeviceStatus.Online;                
-            }
+                if (value[i])
+                    ServicesSupported.Add((BacnetServicesSupported)i);
+            }                
+            Status = DeviceStatus.Standby;
         }
 
-        private void Initialize(bool reInitialize = false)
+        private void ReInitializeDevice(object sender, EventArgs e)
         {
-            if (!reInitialize)
-                if (_status == DeviceStatus.Ready || _status == DeviceStatus.Initializing || _status == DeviceStatus.NotFound || _status == DeviceStatus.Online) return;
-            if(reInitialize)
+            if (Status == DeviceStatus.NotInitialized)
+                Initialize();
+            else
                 _reInitializeTimer.Stop();
+        }
+
+        private void Initialize()
+        {
+            if (_status == DeviceStatus.Initializing || _status == DeviceStatus.Standby || _status == DeviceStatus.Online) return;
             Status = DeviceStatus.Initializing;
-            if (Address == null)
-            {
-                _network.Finder.SearchDevice(Id);
-                _waitForAddress.WaitOne(3000);
-            }
             if (Address != null)
                 ReadSupportedServices();
-            if (_status == DeviceStatus.Ready)
+            if (_status == DeviceStatus.Standby)
             {
                 _trackState = true;
                 Task.Factory.StartNew(TrackDeviceState, TaskCreationOptions.LongRunning);
             }
             else
             {
-                Status = DeviceStatus.NotFound;
+                Status = DeviceStatus.NotInitialized;
                 _reInitializeTimer.Start();
             }
         }
@@ -151,7 +141,7 @@ namespace BacNetApi
                 while(true)
                 {
                     Initialize();
-                    if (_status == DeviceStatus.Ready) break;
+                    if (_status == DeviceStatus.Standby) break;
                     Thread.Sleep(TimeSpan.FromMinutes(minutes));
                     if (minutes < 127) minutes *= 2;
                 }
@@ -169,7 +159,7 @@ namespace BacNetApi
                 {
                     var name = data[0] as BACnetCharacterString;
                     var newTitle = name.Value;
-                    if (Title != newTitle || _status != DeviceStatus.Ready)
+                    if (Title != newTitle || _status != DeviceStatus.Standby)
                     {
                         Title = newTitle;
                         Status = DeviceStatus.Online;
@@ -310,35 +300,35 @@ namespace BacNetApi
         public bool CreateObject(BacNetObject bacNetObject, List<BACnetPropertyValue> data)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return false;
+            if (_status != DeviceStatus.Standby) return false;
             return _network.CreateObject(Address, bacNetObject.Id, data, ApduSetting) != null;
         }
 
         public bool DeleteObject(BacNetObject bacNetObject)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return false;
+            if (_status != DeviceStatus.Standby) return false;
             return _network.DeleteObject(Address, bacNetObject.Id) != null;
         }
 
         public List<BACnetDataType> ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return null;
+            if (_status != DeviceStatus.Standby) return null;
             return _network.ReadProperty(Address, bacNetObject.Id, propertyId, arrayIndex);
         }        
 
         public bool WriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return false;
+            if (_status != DeviceStatus.Standby) return false;
             return _network.WriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
 
         public void BeginWriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return;
+            if (_status != DeviceStatus.Standby) return;
             _network.BeginWriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
 
@@ -354,7 +344,7 @@ namespace BacNetApi
         public bool WritePropertyMultiple(Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues)
         {
             Initialize();
-            if (_status != DeviceStatus.Ready) return false;
+            if (_status != DeviceStatus.Standby) return false;
             return _network.WritePropertyMultiple(Address, objectIdWithValues, ApduSetting);
         }
 

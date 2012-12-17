@@ -52,7 +52,8 @@
             </ScrollViewer>
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <TextBox Width="100" Text="{Binding DeviceCount}"/>
+            <TextBox Width="100" Text="{Binding IamCount, Mode=OneWay}"/>
+            <TextBox Width="100" Text="{Binding DeviceCount, Mode=OneWay}"/>
             <TextBox Width="100" Text="{Binding Address}"/>
             <TextBox Width="100" Text="{Binding Value}"/>
         </StackPanel>
