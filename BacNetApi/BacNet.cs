@@ -371,14 +371,14 @@ namespace BacNetApi
             var service = e.Service as IAmRequest;
             if (service != null && service.DeviceId.ObjectType == (int) BacnetObjectType.Device)
             {
-                Task.Factory.StartNew(() => Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
-                                                                 service.SegmentationSupport, service.GetApduSettings()));
-                lock (SyncRoot)
-                {
-                    if (!iam.Contains((uint)service.DeviceId.Instance))
-                        iam.Add((uint)service.DeviceId.Instance);
-                    IamCount = iam.Count;
-                }
+                Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
+                                                                 service.SegmentationSupport, service.GetApduSettings());
+                //lock (SyncRoot)
+                //{
+                //    if (!iam.Contains((uint)service.DeviceId.Instance))
+                //        iam.Add((uint)service.DeviceId.Instance);
+                //    IamCount = iam.Count;
+                //}
                 OnNetworkModelChangedEvent();
             }
         }
