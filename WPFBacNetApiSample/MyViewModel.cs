@@ -17,65 +17,78 @@ using Microsoft.Practices.Prism.ViewModel;
 
 namespace WPFBacNetApiSample
 {
+	public delegate void ValuesChangedEventHandler(string address, string oldValue, string newValue);
+
     public class MyViewModel : NotificationObject
     {
         public DelegateCommand SetValueCommand { get; set; }
         public DelegateCommand GetValueCommand { get; set; }
 
-        private BacNet _bacnet;
+		public static BacNet Bacnet;
+
+		public static event ValuesChangedEventHandler ValuesChanged;
 
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("10.81.32.211");//192.168.0.168");
-            _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
+            Bacnet = new BacNet("10.81.32.199");//192.168.0.168");
+            Bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             Thread.Sleep(100);
-            /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1700].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1700].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1701].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            _bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
-            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
-            //_bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
+            /*Bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[1700].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[1700].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[1701].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
+            Bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
+            //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
+            //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
             //GetBacnetAddresses();
-            //var dev = _bacnet[100].Objects["AV1"].Get();
+            //var dev = Bacnet[100].Objects["AV1"].Get();
             //Thread.Sleep(500);
-            //var users = _bacnet[100].Users.Get();
-            //var areas = _bacnet[100].AccessGroups[1].Areas;
-            //_bacnet[100].AccessGroups[1].SubmitAreas();
-            //var exceptions = _bacnet[100].AccessGroups[1].Exceptions;
-            //_bacnet[100].AccessGroups[1].Exceptions.Add(new AccessArea() {InstanceNumber = 206002, Type = BacnetObjectType.Door});
-            //_bacnet[100].AccessGroups[1].SubmitExceptions();
-            ////_bacnet[100].Users[1].WriteCard();
-            //var k = _bacnet[100].Users[1].Cards;
-            ////var g = _bacnet[100].Users[1].AccessGroups;
-            //var name = _bacnet[100].Users[1].Name;
-            //_bacnet[100].Users[1].Name = name + " вот";
+            //var users = Bacnet[100].Users.Get();
+            //var areas = Bacnet[100].AccessGroups[1].Areas;
+            //Bacnet[100].AccessGroups[1].SubmitAreas();
+            //var exceptions = Bacnet[100].AccessGroups[1].Exceptions;
+            //Bacnet[100].AccessGroups[1].Exceptions.Add(new AccessArea() {InstanceNumber = 206002, Type = BacnetObjectType.Door});
+            //Bacnet[100].AccessGroups[1].SubmitExceptions();
+            ////Bacnet[100].Users[1].WriteCard();
+            //var k = Bacnet[100].Users[1].Cards;
+            ////var g = Bacnet[100].Users[1].AccessGroups;
+            //var name = Bacnet[100].Users[1].Name;
+            //Bacnet[100].Users[1].Name = name + " вот";
 
-            //_bacnet[100].Users[1].AccessGroups.Add(3);
-            //_bacnet[100].Users[1].SubmitAccessGroups();
-            ////_bacnet[100].Users[1].AccessGroups.Clear();
-            ////_bacnet[100].Users[1].SubmitAccessGroups();
-            //_bacnet[100].Users[1].Cards.Clear();
-            //_bacnet[100].Users[1].Cards.Add(new Card() {Number = 123456, SiteCode = 11, Status = 0});
-            //_bacnet[100].Users[1].Cards.Add(new Card() { Number = 654321, SiteCode = 11, Status = 0 });
-            //_bacnet[100].Users[1].Cards.Add(new Card() { Number = 200000, SiteCode = 11, Status = 0 });
-            //_bacnet[100].Users[1].SubmitCards();
-            //_bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
-            //_bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
+            //Bacnet[100].Users[1].AccessGroups.Add(3);
+            //Bacnet[100].Users[1].SubmitAccessGroups();
+            ////Bacnet[100].Users[1].AccessGroups.Clear();
+            ////Bacnet[100].Users[1].SubmitAccessGroups();
+            //Bacnet[100].Users[1].Cards.Clear();
+            //Bacnet[100].Users[1].Cards.Add(new Card() {Number = 123456, SiteCode = 11, Status = 0});
+            //Bacnet[100].Users[1].Cards.Add(new Card() { Number = 654321, SiteCode = 11, Status = 0 });
+            //Bacnet[100].Users[1].Cards.Add(new Card() { Number = 200000, SiteCode = 11, Status = 0 });
+            //Bacnet[100].Users[1].SubmitCards();
+            //Bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
+            //Bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
             
             SetValueCommand = new DelegateCommand(SetValue);
             GetValueCommand = new DelegateCommand(GetValue);
             SchValues = new List<string>();
+
+			
+
+			Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
+			Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
+
+			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
+
+			var lc = new LightControl();
         }
 
         private void OnNetworkModelChanged()
         {
-            Devices = new ObservableCollection<BacNetDevice>(_bacnet.OnlineDevices);
+            Devices = new ObservableCollection<BacNetDevice>(Bacnet.OnlineDevices);
         }
 
         private ObservableCollection<BacNetDevice> _devices;
@@ -123,7 +136,7 @@ namespace WPFBacNetApiSample
             list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ListOfObjectPropertyReferences, bacval));
             var lst = new List<BACnetDataType>{new BACnetCharacterString("qwe")};
             list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ObjectName, lst));
-            var tmp = _bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
+            var tmp = Bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
             /*var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
             var val = new Dictionary<BacnetPropertyId, object>();
             val.Add(BacnetPropertyId.ObjectName, "AnalogValue1");
@@ -134,7 +147,7 @@ namespace WPFBacNetApiSample
             val.Add(BacnetPropertyId.PresentValue, 10);
             values.Add("AV2", val);
 
-            _bacnet[600].WritePropertyMultiple(values);*/
+            Bacnet[600].WritePropertyMultiple(values);*/
         }
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
@@ -186,7 +199,7 @@ namespace WPFBacNetApiSample
             {
                 string objAddress = address.Split('.')[1].Trim();
 
-                    _bacnet[instance].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
+                    Bacnet[instance].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
             }            
         }
 
@@ -200,7 +213,7 @@ namespace WPFBacNetApiSample
                 if (address.Value == null) continue;
                 foreach (var objAddress in address.Value)
                 {
-                    _bacnet[address.Key].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
+                    Bacnet[address.Key].Objects[objAddress].ValueChangedEvent += OnBacnetValueChanged;
                 }
                 //Thread.Sleep(100);
             }
@@ -211,7 +224,7 @@ namespace WPFBacNetApiSample
             try
             {
                 var address = Address.Split('.');
-                _bacnet[Convert.ToUInt32(address[0])].Objects[address[1]].Set(Value);
+                Bacnet[Convert.ToUInt32(address[0])].Objects[address[1]].Set(Value);
             }
             catch (Exception ex)
             {
@@ -222,13 +235,19 @@ namespace WPFBacNetApiSample
         private void OnBacnetValueChanged(string address, string value)
         {
             var el = Sensors.FirstOrDefault(s => s.Address == address);
-            if (el == null)
-                Sensors.Add(new sensor { Address = address, Value = value });
-            else
-            {
-                Sensors.Remove(el);
-                Sensors.Add(new sensor { Address = address, Value = value });
-            }
+			if (el == null)
+			{
+				Sensors.Add(new sensor { Address = address, Value = value });
+				if (ValuesChanged != null)
+					ValuesChanged(address, null, value);
+			}
+			else
+			{
+				if (ValuesChanged != null)
+					ValuesChanged(address, el.Value, value);
+				Sensors.Remove(el);
+				Sensors.Add(new sensor { Address = address, Value = value });
+			}
 
             RaisePropertyChanged("Sensors");
         }
