@@ -64,7 +64,7 @@ namespace BacNetApi
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
             _network.Finder.SearchDevice(Id);
 
-            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 1, 0, 0) };
+            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 10, 0) };
             _reInitializeTimer.Tick += ReInitializeDevice;
         }
 
