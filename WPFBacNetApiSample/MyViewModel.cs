@@ -93,6 +93,16 @@ namespace WPFBacNetApiSample
 		private void InitializeCabinetesList()
 		{
 			_cabinetes = new List<string>();
+			_cabinetes.Add("101(104)");
+			_cabinetes.Add("113(107)");
+			_cabinetes.Add("(123)");
+			_cabinetes.Add("118(109)");
+			_cabinetes.Add("117(110)");
+			_cabinetes.Add("(111)");
+			_cabinetes.Add("116(112)");
+			_cabinetes.Add("114(122)");
+			_cabinetes.Add("(136)");
+
 			_cabinetes.Add("(137)");
 			_cabinetes.Add("(145)");
 			_cabinetes.Add("111(113)");
@@ -168,29 +178,29 @@ namespace WPFBacNetApiSample
 	        foreach (var cabinete in _cabinetes)
 	        {
 				CreateObj("AV", cabinete, "TemperatureSetpoint", "11");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("AV", cabinete, "CurrentTemperature", "12");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("AV", cabinete, "VentilationSetpoint", "21");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("AV", cabinete, "CurrentVentilationLevel", "22");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("AV", cabinete, "LightLevelSetpoint", "31");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("AV", cabinete, "ConditionerLevelSetpoint", "41");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "TemperatureBacstatAllowed", "19");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "VentilationBacstatAllowed", "29");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "LightStateSetpoint", "31");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "AutoLightLevel", "32");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "LightBacstatAllowed", "39");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "ConditionerStateSetpoint", "41");
-				Thread.Sleep(50);
+				//Thread.Sleep(50);
 				CreateObj("BV", cabinete, "ConditionerBacstatAllowed", "49");
 				Thread.Sleep(100);
 	        }
@@ -211,7 +221,6 @@ namespace WPFBacNetApiSample
 			string tmpStr = string.Empty;
 			foreach (var chr in tmp)
 			{
-				if(chr)
 				tmpStr = tmpStr + chr;
 			}
 			string createdObject = obj + tmpStr + objNumber;
