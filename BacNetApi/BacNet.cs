@@ -104,14 +104,6 @@ namespace BacNetApi
                 }
                 return dev;                   
             }
-            set
-            {
-                int index = _deviceList.FindIndex(d => d.Id == i);
-                if (index < 0)
-                    _deviceList.Add(value);
-                else
-                    _deviceList[index] = value;
-            }
         }
 
         public int IamCount { get;set; }
@@ -134,9 +126,9 @@ namespace BacNetApi
 
         #region Requests
 
-        public void WhoIs(ushort startAddress = 0, ushort endAddress = 0)
+        public void WhoIs(uint startAddress = 0, uint endAddress = 0)
         {
-            if (startAddress >= 0 && endAddress > startAddress)
+            if (endAddress >= startAddress && endAddress != 0)
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest(startAddress, endAddress));
             else
                 _bacNetProvider.SendMessage(BACnetAddress.GlobalBroadcast(), new WhoIsRequest());
@@ -330,7 +322,7 @@ namespace BacNetApi
                 request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
             if (waitForResponse)
             {
-                request.ResetEvent.WaitOne(3000);
+                request.ResetEvent.WaitOne(5000);
                 RemoveRequest(request);
                 return request.State;
             }           

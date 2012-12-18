@@ -92,7 +92,10 @@ namespace BacNetApi
                 foreach (var d in iterationDevices)
                 {
                     if (_network[d.Key].Status == DeviceStatus.Standby)
+                    {
                         _network[d.Key].StartTracking();
+                        Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(10, 50)));
+                    }
                 }                
             }
         }
@@ -110,15 +113,18 @@ namespace BacNetApi
                         new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded).Keys.OrderBy(k => k).ToList();
                 }
 
-                for (int i = 0; i < iterationDevices.Count; i += 2)
+                uint min = 0;
+                foreach (uint iDev in iterationDevices)
                 {
-                    uint diff = iterationDevices[i + 1] - iterationDevices[i];
-                    if (diff > 1)
+                    if (min < iDev - 1)
                     {
-                        _network.WhoIs((ushort) (iterationDevices[i] + 1), (ushort) (iterationDevices[i + 1] - 1));
+                        _network.WhoIs((min + 1), (iDev - 1));
                         Thread.Sleep(TimeSpan.FromSeconds(1));
                     }
+                    min = iDev;
                 }
+                if (min < 4194303)
+                    _network.WhoIs(min + 1, 4194303);
                 Thread.Sleep(TimeSpan.FromSeconds(30));
             }
         }
