@@ -107,19 +107,17 @@ namespace BacNetApi
         public int IamCount { get;set; }
         private List<uint> iam = new List<uint>();
 
-        public List<BacNetDevice> OnlineSubscribedDevices
-        {
-            get { return _deviceList.Where(d => d.SubscriptionState == SubscriptionStatus.Running).ToList(); }
-        }
-
         public List<BacNetDevice> OnlineDevices
         {
-            get { return _deviceList; } //.Where(d => d.Status == DeviceStatus.Standby).ToList(); }
+            get
+            {
+                List<BacNetDevice> list;
+                lock (SyncRoot)
+                {
+                    list = new List<BacNetDevice>(_deviceList);
+                }
+                return list;
             }
-
-        public List<BacNetDevice> SubscribedDevices
-        {
-            get { return _deviceList.Where(d => d.SubscriptionState != SubscriptionStatus.Stopped).ToList(); }
         }
 
         #region Requests
@@ -490,13 +488,17 @@ namespace BacNetApi
             if (pvPropertyIndex < 0  || service.PropertyValues[pvPropertyIndex].Values.Count != 1) return;
             var value = service.PropertyValues[pvPropertyIndex].Values[0].ToString();
 
-            int devIndex = _deviceList.FindIndex(d => d.Id == (uint)service.DeviceId.Instance);
-            if (devIndex >= 0)
+            BacNetDevice dev;
+            lock (SyncRoot)
+            {
+                dev = _deviceList.FirstOrDefault(d => d.Id == (uint)service.DeviceId.Instance);   
+            }            
+            if (dev != null)
             {
                 string objId = BacNetObject.GetStringId((BacnetObjectType) service.ObjectId.ObjectType) +
                                service.ObjectId.Instance;
-                if (_deviceList[devIndex].Objects.Contains(objId))
-                    _deviceList[devIndex].Objects[objId].StringValue = value;
+                if (dev.Objects.Contains(objId))
+                    dev.Objects[objId].StringValue = value;
             }
         }
 
