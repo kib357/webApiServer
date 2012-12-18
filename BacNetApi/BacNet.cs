@@ -24,8 +24,6 @@ namespace BacNetApi
     {
         [StringValue("NotInitialized")]
         NotInitialized,
-        [StringValue("Initializing")]
-        Initializing,
         [StringValue("Standby")]
         Standby,
         [StringValue("Online")]

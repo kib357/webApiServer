@@ -27,7 +27,7 @@ namespace BacNetApi
             _network = network;
             //_search.CollectionChanged += SearchListChanged;
             Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);
-            Task.Factory.StartNew(ReadServices, TaskCreationOptions.LongRunning);            
+            Task.Factory.StartNew(ReadServices, TaskCreationOptions.LongRunning);
         }
 
         //private void SearchListChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -94,9 +94,9 @@ namespace BacNetApi
                     if (_network[d.Key].Status == DeviceStatus.Standby)
                     {
                         _network[d.Key].StartTracking();
-                        Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(10, 50)));
+                        //Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(10, 100)));
                     }
-                }                
+                }
             }
         }
 
