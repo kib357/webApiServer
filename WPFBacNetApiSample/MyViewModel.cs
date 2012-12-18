@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows;
 using System.Xml.Linq;
 using BACsharp;
+using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
@@ -25,6 +26,8 @@ namespace WPFBacNetApiSample
         public DelegateCommand GetValueCommand { get; set; }
 
 		public static BacNet Bacnet;
+
+	    private List<string> _cabinetes; 
 
 		public static event ValuesChangedEventHandler ValuesChanged;
 
@@ -78,13 +81,47 @@ namespace WPFBacNetApiSample
 
 			
 
-			Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
+			/*Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
 			Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
 
 			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
 
-			var lc = new LightControl();
+			var lc = new LightControl();*/
+	        InitializeCabinetesList();
         }
+
+		private void InitializeCabinetesList()
+		{
+			_cabinetes = new List<string>();
+			_cabinetes.Add("(137)");
+			_cabinetes.Add("(145)");
+			_cabinetes.Add("111(113)");
+			_cabinetes.Add("110(127)");
+			_cabinetes.Add("(133)");
+			_cabinetes.Add("106(129)");
+			_cabinetes.Add("104(130)");
+			_cabinetes.Add("(132)");
+			_cabinetes.Add("103(101)");
+			_cabinetes.Add("102(102)");
+			_cabinetes.Add("107(128)");
+			_cabinetes.Add("105(131)");
+			_cabinetes.Add("(1321)");
+			_cabinetes.Add("109(119)");
+			_cabinetes.Add("108(118)");
+			_cabinetes.Add("112(117)");
+			_cabinetes.Add("113(116)");
+			_cabinetes.Add("(115)");
+			_cabinetes.Add("115(114)");
+			_cabinetes.Add("(120)");
+			_cabinetes.Add("(146)");
+			_cabinetes.Add("(142)");
+			_cabinetes.Add("(141)");
+			_cabinetes.Add("(140)");
+			_cabinetes.Add("(143)");
+			_cabinetes.Add("(144)");
+			_cabinetes.Add("(138)");
+			_cabinetes.Add("(139)");
+		}
 
         private void OnNetworkModelChanged()
         {
@@ -128,42 +165,58 @@ namespace WPFBacNetApiSample
 
         private void GetValue()
         {
-            /*List<BACnetDataType> propertyValues = new List<BACnetDataType>();
-            propertyValues.Add(new BACnetDailySchedule()); //1
-            BACnetDailySchedule dailySchedule = new BACnetDailySchedule();
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(0, 0, 0, 0), new BACnetNull()));
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(9, 30, 0, 0), new BACnetEnumerated(1)));
-            dailySchedule.Values.Add(new BACnetTimeValue(new BACnetTime(13, 30, 0, 0), new BACnetNull()));
-            propertyValues.Add(dailySchedule); // 2
-            propertyValues.Add(new BACnetDailySchedule()); //3
-            propertyValues.Add(new BACnetDailySchedule()); //4
-            propertyValues.Add(new BACnetDailySchedule()); //5
-            propertyValues.Add(new BACnetDailySchedule()); //6
-            propertyValues.Add(new BACnetDailySchedule()); //7
-            var val = new List<string> { "600.AV2" };
-            var bacval = new List<BACnetDataType>();
-            foreach (var v in val)
-            {
-                bacval.Add(GetPropertyReferensFromString(v));
-            }
-            List<BACnetPropertyValue> list = new List<BACnetPropertyValue>();
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.WeeklySchedule, propertyValues));
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ListOfObjectPropertyReferences, bacval));
-            var lst = new List<BACnetDataType>{new BACnetCharacterString("qwe")};
-            list.Add(new BACnetPropertyValue((int)BacnetPropertyId.ObjectName, lst));
-            var tmp = Bacnet[600].Objects["SCH1"].Set(propertyValues, BacnetPropertyId.WeeklySchedule);*/
-            /*var values = new Dictionary<string, Dictionary<BacnetPropertyId, object>>();
-            var val = new Dictionary<BacnetPropertyId, object>();
-            val.Add(BacnetPropertyId.ObjectName, "AnalogValue1");
-            val.Add(BacnetPropertyId.PresentValue, 10);
-            values.Add("AV1", val);
-            val = new Dictionary<BacnetPropertyId, object>();
-            val.Add(BacnetPropertyId.ObjectName, "AnalogValue2");
-            val.Add(BacnetPropertyId.PresentValue, 10);
-            values.Add("AV2", val);
-
-            Bacnet[600].WritePropertyMultiple(values);*/
+	        foreach (var cabinete in _cabinetes)
+	        {
+				CreateObj("AV", cabinete, "TemperatureSetpoint", "11");
+				Thread.Sleep(50);
+				CreateObj("AV", cabinete, "CurrentTemperature", "12");
+				Thread.Sleep(50);
+				CreateObj("AV", cabinete, "VentilationSetpoint", "21");
+				Thread.Sleep(50);
+				CreateObj("AV", cabinete, "CurrentVentilationLevel", "22");
+				Thread.Sleep(50);
+				CreateObj("AV", cabinete, "LightLevelSetpoint", "31");
+				Thread.Sleep(50);
+				CreateObj("AV", cabinete, "ConditionerLevelSetpoint", "41");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "TemperatureBacstatAllowed", "19");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "VentilationBacstatAllowed", "29");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "LightStateSetpoint", "31");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "AutoLightLevel", "32");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "LightBacstatAllowed", "39");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "ConditionerStateSetpoint", "41");
+				Thread.Sleep(50);
+				CreateObj("BV", cabinete, "ConditionerBacstatAllowed", "49");
+				Thread.Sleep(100);
+	        }
         }
+
+		private void CreateObj(string obj, string cabinete, string objectDescription, string objNumber)
+		{
+			var objName = new List<BACnetPropertyValue>
+                              {
+                                  new BACnetPropertyValue((int) BacnetPropertyId.ObjectName,
+                                                          new List<BACnetDataType> {new BACnetCharacterString(cabinete + objectDescription)})
+                              };
+			int start = cabinete.IndexOf('(');
+			int end = cabinete.IndexOf(')');
+			char[] tmp = new char[0];
+			Array.Resize(ref tmp, end - start - 1);
+			cabinete.CopyTo(start + 1, tmp, 0, end - start - 1);
+			string tmpStr = string.Empty;
+			foreach (var chr in tmp)
+			{
+				if(chr)
+				tmpStr = tmpStr + chr;
+			}
+			string createdObject = obj + tmpStr + objNumber;
+			Bacnet[100].Objects[createdObject].Create(objName); 
+		}
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
         {
