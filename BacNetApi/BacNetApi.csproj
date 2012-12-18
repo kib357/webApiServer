@@ -57,7 +57,7 @@
     <Compile Include="Data\PrimitiveObjectIndexer.cs" />
     <Compile Include="BacNetRequest.cs" />
     <Compile Include="Data\PrimitiveObject.cs" />
-    <Compile Include="DeviceFinder.cs" />
+    <Compile Include="DeviceManager.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="IBacNetservices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

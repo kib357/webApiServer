@@ -27,8 +27,9 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            _bacnet = new BacNet("192.168.0.168");//"10.81.32.211");
+            _bacnet = new BacNet("10.81.32.211");//"192.168.0.168");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
+            //_bacnet[100].Objects["AV1"].ValueChangedEvent += OnValueChanged;
             //Thread.Sleep(100);
             /*_bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             _bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
@@ -72,6 +73,14 @@ namespace WPFBacNetApiSample
             GetValueCommand = new DelegateCommand(GetValue);
             SchValues = new List<string>();
         }
+
+        private void OnValueChanged(string address, string value)
+        {
+            DataString = value;
+            RaisePropertyChanged("DataString");
+        }
+
+        public string DataString { get; set; }
 
         private void OnNetworkModelChanged()
         {
