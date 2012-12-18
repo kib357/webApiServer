@@ -49,7 +49,7 @@ namespace BacNetApi
         private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
         private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
         public readonly object               SyncRoot = new Object();
-        internal readonly DeviceFinder       Finder;
+        internal readonly DeviceManager       Manager;
         public event NotificationEventHandler NotificationEvent;
 
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
@@ -63,7 +63,7 @@ namespace BacNetApi
         public BacNet(string address)
         {
             InitializeProvider(address);
-            Finder = new DeviceFinder(this);
+            Manager = new DeviceManager(this);
         }
 
         private void InitializeProvider(string address)
@@ -362,13 +362,13 @@ namespace BacNetApi
             var service = e.Service as IAmRequest;
             if (service != null && service.DeviceId.ObjectType == (int) BacnetObjectType.Device)
             {
-                Task.Factory.StartNew(() => Finder.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
+                Task.Factory.StartNew(() => Manager.DeviceLocated((uint) service.DeviceId.Instance, e.BacnetAddress,
                                                                  service.SegmentationSupport, service.GetApduSettings()));
                 lock (SyncRoot)
                 {
                     if (!iam.Contains((uint)service.DeviceId.Instance))
                         iam.Add((uint)service.DeviceId.Instance);
-                    IamCount = Finder._finded.Count; //iam.Count;
+                    IamCount = Manager._finded.Count; //iam.Count;
                 }
                 OnNetworkModelChangedEvent();
             }

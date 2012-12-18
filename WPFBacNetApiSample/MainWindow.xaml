@@ -5,7 +5,7 @@
     <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
         <StackPanel Orientation="Horizontal">
             <ScrollViewer Height="500">
-            <ListView ItemsSource="{Binding Sensors}" Width="500" Background="#AAAAAA" Name="myListView">
+            <ListView ItemsSource="{Binding Sensors}" Width="300" Background="#AAAAAA" Name="myListView">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel Orientation="Vertical"/>
@@ -26,7 +26,7 @@
             </ListView>
             </ScrollViewer>
             <ScrollViewer Height="500">
-                <ListView ItemsSource="{Binding Devices}" Width="500" Background="#AAAAAA" Name="myDevListView">
+                <ListView ItemsSource="{Binding Devices}" Width="700" Background="#AAAAAA" Name="myDevListView">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Vertical"/>
@@ -36,15 +36,17 @@
                         <DataTemplate>
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="80"/>
+                                    <ColumnDefinition Width="160"/>
                                     <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding Path=Id}" Grid.Column="0"/>
                                 <TextBlock Text="{Binding Path=Title}" Grid.Column="1"/>
                                 <TextBlock Text="{Binding Path=LastUpdated}" Grid.Column="2"/>
                                 <TextBlock Text="{Binding Path=Status}" Grid.Column="3"/>
+                                <TextBlock Text="{Binding Path=SubscriptionState}" Grid.Column="4"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -54,6 +56,7 @@
         <StackPanel Orientation="Horizontal">
             <TextBox Width="100" Text="{Binding IamCount, Mode=OneWay}"/>
             <TextBox Width="100" Text="{Binding DeviceCount, Mode=OneWay}"/>
+            <TextBox Width="100" Text="{Binding DataString, Mode=OneWay}"/>
             <TextBox Width="100" Text="{Binding Address}"/>
             <TextBox Width="100" Text="{Binding Value}"/>
         </StackPanel>

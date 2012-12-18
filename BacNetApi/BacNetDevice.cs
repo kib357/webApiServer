@@ -116,7 +116,7 @@ namespace BacNetApi
         private void Initialize()
         {
             if (_status == DeviceStatus.Standby || _status == DeviceStatus.Online) return;
-            _network.Finder.SearchDevice(Id);            
+            _network.Manager.SearchDevice(Id);            
         }
 
         internal void StartTracking()
@@ -169,7 +169,8 @@ namespace BacNetApi
             if (responce == null) return;
             foreach (BACnetObjectId objectId in responce)
             {
-                ObjectList.Add(objectId.ToString2());
+                if (objectId != null)
+                    ObjectList.Add(objectId.ToString2());
             }
         }
 
@@ -181,36 +182,26 @@ namespace BacNetApi
         {
             if (_subscriptionList.Count > 0 && _subscriptionStatus == SubscriptionStatus.Stopped)
             {
-                _subscriptionStatus = SubscriptionStatus.Initializing;
-                Task.Factory.StartNew(StartSubscription, TaskCreationOptions.LongRunning);
+                _subscriptionStatus = SubscriptionStatus.Initializing;               
             }
             if (_subscriptionList.Count == 0)
             {
-                StopSubsciption();
+                _subscriptionStatus = SubscriptionStatus.Stopped;
             }
-        }        
-
-        private void StartSubscription()
-        {
-            while (true)
-            {
-                if (_status == DeviceStatus.Online) break;
-                if (_subscriptionStatus == SubscriptionStatus.Stopped) return;
-                Thread.Sleep(TimeSpan.FromSeconds(30));
-            }
-            _subscriptionStatus = SubscriptionStatus.Running;
-            if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
-                COVSubscription();
-            else
-                if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
-                    RPMPolling();
-                else
-                ReadPropertyPolling();
         }
 
-        private void StopSubsciption()
+        internal void StartSubscription()
         {
-            _subscriptionStatus = SubscriptionStatus.Stopped;
+            Task.Factory.StartNew(() =>
+                {
+                    _subscriptionStatus = SubscriptionStatus.Running;
+                    if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
+                        COVSubscription();
+                    else if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
+                        RPMPolling();
+                    else
+                        ReadPropertyPolling();
+                }, TaskCreationOptions.LongRunning);
         }
 
         private void ReadPropertyPolling()
@@ -224,7 +215,7 @@ namespace BacNetApi
                         _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
                     }
                 }
-                Thread.Sleep(10000);
+                Thread.Sleep(TimeSpan.FromSeconds(10));
             }
         }
 
@@ -236,7 +227,7 @@ namespace BacNetApi
                 {
                     _network.BeginReadPropertyMultiple(Address, _subscriptionList.ToList(), ApduSetting);
                 }
-                Thread.Sleep(10000);
+                Thread.Sleep(TimeSpan.FromSeconds(10));
             }
         }
 

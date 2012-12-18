@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
@@ -12,37 +10,20 @@ using BACsharp.Types.Primitive;
 
 namespace BacNetApi
 {
-    internal class DeviceFinder
+    internal class DeviceManager
     {
         private readonly BacNet _network;
         public readonly Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>> _finded = new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>();
         private readonly ObservableCollection<uint> _search = new ObservableCollection<uint>();
-        private readonly List<uint> _lost = new List<uint>();
         private readonly object SyncRoot = new object();
-        private volatile bool Searching = false;
 
 
-        public DeviceFinder(BacNet network)
+        public DeviceManager(BacNet network)
         {
             _network = network;
-            //_search.CollectionChanged += SearchListChanged;
             Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);
-            Task.Factory.StartNew(ReadServices, TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(StartDeviceServices, TaskCreationOptions.LongRunning);
         }
-
-        //private void SearchListChanged(object sender, NotifyCollectionChangedEventArgs e)
-        //{
-        //    var s = sender as ObservableCollection<uint>;
-        //    if (s != null && s.Count > 0 && !Searching)
-        //    {
-        //        Searching = true;
-        //        Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);                
-        //    }
-        //    else
-        //    {
-        //        Searching = false;
-        //    }
-        //}
 
         public void SearchDevice(uint instance)
         {
@@ -73,7 +54,7 @@ namespace BacNetApi
             _network[instance].SetAddress(source, segmentationSupported, settings);
         }
 
-        private void ReadServices()
+        private void StartDeviceServices()
         {
             while (true)
             {
@@ -84,6 +65,9 @@ namespace BacNetApi
                     iterationDevices =
                         new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded);
                 }
+
+                //Это - очень важные форичи. Не дай боже какой-нибудь падла решит эти форичи в один объединить, 
+                //очень плохо это для него закончится
                 foreach (var d in iterationDevices)
                 {
                     if (_network[d.Key].Status == DeviceStatus.NotInitialized)
@@ -92,10 +76,13 @@ namespace BacNetApi
                 foreach (var d in iterationDevices)
                 {
                     if (_network[d.Key].Status == DeviceStatus.Standby)
-                    {
                         _network[d.Key].StartTracking();
-                        //Thread.Sleep(TimeSpan.FromMilliseconds(new Random().Next(10, 100)));
-                    }
+                }
+                foreach (var d in iterationDevices)
+                {
+                    if (_network[d.Key].Status == DeviceStatus.Online &&
+                        _network[d.Key].SubscriptionState == SubscriptionStatus.Initializing)
+                        _network[d.Key].StartSubscription();
                 }
             }
         }
