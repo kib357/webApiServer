@@ -36,8 +36,6 @@ namespace WPFBacNetApiSample
             _sensors = new ObservableCollection<sensor>();
             Bacnet = new BacNet("10.81.32.199");//192.168.0.168");
             Bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
-            //_bacnet[100].Objects["AV1"].ValueChangedEvent += OnValueChanged;
-            //Thread.Sleep(100);
             /*Bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             Bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
             Bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
@@ -49,9 +47,7 @@ namespace WPFBacNetApiSample
             Bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
             //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
             //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
-            //GetBacnetAddresses();
             //var dev = Bacnet[100].Objects["AV1"].Get();
-            //Thread.Sleep(500);
             //var users = Bacnet[100].Users.Get();
             //var areas = Bacnet[100].AccessGroups[1].Areas;
             //Bacnet[100].AccessGroups[1].SubmitAreas();
@@ -63,7 +59,6 @@ namespace WPFBacNetApiSample
             ////var g = Bacnet[100].Users[1].AccessGroups;
             //var name = Bacnet[100].Users[1].Name;
             //Bacnet[100].Users[1].Name = name + " вот";
-
             //Bacnet[100].Users[1].AccessGroups.Add(3);
             //Bacnet[100].Users[1].SubmitAccessGroups();
             ////Bacnet[100].Users[1].AccessGroups.Clear();

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BacNetApiSample", "BacNetAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFBacNetApiSample", "WPFBacNetApiSample\WPFBacNetApiSample.csproj", "{AEF1613E-7055-42B9-A3B7-A50B55548ABC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFSubscribeSample", "WPFSubscribeSample\WPFSubscribeSample.csproj", "{FB6C8888-0E84-436C-AE30-A8B020DD0457}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEF1613E-7055-42B9-A3B7-A50B55548ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB6C8888-0E84-436C-AE30-A8B020DD0457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB6C8888-0E84-436C-AE30-A8B020DD0457}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB6C8888-0E84-436C-AE30-A8B020DD0457}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB6C8888-0E84-436C-AE30-A8B020DD0457}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

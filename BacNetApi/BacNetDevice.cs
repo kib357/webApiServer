@@ -156,9 +156,9 @@ namespace BacNetApi
                         _network.OnNetworkModelChangedEvent();
                     }
                 }
-                if (_trackCount % 6 == 0 || _trackCount == 1)
-                    GetObjectList();
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                //if (_trackCount % 6 == 0 || _trackCount == 1)
+                //    GetObjectList();
+                Thread.Sleep(TimeSpan.FromSeconds(15));
             }
         }
 
