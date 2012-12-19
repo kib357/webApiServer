@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
@@ -15,11 +17,17 @@ namespace WPFSubscribeSample
         private readonly BacNet _bacnet;
         public DelegateCommand CreateObjectsCommand { get; set; }
         public DelegateCommand SubscribeObjectsCommand { get; set; }
+        public DelegateCommand WriteObjectsCommand { get; set; }
+        public DelegateCommand StopWriteObjectsCommand { get; set; }
+
+        private volatile bool _write;
 
         public MyViewModel()
         {
             CreateObjectsCommand = new DelegateCommand(OnCreateObjects, CanCreateAndSubscribe);
             SubscribeObjectsCommand = new DelegateCommand(OnSubscribeObjects, CanCreateAndSubscribe);
+            WriteObjectsCommand = new DelegateCommand(OnWriteObjects, CanWriteObjects);
+            StopWriteObjectsCommand = new DelegateCommand(OnStopWrite);
 
             _bacnet = new BacNet("192.168.0.168");//"10.81.32.211");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
@@ -28,11 +36,42 @@ namespace WPFSubscribeSample
             {
                 Sensors.Add(0);
             }
+
+            CanChangeSelectedDevice = true;
         }
+
+        private void OnStopWrite()
+        {
+            _write = false;
+        }
+
+        private bool CanWriteObjects()
+        {
+            return SelectedDevice != null && SelectedDevice.Status == DeviceStatus.Online;
+        }
+
+        private void OnWriteObjects()
+        {
+            _write = true;
+            Task.Factory.StartNew(WriteObjects, TaskCreationOptions.LongRunning);
+        }
+
+        private void WriteObjects()
+        {
+            while (_write)
+            {
+                for (int i = 1; i <= 100; i++)
+                {
+                    _bacnet[SelectedDevice.Id].Objects["AV" + i].BeginSet((new Random().Next(0,100)).ToString());
+                    Thread.Sleep(new Random().Next(20, 100));
+                }
+            }
+        }
+
 
         private bool CanCreateAndSubscribe()
         {
-            return SelectedDevice != null && SelectedDevice.Status == DeviceStatus.Online;
+            return SelectedDevice != null && SelectedDevice.Status == DeviceStatus.Online && CanChangeSelectedDevice;
         }
 
         private void OnNetworkModelChanged()
@@ -40,6 +79,7 @@ namespace WPFSubscribeSample
             Devices = new ObservableCollection<BacNetDevice>(_bacnet.OnlineDevices);
             CreateObjectsCommand.RaiseCanExecuteChanged();
             SubscribeObjectsCommand.RaiseCanExecuteChanged();
+            WriteObjectsCommand.RaiseCanExecuteChanged();
         }
 
         private void OnCreateObjects()
@@ -60,17 +100,31 @@ namespace WPFSubscribeSample
             {
                 _bacnet[SelectedDevice.Id].Objects["AV" + i].ValueChangedEvent += OnValueChanged;
             }
+            CanChangeSelectedDevice = false;
         }
 
         private void OnValueChanged(string address, string value)
         {
             int index;
             double val;
-            if (int.TryParse(address.Replace("AV", ""), out index) &&
+            if (int.TryParse(address.Replace(SelectedDevice.Id + ".AV", ""), out index) &&
                 index <= 100 && 
                 double.TryParse(value, out val))
             {
                 Sensors[index - 1] = (int)val;
+            }
+        }
+
+        private bool _canChangeSelectedDevice;
+        public bool CanChangeSelectedDevice
+        {
+            get { return _canChangeSelectedDevice; }
+            set
+            {
+                _canChangeSelectedDevice = value;
+                CreateObjectsCommand.RaiseCanExecuteChanged();
+                SubscribeObjectsCommand.RaiseCanExecuteChanged();
+                RaisePropertyChanged("CanChangeSelectedDevice");
             }
         }
 
@@ -113,6 +167,7 @@ namespace WPFSubscribeSample
                     RaisePropertyChanged("SelectedDeviceName");
                     CreateObjectsCommand.RaiseCanExecuteChanged();
                     SubscribeObjectsCommand.RaiseCanExecuteChanged();
+                    WriteObjectsCommand.RaiseCanExecuteChanged();
                 }
             }
         }

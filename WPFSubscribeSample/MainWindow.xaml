@@ -26,6 +26,7 @@
             </Grid.ColumnDefinitions>
             <ScrollViewer Height="180" HorizontalAlignment="Left">
                 <ListView ItemsSource="{Binding Devices}" Width="240" Background="#AAAAAA"
+                          IsEnabled="{Binding CanChangeSelectedDevice}"
                           SelectedItem="{Binding SelectedDevice}">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -54,6 +55,10 @@
                         Command="{Binding CreateObjectsCommand}"/>
                 <Button Height="20" Width="120" Content="Subscribe 100 AV" Margin="0,10,0,0" HorizontalAlignment="Left"
                         Command="{Binding SubscribeObjectsCommand}"/>
+                <Button Height="20" Width="120" Content="Start write 100 AV" Margin="0,10,0,0" HorizontalAlignment="Left"
+                        Command="{Binding WriteObjectsCommand}"/>
+                <Button Height="20" Width="120" Content="Stop write 100 AV" Margin="0,10,0,0" HorizontalAlignment="Left"
+                        Command="{Binding StopWriteObjectsCommand}"/>
             </StackPanel>
         </Grid>
     </Grid>
