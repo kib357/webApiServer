@@ -27,7 +27,7 @@ namespace WPFBacNetApiSample
 
 		public static BacNet Bacnet;
 
-	    private List<string> _cabinetes; 
+	    private Dictionary<string, string> _cabinetes; 
 
 		public static event ValuesChangedEventHandler ValuesChanged;
 
@@ -82,56 +82,56 @@ namespace WPFBacNetApiSample
 
 			
 
-			/*Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
+			Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
 			Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
 
 			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
 
-			var lc = new LightControl();*/
+			var lc = new LightControl();
 	        InitializeCabinetesList();
         }
 
 		private void InitializeCabinetesList()
 		{
-			_cabinetes = new List<string>();
-			_cabinetes.Add("101(104)");
-			_cabinetes.Add("113(107)");
-			_cabinetes.Add("(123)");
-			_cabinetes.Add("118(109)");
-			_cabinetes.Add("117(110)");
-			_cabinetes.Add("(111)");
-			_cabinetes.Add("116(112)");
-			_cabinetes.Add("114(122)");
-			_cabinetes.Add("(136)");
+			_cabinetes = new Dictionary<string, string>();
+			_cabinetes.Add("101(104)", "1310");
+			_cabinetes.Add("113(107)", "1312");
+			//_cabinetes.Add("(123)", string.Empty);
+			_cabinetes.Add("118(109)", "1317");
+			_cabinetes.Add("117(110)", "1320");
+			_cabinetes.Add("(111)", "1322");
+			_cabinetes.Add("116(112)", "1322");
+			_cabinetes.Add("114(122)", "1350");
+			//_cabinetes.Add("(136)", string.Empty);
 
-			_cabinetes.Add("(137)");
-			_cabinetes.Add("(145)");
-			_cabinetes.Add("111(113)");
-			_cabinetes.Add("110(127)");
-			_cabinetes.Add("(133)");
-			_cabinetes.Add("106(129)");
-			_cabinetes.Add("104(130)");
-			_cabinetes.Add("(132)");
-			_cabinetes.Add("103(101)");
-			_cabinetes.Add("102(102)");
-			_cabinetes.Add("107(128)");
-			_cabinetes.Add("105(131)");
-			_cabinetes.Add("(1321)");
-			_cabinetes.Add("109(119)");
-			_cabinetes.Add("108(118)");
-			_cabinetes.Add("112(117)");
-			_cabinetes.Add("113(116)");
-			_cabinetes.Add("(115)");
-			_cabinetes.Add("115(114)");
-			_cabinetes.Add("(120)");
-			_cabinetes.Add("(146)");
-			_cabinetes.Add("(142)");
-			_cabinetes.Add("(141)");
-			_cabinetes.Add("(140)");
-			_cabinetes.Add("(143)");
-			_cabinetes.Add("(144)");
-			_cabinetes.Add("(138)");
-			_cabinetes.Add("(139)");
+			//_cabinetes.Add("(137)", string.Empty);
+			_cabinetes.Add("(145)", "1350");
+			_cabinetes.Add("111(113)", "1301");
+			_cabinetes.Add("110(127)", "1351");
+			//_cabinetes.Add("(133)", string.Empty);
+			_cabinetes.Add("106(129)", "1302");
+			_cabinetes.Add("104(130)", "1303");
+			_cabinetes.Add("(132)", "1305");
+			_cabinetes.Add("103(101)", "1306");
+			_cabinetes.Add("102(102)", "1308");
+			//_cabinetes.Add("107(128)", string.Empty);
+			//_cabinetes.Add("105(131)", string.Empty);
+			_cabinetes.Add("(1321)", "1350");
+			_cabinetes.Add("109(119)", "1350");
+			_cabinetes.Add("108(118)", "1350");
+			_cabinetes.Add("112(117)", "1313");
+			_cabinetes.Add("113(116)", "1313");
+			_cabinetes.Add("(115)", "1314");
+			_cabinetes.Add("115(114)", "1314");
+			//_cabinetes.Add("(120)", string.Empty);
+			_cabinetes.Add("(146)", "1350");
+			//_cabinetes.Add("(142)", string.Empty);
+			//_cabinetes.Add("(141)", string.Empty);
+			//_cabinetes.Add("(140)", string.Empty);
+			//_cabinetes.Add("(143)", string.Empty);
+			_cabinetes.Add("(144)", "1350");
+			_cabinetes.Add("(138)", "1350");
+			_cabinetes.Add("(139)", "1350");
 		}
 
         private void OnValueChanged(string address, string value)
@@ -186,36 +186,67 @@ namespace WPFBacNetApiSample
         {
 	        foreach (var cabinete in _cabinetes)
 	        {
-				CreateObj("AV", cabinete, "TemperatureSetpoint", "11");
+				if(string.IsNullOrEmpty(cabinete.Value)) continue;
+		        /*CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpoint", "11");
 				//Thread.Sleep(50);
-				CreateObj("AV", cabinete, "CurrentTemperature", "12");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "CurrentTemperature", "12");
 				//Thread.Sleep(50);
-				CreateObj("AV", cabinete, "VentilationSetpoint", "21");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "VentilationSetpoint", "21");
 				//Thread.Sleep(50);
-				CreateObj("AV", cabinete, "CurrentVentilationLevel", "22");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "CurrentVentilationLevel", "22");
 				//Thread.Sleep(50);
-				CreateObj("AV", cabinete, "LightLevelSetpoint", "31");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "LightLevelSetpoint", "31");
 				//Thread.Sleep(50);
-				CreateObj("AV", cabinete, "ConditionerLevelSetpoint", "41");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "ConditionerLevelSetpoint", "41");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "TemperatureBacstatAllowed", "19");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "TemperatureBacstatAllowed", "19");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "VentilationBacstatAllowed", "29");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "VentilationBacstatAllowed", "29");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "LightStateSetpoint", "31");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "LightStateSetpoint", "31");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "AutoLightLevel", "32");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "AutoLightLevel", "32");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "LightBacstatAllowed", "39");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "LightBacstatAllowed", "39");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "ConditionerStateSetpoint", "41");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "ConditionerStateSetpoint", "41");
 				//Thread.Sleep(50);
-				CreateObj("BV", cabinete, "ConditionerBacstatAllowed", "49");
-				Thread.Sleep(100);
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "ConditionerBacstatAllowed", "49");*/
+				/*CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpointMin", "13");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpointMax", "14");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "TActuator", "15");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "CurrentLightLevel", "32");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "MinLightLevel", "33");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "MaxLightLevel", "34");
+				CreateObj(cabinete.Value, "BV", cabinete.Key, "WaitLightSensorResponse", "91");
+				//CreateObj(cabinete.Value, "CO", cabinete.Key, "TActuatorPID", "91");
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");*/
+				WriteCOV(cabinete.Value, cabinete.Key, "13", "16");
+				WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
 	        }
         }
 
-		private void CreateObj(string obj, string cabinete, string objectDescription, string objNumber)
+		private void WriteCOV(string device, string cabinete, string objNumber, string value)
+		{
+			int start = cabinete.IndexOf('(');
+			int end = cabinete.IndexOf(')');
+			char[] tmp = new char[0];
+			Array.Resize(ref tmp, end - start - 1);
+			cabinete.CopyTo(start + 1, tmp, 0, end - start - 1);
+			string tmpStr = string.Empty;
+			foreach (var chr in tmp)
+			{
+				tmpStr = tmpStr + chr;
+			}
+			string createdObject = "AV" + tmpStr + objNumber;
+			uint instance;
+			if (uint.TryParse(device, out instance))
+			{
+				Bacnet[100].Objects[createdObject].BeginSet(value, BacnetPropertyId.COVIncrement);
+			}
+		}
+
+		private void CreateObj(string device, string obj, string cabinete, string objectDescription, string objNumber)
 		{
 			var objName = new List<BACnetPropertyValue>
                               {
@@ -233,7 +264,13 @@ namespace WPFBacNetApiSample
 				tmpStr = tmpStr + chr;
 			}
 			string createdObject = obj + tmpStr + objNumber;
-			Bacnet[100].Objects[createdObject].Create(objName); 
+			uint instance;
+			if (uint.TryParse(device, out instance))
+			{
+				Bacnet[instance].Objects[createdObject].Create(objName);
+				if(objectDescription.Contains("Temperature") && obj=="AV")
+					Bacnet[instance].Objects[createdObject].BeginSet(0.5, BacnetPropertyId.COVIncrement); 
+			}
 		}
 
         private void GetBacnetAddresses(string relativePath = @"Resources\Dictionaries")
