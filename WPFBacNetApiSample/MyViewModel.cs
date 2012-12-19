@@ -216,6 +216,8 @@ namespace WPFBacNetApiSample
 				CreateObj(cabinete.Value, "BV", cabinete.Key, "WaitLightSensorResponse", "91");
 				//CreateObj(cabinete.Value, "CO", cabinete.Key, "TActuatorPID", "91");
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");*/
+				WriteCOV(cabinete.Value, cabinete.Key, "11", "16");
+				WriteCOV(cabinete.Value, cabinete.Key, "12", "16");
 				WriteCOV(cabinete.Value, cabinete.Key, "13", "16");
 				WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
 	        }
@@ -237,7 +239,7 @@ namespace WPFBacNetApiSample
 			uint instance;
 			if (uint.TryParse(device, out instance))
 			{
-				Bacnet[100].Objects[createdObject].BeginSet(value, BacnetPropertyId.COVIncrement);
+				Bacnet[instance].Objects[createdObject].BeginSet("1", BacnetPropertyId.Units);
 			}
 		}
 
