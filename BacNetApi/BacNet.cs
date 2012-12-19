@@ -84,17 +84,19 @@ namespace BacNetApi
             _bacNetProvider.SubscribeCOVAckEvent += OnSubscribeCOVAck;
             _bacNetProvider.UnconfirmedCOVNotificationRequestEvent += OnCOVNotification;
             _bacNetProvider.UnconfirmedEventNotificationRequestEvent += OnEventNotification;
+            _bacNetProvider.CreateObjectAckEvent += OnCreateObjectAckReceived;
+            _bacNetProvider.DeleteObjectAckEvent += OnDeleteObjectAckReceived;
             _bacNetProvider.Start();
 
             _initialized = true;
-        }                
+        }
 
         public BacNetDevice this[uint i]
         {
             get
             {
                 BacNetDevice dev;
-                lock (SyncRoot)
+                lock (_deviceList)
                 {
                     if (_deviceList.FindIndex(d => d.Id == i) < 0)
                         _deviceList.Add(new BacNetDevice(i, this));
@@ -112,7 +114,7 @@ namespace BacNetApi
             get
             {
                 List<BacNetDevice> list;
-                lock (SyncRoot)
+                lock (_deviceList)
                 {
                     list = new List<BacNetDevice>(_deviceList);
                 }
@@ -489,7 +491,7 @@ namespace BacNetApi
             var value = service.PropertyValues[pvPropertyIndex].Values[0].ToString();
 
             BacNetDevice dev;
-            lock (SyncRoot)
+            lock (_deviceList)
             {
                 dev = _deviceList.FirstOrDefault(d => d.Id == (uint)service.DeviceId.Instance);   
             }            
@@ -499,6 +501,38 @@ namespace BacNetApi
                                service.ObjectId.Instance;
                 if (dev.Objects.Contains(objId))
                     dev.Objects[objId].StringValue = value;
+            }
+        }
+
+        private void OnCreateObjectAckReceived(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as CreateObjectAck;
+            if (service == null) return;
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                request.State = true;
+                request.ResetEvent.Set();
+            }
+        }
+
+        private void OnDeleteObjectAckReceived(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as DeleteObjectAck;
+            if (service == null) return;
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                request.State = true;
+                request.ResetEvent.Set();
             }
         }
 
