@@ -63,7 +63,8 @@ namespace WPFSubscribeSample
                 for (int i = 1; i <= 100; i++)
                 {
                     _bacnet[SelectedDevice.Id].Objects["AV" + i].BeginSet((new Random().Next(0,100)).ToString());
-                    Thread.Sleep(new Random().Next(20, 100));
+                    if (!_write) break;
+                    Thread.Sleep(new Random().Next(10, 50));
                 }
             }
         }
