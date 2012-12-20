@@ -216,8 +216,8 @@ namespace LigtService.Common
 			lightZones.Add(new LightZone { InputAddress = "2400.BV21", OutputAddresses = new List<string> { "17821.AO1105" }, SetPointAddress = "2400.AV21" }); //210A(238)
 			lightZones.Add(new LightZone { InputAddress = "2400.BV22", OutputAddresses = new List<string> { "17821.AO1004" }, SetPointAddress = "2400.AV22" }); //206A(234A)
 			lightZones.Add(new LightZone { InputAddress = "2400.BV4", OutputAddresses = new List<string> { "17821.AO1003" }, SetPointAddress = "2400.AV4" }); //216
-			lightZones.Add(new LightZone { InputAddress = "2400.BV5", OutputAddresses = new List<string> { "17821.AO1002", "BV4" }, SetPointAddress = "2400.AV5" }); //209(217)
-			lightZones.Add(new LightZone { InputAddress = "2400.BV7", OutputAddresses = new List<string> { "17821.AO1001", "BV10" }, SetPointAddress = "2400.AV7" }); //207(218)
+			lightZones.Add(new LightZone { InputAddress = "2400.BV5", OutputAddresses = new List<string> { "17821.AO1002", "2400.BV4" }, SetPointAddress = "2400.AV5" }); //209(217)
+			lightZones.Add(new LightZone { InputAddress = "2400.BV7", OutputAddresses = new List<string> { "17821.AO1001", "2400.BV10" }, SetPointAddress = "2400.AV7" }); //207(218)
 			lightZones.Add(new LightZone { InputAddress = "2400.BV10", OutputAddresses = new List<string> { "17821.AO1000" }, SetPointAddress = "2400.AV10" }); //224
 			lightZones.Add(new LightZone { InputAddress = "2400.BV15", OutputAddresses = new List<string> { "17821.AO1200" }, SetPointAddress = "2400.AV15" }); //230
 			// Контроллер 3300 кабинеты
