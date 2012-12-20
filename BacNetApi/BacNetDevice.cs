@@ -27,7 +27,7 @@ namespace BacNetApi
         private volatile bool                               _trackState;
         private readonly DispatcherTimer                    _reInitializeTimer;
 
-        public BACnetAddress                 Address { get; set; }
+        public BACnetRemoteAddress           Address { get; set; }
         public uint                          Id { get; private set; }
         public string                        Title { get; private set; }        
         public SubscriptionStatus            SubscriptionState { get { return _subscriptionStatus; } }
@@ -81,7 +81,7 @@ namespace BacNetApi
 
         #region Initialization
 
-        public void SetAddress(BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
+        public void SetAddress(BACnetRemoteAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
         {
             Address = source;
             Segmentation = (BacnetSegmentation)segmentationSupported.Value;
@@ -97,7 +97,7 @@ namespace BacNetApi
             if (!(services is BACnetBitString)) return;
             ServicesSupported = new List<BacnetServicesSupported>();
             var value = (services as BACnetBitString).Value;
-            for (int i = 0; i < value.Length && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
+            for (int i = 0; i < value.Count && i < (int)BacnetServicesSupported.MaxBacnetServicesSupported; i++)
             {
                 if (value[i])
                     ServicesSupported.Add((BacnetServicesSupported)i);
@@ -129,6 +129,7 @@ namespace BacNetApi
         }
 
         private int _trackCount = 0;
+        private int _faultCount = 0;
         private void TrackDeviceState()
         {
             while (_trackState)
@@ -137,19 +138,21 @@ namespace BacNetApi
                 var data = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectName);
                 if (data != null && data.Count == 1 && data[0] is BACnetCharacterString)
                 {
+                    _faultCount = 0;
                     var name = data[0] as BACnetCharacterString;
                     var newTitle = name.Value;
-                    if (Title != newTitle || _status != DeviceStatus.Standby)
+                    LastUpdated = DateTime.Now;
+                    if (Title != newTitle || _status != DeviceStatus.Online)
                     {
                         Title = newTitle;
-                        Status = DeviceStatus.Online;
-                        LastUpdated = DateTime.Now;
-                        _network.OnNetworkModelChangedEvent();
+                        Status = DeviceStatus.Online;                                                
                     }
+                    _network.OnNetworkModelChangedEvent();
                 }
                 else
                 {
-                    if (_status != DeviceStatus.Fault)
+                    _faultCount++;
+                    if (_faultCount == 6 && _status != DeviceStatus.Fault)
                     {
                         Status = DeviceStatus.Fault;
                         LastUpdated = DateTime.Now;
@@ -158,7 +161,7 @@ namespace BacNetApi
                 }
                 //if (_trackCount % 6 == 0 || _trackCount == 1)
                 //    GetObjectList();
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }
 

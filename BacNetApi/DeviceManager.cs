@@ -13,7 +13,7 @@ namespace BacNetApi
     internal class DeviceManager
     {
         private readonly BacNet _network;
-        public readonly Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>> _finded = new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>();
+        public readonly Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> _finded = new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>();
         private readonly ObservableCollection<uint> _search = new ObservableCollection<uint>();
         private readonly object SyncRoot = new object();
 
@@ -40,16 +40,16 @@ namespace BacNetApi
             }
         }
 
-        public void DeviceLocated(uint instance, BACnetAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
+        public void DeviceLocated(uint instance, BACnetRemoteAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
         {
             lock (SyncRoot)
             {
                 if (_search.Contains(instance))
                     _search.Remove(instance);
                 if (!_finded.ContainsKey(instance))
-                    _finded.Add(instance, new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings));
+                    _finded.Add(instance, new Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings));
                 else
-                    _finded[instance] = new Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings);
+                    _finded[instance] = new Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>(source, segmentationSupported, settings);
             }
             _network[instance].SetAddress(source, segmentationSupported, settings);
         }
@@ -59,11 +59,11 @@ namespace BacNetApi
             while (true)
             {
                 Thread.Sleep(TimeSpan.FromSeconds(5));
-                Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>> iterationDevices;
+                Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> iterationDevices;
                 lock (SyncRoot)
                 {
                     iterationDevices =
-                        new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded);
+                        new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>(_finded);
                 }
 
                 //Это - очень важные форичи. Не дай боже какой-нибудь падла решит эти форичи в один объединить, 
@@ -97,7 +97,7 @@ namespace BacNetApi
                 lock (SyncRoot)
                 {
                     iterationDevices =
-                        new Dictionary<uint, Tuple<BACnetAddress, BACnetEnumerated, ApduSettings>>(_finded).Keys.OrderBy(k => k).ToList();
+                        new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>(_finded).Keys.OrderBy(k => k).ToList();
                 }
 
                 uint min = 0;
