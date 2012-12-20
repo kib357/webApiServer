@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="2611b2b1-dfa7-42e7-99a9-f90d93cd6c65" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:8733/LightControl/" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="item.xsd" MetadataType="Schema" ID="5c3c9a1a-0364-4006-9c2d-099b5f21880d" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?xsd=xsd3" />
+    <MetadataFile FileName="item.disco" MetadataType="Disco" ID="5d0eb814-4031-4449-be52-1754dd2217d0" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?disco" />
+    <MetadataFile FileName="item1.xsd" MetadataType="Schema" ID="09238ffb-c147-4a45-975c-5b6436f7f4f2" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?xsd=xsd4" />
+    <MetadataFile FileName="item2.xsd" MetadataType="Schema" ID="8edda51d-66ab-4a88-b587-cee40a3fceb1" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?xsd=xsd2" />
+    <MetadataFile FileName="item3.xsd" MetadataType="Schema" ID="5ff86133-afb2-4868-ab5b-ae262a762b2d" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?xsd=xsd0" />
+    <MetadataFile FileName="ServiceControl.wsdl" MetadataType="Wsdl" ID="f583d275-e22b-4975-a8c3-6e72c3fe744e" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?wsdl" />
+    <MetadataFile FileName="item4.xsd" MetadataType="Schema" ID="8f7c4962-a122-42ad-97a1-8305a8e274b4" SourceId="1" SourceUrl="http://localhost:8733/LightControl/?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
