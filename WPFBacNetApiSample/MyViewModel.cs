@@ -216,10 +216,10 @@ namespace WPFBacNetApiSample
 				CreateObj(cabinete.Value, "BV", cabinete.Key, "WaitLightSensorResponse", "91");
 				//CreateObj(cabinete.Value, "CO", cabinete.Key, "TActuatorPID", "91");
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");*/
-				WriteCOV(cabinete.Value, cabinete.Key, "11", "16");
-				WriteCOV(cabinete.Value, cabinete.Key, "12", "16");
-				WriteCOV(cabinete.Value, cabinete.Key, "13", "16");
-				WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
+				WriteCOV(cabinete.Value, cabinete.Key, "32", "16");
+				WriteCOV(cabinete.Value, cabinete.Key, "33", "16");
+				WriteCOV(cabinete.Value, cabinete.Key, "34", "16");
+				//WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
 	        }
         }
 
