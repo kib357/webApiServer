@@ -283,16 +283,15 @@ namespace BacNetApi
                     foreach (var area in value as List<AccessArea>)
                     {
                         var objectId = new BACnetObjectId((int)area.Type, (int)area.InstanceNumber, 0);
-                        var areaSequence = new Sequence(new List<BACnetDataType>() { objectId, new BACnetEnumerated(85, 1) }, 0);
+                        var areaSequence = new Sequence(new List<BACnetDataType> { objectId, new BACnetEnumerated(85, 1) }, 0);
                         Sequence scheduleSequence;
                         if (area.ScheduleId != 0)
                         {
                             var scheduleId = new BACnetObjectId((int)BacnetObjectType.Schedule, (int)area.ScheduleId, 0);
-                            scheduleSequence = new Sequence(new List<BACnetDataType>() { scheduleId, new BACnetEnumerated(85, 1) }, 1);
+                            scheduleSequence = new Sequence(new List<BACnetDataType> { scheduleId, new BACnetEnumerated(85, 1) }, 1);
                         }
                         else
-                            scheduleSequence = new Sequence(new List<BACnetDataType>() 
-                                { new BACnetUnsigned(0xFFFFFFFF, 0), new BACnetUnsigned(0x3FFFFE, 1), new BACnetUnsigned(0x023FFFFF, 2) }, 1);
+                            scheduleSequence = new Sequence(new List<BACnetDataType> { new BACnetUnsigned(0xFFFFFFFF, 0), new BACnetUnsigned(0x3FFFFE, 1), new BACnetUnsigned(0x023FFFFF, 2) }, 1);
                         list.Add(areaSequence);
                         list.Add(scheduleSequence);
                     }
@@ -380,8 +379,6 @@ namespace BacNetApi
                                       service.SegmentationSupport, service.GetApduSettings());
             }
         }
-
-        private List<string> addresses = new List<string>();
 
         private void OnReadPropertyAckReceived(object sender, AppServiceEventArgs e)
         {

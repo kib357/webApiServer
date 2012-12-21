@@ -5,7 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using BACsharp;
 using BACsharp.AppService;
 using BACsharp.Types;
@@ -22,10 +21,8 @@ namespace BacNetApi
         private volatile DeviceStatus                       _status;
         private volatile SubscriptionStatus                 _subscriptionStatus;
         private readonly ObservableCollection<BacNetObject> _subscriptionList;
-        private readonly AutoResetEvent                     _waitForAddress = new AutoResetEvent(false);
         public readonly object                              SyncRoot = new Object();
         private volatile bool                               _trackState;
-        private readonly DispatcherTimer                    _reInitializeTimer;
 
         public BACnetRemoteAddress           Address { get; set; }
         public uint                          Id { get; private set; }
@@ -62,9 +59,6 @@ namespace BacNetApi
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<BacNetObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
-            _reInitializeTimer = new DispatcherTimer { Interval = new TimeSpan(0, 0, 0, 10) };
-            _reInitializeTimer.Tick += ReInitializeDevice;
-            _reInitializeTimer.Start();
         }
 
         private DateTime _lastUpdated;
@@ -103,14 +97,6 @@ namespace BacNetApi
                     ServicesSupported.Add((BacnetServicesSupported)i);
             }                
             Status = DeviceStatus.Standby;
-        }
-
-        private void ReInitializeDevice(object sender, EventArgs e)
-        {
-            if (Status == DeviceStatus.NotInitialized)
-                Initialize();
-            else
-                _reInitializeTimer.Stop();
         }
 
         private void Initialize()
