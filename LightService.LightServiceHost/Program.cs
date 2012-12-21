@@ -12,7 +12,6 @@ namespace LightService.LightServiceHost
 		static void Main(string[] args)
 		{
 			MainService service = null;
-			//var obj = ConfigurationManager.GetSection("LightControl");
 
 			if (args != null && args.Any() && args[0] == "/c")
 			{

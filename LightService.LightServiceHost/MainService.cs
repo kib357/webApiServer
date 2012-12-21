@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.ServiceModel;
 using System.ServiceProcess;
 using System.Threading;
+using System.Xml.Serialization;
 using BacNetApi;
 using LightService.Common;
 using LightService.ControlService;
@@ -12,6 +15,7 @@ namespace LightService.LightServiceHost
 {
 	public partial class MainService : ServiceBase
 	{
+		private const string _lightzonesXml = "lightZones.xml";
 		private BacNet _network;
 		private LightControl _control;
 		private Thread _thread;
@@ -49,44 +53,34 @@ namespace LightService.LightServiceHost
 		{
 			var ip = ConfigurationManager.AppSettings["BacNetIp"];
 
-			var controlledObjects = LightControl.InitLightZones();
+			List<LightZone> zones = null;
+			try
+			{
+				if (File.Exists(_lightzonesXml))
+				{
+					XmlSerializer serializer = new XmlSerializer(typeof(List<LightZone>));
+					using (var stream = File.OpenRead(_lightzonesXml))
+					{
+						zones = (List<LightZone>)serializer.Deserialize(stream);
+					}
+				}
+			}
+			catch (Exception)
+			{
+			}
+			if (zones == null)
+				zones = LightControl.InitLightZones();
 
 			_network = new BacNet(ip);
-			_control = new LightControl(_network, controlledObjects);
+			_control = new LightControl(_network, zones);
 
 			_lightService = new ServiceControl(_control);
 			_serviceHost = new ServiceHost(_lightService);
 			_serviceHost.Open();
-
-			//while (!_shutdownEvent.WaitOne(0))
-			//{
-			//	if (!_workerStarted)
-			//	{
-			//		_workerStarted = true;
-
-			//		var ip = ConfigurationManager.AppSettings["BacNetIp"];
-
-			//		var controlledObjects = LightControl.InitLightZones();
-
-			//		_network = new BacNet(ip);
-			//		_control = new LightControl(_network, controlledObjects);
-
-			//		_lightService = new ServiceControl(_control);
-			//		_serviceHost = new ServiceHost(_lightService);
-			//		_serviceHost.Open();
-			//	}
-			//}
 		}
 
 		protected override void OnStop()
 		{
-			//_shutdownEvent.Set();
-
-			//if (!_thread.Join(3000))
-			//{
-			//	_thread.Abort();
-			//}
-
 			if (_control != null)
 				_control.Unsubscribe();
 

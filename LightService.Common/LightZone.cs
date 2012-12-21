@@ -11,7 +11,9 @@ namespace LightService.Common
 		public string InputAddress { get; set; }
 		[XmlAttribute]
 		public string InputValue { get; set; }
+		[XmlArray]
 		public List<string> OutputAddresses { get; set; }
+		[XmlArray]
 		public List<string> OutputAlarmAddresses { get; set; }
 		[XmlAttribute]
 		public string SetPointAddress { get; set; }
