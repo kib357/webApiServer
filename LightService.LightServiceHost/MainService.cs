@@ -5,8 +5,8 @@ using System.ServiceModel;
 using System.ServiceProcess;
 using System.Threading;
 using BacNetApi;
+using LightService.Common;
 using LightService.ControlService;
-using LigtService.Common;
 
 namespace LightService.LightServiceHost
 {
@@ -14,9 +14,7 @@ namespace LightService.LightServiceHost
 	{
 		private BacNet _network;
 		private LightControl _control;
-		private readonly ManualResetEvent _shutdownEvent = new ManualResetEvent(false);
 		private Thread _thread;
-		private volatile bool _workerStarted;
 		private ServiceControl _lightService;
 		private ServiceHost _serviceHost = null;
 
@@ -49,33 +47,45 @@ namespace LightService.LightServiceHost
 
 		private void ProcessBacNet()
 		{
-			while (!_shutdownEvent.WaitOne(0))
-			{
-				if (!_workerStarted)
-				{
-					_workerStarted = true;
+			var ip = ConfigurationManager.AppSettings["BacNetIp"];
 
-					var ip = ConfigurationManager.AppSettings["BacNetIp"];
-					var controlledObjects = LightControl.InitLightZones();
+			var controlledObjects = LightControl.InitLightZones();
 
-					_network = new BacNet(ip);
-					_control = new LightControl(_network, controlledObjects);
+			_network = new BacNet(ip);
+			_control = new LightControl(_network, controlledObjects);
 
-					_lightService = new ServiceControl(_control);
-					_serviceHost = new ServiceHost(_lightService);
-					_serviceHost.Open();
-				}
-			}
+			_lightService = new ServiceControl(_control);
+			_serviceHost = new ServiceHost(_lightService);
+			_serviceHost.Open();
+
+			//while (!_shutdownEvent.WaitOne(0))
+			//{
+			//	if (!_workerStarted)
+			//	{
+			//		_workerStarted = true;
+
+			//		var ip = ConfigurationManager.AppSettings["BacNetIp"];
+
+			//		var controlledObjects = LightControl.InitLightZones();
+
+			//		_network = new BacNet(ip);
+			//		_control = new LightControl(_network, controlledObjects);
+
+			//		_lightService = new ServiceControl(_control);
+			//		_serviceHost = new ServiceHost(_lightService);
+			//		_serviceHost.Open();
+			//	}
+			//}
 		}
 
 		protected override void OnStop()
 		{
-			_shutdownEvent.Set();
+			//_shutdownEvent.Set();
 
-			if (!_thread.Join(3000))
-			{
-				_thread.Abort();
-			}
+			//if (!_thread.Join(3000))
+			//{
+			//	_thread.Abort();
+			//}
 
 			if (_control != null)
 				_control.Unsubscribe();

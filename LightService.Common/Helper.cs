@@ -2,7 +2,7 @@
 using BacNetApi;
 using BacNetApi.Data;
 
-namespace LigtService.Common
+namespace LightService.Common
 {
 	public static class Helper
 	{

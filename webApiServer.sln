@@ -11,13 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFSubscribeSample", "WPFSu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LightService", "LightService", "{7AD02555-2C95-477C-AA09-AD2B040D5773}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LigtService.Common", "LigtService.Common\LigtService.Common.csproj", "{689D439A-9BA7-4734-AE86-FB6367BBD207}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightService.ControlService", "LightService.ControlService\LightService.ControlService.csproj", "{15B3E0D2-6217-493A-A690-158C497F5318}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightService.LightServiceHost", "LightService.LightServiceHost\LightService.LightServiceHost.csproj", "{B9440C62-6B5A-4FA4-A036-3AD16DE2EE8A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightService.Monitor", "LightService.Monitor\LightService.Monitor.csproj", "{529D2F28-5B71-4745-B3DF-5E15278B59C3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LightService.Common", "LightService.Common\LightService.Common.csproj", "{689D439A-9BA7-4734-AE86-FB6367BBD207}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

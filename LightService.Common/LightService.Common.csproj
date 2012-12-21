@@ -7,8 +7,8 @@
     <ProjectGuid>{689D439A-9BA7-4734-AE86-FB6367BBD207}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LigtService.Common</RootNamespace>
-    <AssemblyName>LigtService.Common</AssemblyName>
+    <RootNamespace>LightService.Common</RootNamespace>
+    <AssemblyName>LightService.Common</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -45,7 +45,6 @@
     <Compile Include="Helper.cs" />
     <Compile Include="LightControl.cs" />
     <Compile Include="LightZone.cs" />
-    <Compile Include="LightZones.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Configuration;
+using System.Linq;
 using System.ServiceProcess;
 
 namespace LightService.LightServiceHost
@@ -11,6 +12,7 @@ namespace LightService.LightServiceHost
 		static void Main(string[] args)
 		{
 			MainService service = null;
+			//var obj = ConfigurationManager.GetSection("LightControl");
 
 			if (args != null && args.Any() && args[0] == "/c")
 			{

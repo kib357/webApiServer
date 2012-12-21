@@ -52,9 +52,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LigtService.Common\LigtService.Common.csproj">
+    <ProjectReference Include="..\LightService.Common\LightService.Common.csproj">
       <Project>{689d439a-9ba7-4734-ae86-fb6367bbd207}</Project>
-      <Name>LigtService.Common</Name>
+      <Name>LightService.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

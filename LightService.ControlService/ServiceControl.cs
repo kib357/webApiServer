@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceModel;
-using LigtService.Common;
+using LightService.Common;
 
 namespace LightService.ControlService
 {
@@ -16,7 +16,7 @@ namespace LightService.ControlService
 			_control = control;
 		}
 
-		public void UpdateControlledObjects(LightZones lightZone)
+		public void UpdateControlledObjects(List<LightZone> lightZone)
 		{
 			_control.Resubscribe(lightZone);
 		}

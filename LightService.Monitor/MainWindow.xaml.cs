@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Windows;
-using LightService.Monitor.LightControl;
+using System.Xml;
+using System.Xml.Serialization;
+using LightService.Common;
+
+//using LightService.Monitor.LightControl;
 
 namespace LightService.Monitor
 {
@@ -16,8 +21,15 @@ namespace LightService.Monitor
 
 		private void Button_Click_1(object sender, RoutedEventArgs e)
 		{
-			AstoriaLightServiceControlClient client = new AstoriaLightServiceControlClient();
-			client.UpdateControlledObjects(new[] { new LightZone { InputAddress = "1400.BV1108", OutputAddresses = new[] { "17811.AO1101" }, SetPointAddress = "1400.AV1108" } });
+			//AstoriaLightServiceControlClient client = new AstoriaLightServiceControlClient();
+			//client.UpdateControlledObjects(new[] { new LightZone { InputAddress = "1400.BV1108", OutputAddresses = new[] { "17811.AO1101" }, SetPointAddress = "1400.AV1108" } });
+
+			var s = new XmlSerializer(typeof(List<LightZone>));
+
+			using (var m = File.OpenWrite("xml.xml"))
+			{
+				s.Serialize(m, Common.LightControl.InitLightZones());
+			}
 		}
 	}
 }
