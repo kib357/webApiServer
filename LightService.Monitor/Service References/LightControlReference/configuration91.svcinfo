@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="ZtnCNJyXtDTjcgulnCSmQLe8tcw=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="N2v9VTf0yQR+kpwstlX++w9IGvE=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="basicHttpBinding" name="BasicHttpBinding_IAstoriaLightServiceControl">
       <properties>
@@ -112,7 +112,7 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="BasicHttpBinding_IAstoriaLightServiceControl" contract="LightControl.IAstoriaLightServiceControl" bindingType="basicHttpBinding" address="http://localhost:8733/LightControl/" bindingConfiguration="BasicHttpBinding_IAstoriaLightServiceControl">
+    <endpoint name="BasicHttpBinding_IAstoriaLightServiceControl" contract="LightControlReference.IAstoriaLightServiceControl" bindingType="basicHttpBinding" address="http://localhost:8733/LightControl/" bindingConfiguration="BasicHttpBinding_IAstoriaLightServiceControl">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue>http://localhost:8733/LightControl/</serializedValue>
@@ -127,7 +127,7 @@
           <serializedValue>BasicHttpBinding_IAstoriaLightServiceControl</serializedValue>
         </property>
         <property path="/contract" isComplexType="false" isExplicitlyDefined="true" clrType="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>LightControl.IAstoriaLightServiceControl</serializedValue>
+          <serializedValue>LightControlReference.IAstoriaLightServiceControl</serializedValue>
         </property>
         <property path="/headers" isComplexType="true" isExplicitlyDefined="false" clrType="System.ServiceModel.Configuration.AddressHeaderCollectionElement, System.ServiceModel, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue>System.ServiceModel.Configuration.AddressHeaderCollectionElement</serializedValue>
