@@ -82,51 +82,51 @@ namespace WPFBacNetApiSample
 
 			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
 
-			var lc = new LightControl();
+			//var lc = new LightControl();
 	        InitializeCabinetesList();
         }
 
 		private void InitializeCabinetesList()
 		{
 			_cabinetes = new Dictionary<string, string>();
-			_cabinetes.Add("101(104)", "1310");
-			_cabinetes.Add("113(107)", "1312");
-			//_cabinetes.Add("(123)", string.Empty);
-			_cabinetes.Add("118(109)", "1317");
-			_cabinetes.Add("117(110)", "1320");
-			_cabinetes.Add("(111)", "1322");
-			_cabinetes.Add("116(112)", "1322");
-			_cabinetes.Add("114(122)", "1350");
-			//_cabinetes.Add("(136)", string.Empty);
+			//_cabinetes.Add("101(104)", "1310");
+			//_cabinetes.Add("113(107)", "1312");
+			_cabinetes.Add("(123)", string.Empty);
+			//_cabinetes.Add("118(109)", "1317");
+			//_cabinetes.Add("117(110)", "1320");
+			//_cabinetes.Add("(111)", "1322");
+			//_cabinetes.Add("116(112)", "1322");
+			//_cabinetes.Add("114(122)", "1350");
+			_cabinetes.Add("(136)", string.Empty);
 
-			//_cabinetes.Add("(137)", string.Empty);
-			_cabinetes.Add("(145)", "1350");
-			_cabinetes.Add("111(113)", "1301");
-			_cabinetes.Add("110(127)", "1351");
-			//_cabinetes.Add("(133)", string.Empty);
-			_cabinetes.Add("106(129)", "1302");
-			_cabinetes.Add("104(130)", "1303");
-			_cabinetes.Add("(132)", "1305");
-			_cabinetes.Add("103(101)", "1306");
-			_cabinetes.Add("102(102)", "1308");
-			//_cabinetes.Add("107(128)", string.Empty);
-			//_cabinetes.Add("105(131)", string.Empty);
-			_cabinetes.Add("(1321)", "1350");
-			_cabinetes.Add("109(119)", "1350");
-			_cabinetes.Add("108(118)", "1350");
-			_cabinetes.Add("112(117)", "1313");
-			_cabinetes.Add("113(116)", "1313");
-			_cabinetes.Add("(115)", "1314");
-			_cabinetes.Add("115(114)", "1314");
-			//_cabinetes.Add("(120)", string.Empty);
-			_cabinetes.Add("(146)", "1350");
-			//_cabinetes.Add("(142)", string.Empty);
-			//_cabinetes.Add("(141)", string.Empty);
-			//_cabinetes.Add("(140)", string.Empty);
-			//_cabinetes.Add("(143)", string.Empty);
-			_cabinetes.Add("(144)", "1350");
-			_cabinetes.Add("(138)", "1350");
-			_cabinetes.Add("(139)", "1350");
+			_cabinetes.Add("(137)", string.Empty);
+			//_cabinetes.Add("(145)", "1350");
+			//_cabinetes.Add("111(113)", "1301");
+			//_cabinetes.Add("110(127)", "1351");
+			_cabinetes.Add("(133)", string.Empty);
+			//_cabinetes.Add("106(129)", "1302");
+			//_cabinetes.Add("104(130)", "1303");
+			//_cabinetes.Add("(132)", "1305");
+			//_cabinetes.Add("103(101)", "1306");
+			//_cabinetes.Add("102(102)", "1308");
+			_cabinetes.Add("107(128)", string.Empty);
+			_cabinetes.Add("105(131)", string.Empty);
+			//_cabinetes.Add("(1321)", "1350");
+			//_cabinetes.Add("109(119)", "1350");
+			//_cabinetes.Add("108(118)", "1350");
+			//_cabinetes.Add("112(117)", "1313");
+			//_cabinetes.Add("113(116)", "1313");
+			//_cabinetes.Add("(115)", "1314");
+			//_cabinetes.Add("115(114)", "1314");
+			_cabinetes.Add("(120)", string.Empty);
+			//_cabinetes.Add("(146)", "1350");
+			_cabinetes.Add("(142)", string.Empty);
+			_cabinetes.Add("(141)", string.Empty);
+			_cabinetes.Add("(140)", string.Empty);
+			_cabinetes.Add("(143)", string.Empty);
+			//_cabinetes.Add("(144)", "1350");
+			//_cabinetes.Add("(138)", "1350");
+			//_cabinetes.Add("(139)", "1350");
 		}
 
         private void OnValueChanged(string address, string value)
@@ -181,32 +181,32 @@ namespace WPFBacNetApiSample
         {
 	        foreach (var cabinete in _cabinetes)
 	        {
-				if(string.IsNullOrEmpty(cabinete.Value)) continue;
-		        /*CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpoint", "11");
+				//if(string.IsNullOrEmpty(cabinete.Value)) continue;
+		        CreateObj("1300", "AV", cabinete.Key, "TemperatureSetpoint", "11");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "CurrentTemperature", "12");
+				CreateObj("1300", "AV", cabinete.Key, "CurrentTemperature", "12");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "VentilationSetpoint", "21");
+				CreateObj("1300", "AV", cabinete.Key, "VentilationSetpoint", "21");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "CurrentVentilationLevel", "22");
+				CreateObj("1300", "AV", cabinete.Key, "CurrentVentilationLevel", "22");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "LightLevelSetpoint", "31");
+				CreateObj("1300", "AV", cabinete.Key, "LightLevelSetpoint", "31");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "ConditionerLevelSetpoint", "41");
+				CreateObj("1300", "AV", cabinete.Key, "ConditionerLevelSetpoint", "41");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "TemperatureBacstatAllowed", "19");
+				CreateObj("1300", "BV", cabinete.Key, "TemperatureBacstatAllowed", "19");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "VentilationBacstatAllowed", "29");
+				CreateObj("1300", "BV", cabinete.Key, "VentilationBacstatAllowed", "29");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "LightStateSetpoint", "31");
+				CreateObj("1300", "BV", cabinete.Key, "LightStateSetpoint", "31");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "AutoLightLevel", "32");
+				CreateObj("1300", "BV", cabinete.Key, "AutoLightLevel", "32");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "LightBacstatAllowed", "39");
+				CreateObj("1300", "BV", cabinete.Key, "LightBacstatAllowed", "39");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "ConditionerStateSetpoint", "41");
+				CreateObj("1300", "BV", cabinete.Key, "ConditionerStateSetpoint", "41");
 				//Thread.Sleep(50);
-				CreateObj(cabinete.Value, "BV", cabinete.Key, "ConditionerBacstatAllowed", "49");*/
+				CreateObj("1300", "BV", cabinete.Key, "ConditionerBacstatAllowed", "49");
 				/*CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpointMin", "13");
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "TemperatureSetpointMax", "14");
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "TActuator", "15");
@@ -216,9 +216,9 @@ namespace WPFBacNetApiSample
 				CreateObj(cabinete.Value, "BV", cabinete.Key, "WaitLightSensorResponse", "91");
 				//CreateObj(cabinete.Value, "CO", cabinete.Key, "TActuatorPID", "91");
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");*/
-				WriteCOV(cabinete.Value, cabinete.Key, "32", "16");
-				WriteCOV(cabinete.Value, cabinete.Key, "33", "16");
-				WriteCOV(cabinete.Value, cabinete.Key, "34", "16");
+				WriteCOV("1300", cabinete.Key, "11", "16");
+				WriteCOV("1300", cabinete.Key, "12", "16");
+				//WriteCOV(cabinete.Value, cabinete.Key, "34", "16");
 				//WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
 	        }
         }
@@ -239,7 +239,7 @@ namespace WPFBacNetApiSample
 			uint instance;
 			if (uint.TryParse(device, out instance))
 			{
-				Bacnet[instance].Objects[createdObject].BeginSet("1", BacnetPropertyId.Units);
+				Bacnet[instance].Objects[createdObject].BeginSet(0.5, BacnetPropertyId.COVIncrement);
 			}
 		}
 
