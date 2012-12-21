@@ -1,17 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Serialization;
 
-namespace LigtService.Common
+namespace LightService.Common
 {
 	public class LightZone
 	{
+		[XmlAttribute]
 		public string InputAddress { get; set; }
+		[XmlAttribute]
 		public string InputValue { get; set; }
+		[XmlArray]
 		public List<string> OutputAddresses { get; set; }
+		[XmlArray]
 		public List<string> OutputAlarmAddresses { get; set; }
+		[XmlAttribute]
 		public string SetPointAddress { get; set; }
+		[XmlAttribute]
 		public string SetPointValue { get; set; }
 		//		public string LastSettedValue { get; set; }
+
+		public LightZone()
+		{
+			OutputAddresses = new List<string>();
+			OutputAlarmAddresses = new List<string>();
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -31,7 +45,15 @@ namespace LigtService.Common
 
 		public override int GetHashCode()
 		{
-			return (InputAddress + InputValue + OutputAddresses.Aggregate((a, b) => a + b) + OutputAlarmAddresses.Aggregate((a, b) => a + b) + SetPointAddress + SetPointValue).GetHashCode();
+			return (
+				(InputAddress ?? "") +
+				(InputValue ?? "") +
+				(OutputAddresses.Any() ? OutputAddresses.Aggregate((a, b) => a + (b ?? "")) : "") +
+				(OutputAlarmAddresses.Any() ? OutputAlarmAddresses.Aggregate((a, b) => a + (b ?? "")) : "") +
+				(SetPointAddress ?? "") +
+				(SetPointValue ?? "")
+
+			).GetHashCode();
 		}
 	}
 }

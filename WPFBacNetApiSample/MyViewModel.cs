@@ -140,7 +140,7 @@ namespace WPFBacNetApiSample
         private void OnNetworkModelChanged()
         {
             Devices = new ObservableCollection<BacNetDevice>(Bacnet.OnlineDevices);
-            IamCount = Bacnet.IamCount;
+            //IamCount = Bacnet.IamCount;
         }
 
         private ObservableCollection<BacNetDevice> _devices;

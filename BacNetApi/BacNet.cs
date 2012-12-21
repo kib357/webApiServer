@@ -43,12 +43,13 @@ namespace BacNetApi
 
     public class BacNet : IBacNetServices
     {
-        private bool                         _initialized;
-        private BaseAppServiceProvider       _bacNetProvider;
-        private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
-        private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
-        public readonly object               SyncRoot = new Object();
+        private bool                          _initialized;
+        private BaseAppServiceProvider        _bacNetProvider;
+        private readonly List<BacNetDevice>   _deviceList = new List<BacNetDevice>();
+        private readonly List<BacNetRequest>  _requests = new List<BacNetRequest>();
+        public readonly object                SyncRoot = new Object();
         internal readonly DeviceManager       Manager;
+        internal readonly BacNetConfig        Config;
         public event NotificationEventHandler NotificationEvent;
 
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
@@ -59,9 +60,17 @@ namespace BacNetApi
             if (handler != null) handler();
         }
 
+        public BacNet()
+        {
+            Config = new BacNetConfig();
+            InitializeProvider(Config.IpAddress);
+            Manager = new DeviceManager(this);
+        }
+
         public BacNet(string address)
         {
-            InitializeProvider(address);
+            Config = new BacNetConfig {IpAddress = address};
+            InitializeProvider(Config.IpAddress);
             Manager = new DeviceManager(this);
         }
 
@@ -70,6 +79,10 @@ namespace BacNetApi
             IPAddress ipAddress;
             if (IPAddress.TryParse(address, out ipAddress))
                 StartProvider(ipAddress);
+            else
+            {
+                throw new Exception("Invalid Ip address configuration");
+            }
         }
 
         private void StartProvider(IPAddress address)
@@ -105,8 +118,10 @@ namespace BacNetApi
             }
         }
 
-        public int IamCount { get;set; }
-        private List<uint> iam = new List<uint>();
+        public void SearchAllDevices()
+        {
+            Manager.SearchAllDevices();
+        }
 
         public List<BacNetDevice> OnlineDevices
         {
@@ -319,7 +334,7 @@ namespace BacNetApi
                 request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
             if (waitForResponse)
             {
-                request.ResetEvent.WaitOne(5000);
+                request.ResetEvent.WaitOne(TimeSpan.FromSeconds(Config.RequestTimeOut));
                 RemoveRequest(request);
                 return request.State;
             }           

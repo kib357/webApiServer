@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using BacNetApi;
 
-namespace LigtService.Common
+namespace LightService.Common
 {
 	public class LightControl
 	{

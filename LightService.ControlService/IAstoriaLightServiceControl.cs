@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.ServiceModel;
-using LigtService.Common;
+using LightService.Common;
 
 namespace LightService.ControlService
 {
@@ -9,7 +9,7 @@ namespace LightService.ControlService
 	public interface IAstoriaLightServiceControl
 	{
 		[OperationContract]
-		void UpdateControlledObjects(LightZones lightZone);
+		void UpdateControlledObjects(List<LightZone> lightZone);
 
 		[OperationContract]
 		List<LightZone> GetControlledObjects();

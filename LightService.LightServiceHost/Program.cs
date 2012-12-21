@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Configuration;
+using System.Linq;
 using System.ServiceProcess;
 
 namespace LightService.LightServiceHost
