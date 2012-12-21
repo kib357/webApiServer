@@ -221,29 +221,61 @@ namespace LigtService.Common
 			lightZones.Add(new LightZone { InputAddress = "2400.BV10", OutputAddresses = new List<string> { "17821.AO1000" }, SetPointAddress = "2400.AV10" }); //224
 			lightZones.Add(new LightZone { InputAddress = "2400.BV15", OutputAddresses = new List<string> { "17821.AO1200" }, SetPointAddress = "2400.AV15" }); //230
 			// Контроллер 3300 кабинеты
-			/*lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
 			lightZones.Add(new LightZone { InputAddress = "3300.BV17", OutputAddresses = new List<string> { "17832.AO68614" }, SetPointAddress = "3300.AV17" }); //312(341)
 			lightZones.Add(new LightZone { InputAddress = "3300.BV18", OutputAddresses = new List<string> { "17832.AO68613" }, SetPointAddress = "3300.AV18" }); //312A(342)
 			lightZones.Add(new LightZone { InputAddress = "3300.BV6", OutputAddresses = new List<string> { "17832.AO68612" }, SetPointAddress = "3300.AV5" }); //313(311)
 			lightZones.Add(new LightZone { InputAddress = "3300.BV5", OutputAddresses = new List<string> { "17832.AO68611" }, SetPointAddress = "3300.AV6" }); //313A(310)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //314A(309)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)
-			lightZones.Add(new LightZone { InputAddress = "3300.BV16", OutputAddresses = new List<string> { "17832.AO68615" }, SetPointAddress = "3300.AV16" }); //311(340)*/
-			
+			lightZones.Add(new LightZone { InputAddress = "3300.BV4", OutputAddresses = new List<string> { "17832.AO68355" }, SetPointAddress = "3300.AV4" }); //314A(309)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV3", OutputAddresses = new List<string> { "17832.AO68354" }, SetPointAddress = "3300.AV3" }); //314(308)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV2", OutputAddresses = new List<string> { "17832.AO68353" }, SetPointAddress = "3300.AV2" }); //316(306)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV1", OutputAddresses = new List<string> { "17832.AO68352" }, SetPointAddress = "3300.AV1" }); //318(305)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV9", OutputAddresses = new List<string> { "17832.AO68357", "3300.BV7" }, SetPointAddress = "3300.AV9" }); //315(318)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV7", OutputAddresses = new List<string> { "17832.AO68356" }, SetPointAddress = "3300.AV7" }); //312
+			lightZones.Add(new LightZone { InputAddress = "3300.BV11", OutputAddresses = new List<string> { "17832.AO68358", "3300.BV13" }, SetPointAddress = "3300.AV11" }); //317(319)
+			lightZones.Add(new LightZone { InputAddress = "3300.BV13", OutputAddresses = new List<string> { "17832.AO68359" }, SetPointAddress = "3300.AV13" }); //320
+			lightZones.Add(new LightZone { InputAddress = "3300.BV15", OutputAddresses = new List<string> { "17832.AO68360" }, SetPointAddress = "3300.AV15" }); //317A(326)
+			// Контроллер 3400 кабинеты
+			lightZones.Add(new LightZone { InputAddress = "3400.BV1", OutputAddresses = new List<string> { "17831.AO68611" }, SetPointAddress = "3400.AV1" }); //301A(301)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV2", OutputAddresses = new List<string> { "17831.AO68612" }, SetPointAddress = "3400.AV2" }); //301(302)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV13", OutputAddresses = new List<string> { "17831.AO68610" }, SetPointAddress = "3400.AV13" }); //302(327)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV14", OutputAddresses = new List<string> { "17831.AO68609" }, SetPointAddress = "3400.AV14" }); //302A(328)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV16", OutputAddresses = new List<string> { "17831.AO68104" }, SetPointAddress = "3400.AV16" }); //305A(330)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV17", OutputAddresses = new List<string> { "17831.AO68103" }, SetPointAddress = "3400.AV17" }); //305(331)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV19", OutputAddresses = new List<string> { "17831.AO68101" }, SetPointAddress = "3400.AV19" }); //307(334)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV20", OutputAddresses = new List<string> { "17831.AO68100" }, SetPointAddress = "3400.AV20" }); //307A(335)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV21", OutputAddresses = new List<string> { "17831.AO68357" }, SetPointAddress = "3400.AV21" }); //309(337)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV22", OutputAddresses = new List<string> { "17831.AO68356" }, SetPointAddress = "3400.AV22" }); //309A(338)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV4", OutputAddresses = new List<string> { "17831.AO68099" }, SetPointAddress = "3400.AV4" }); //315
+			lightZones.Add(new LightZone { InputAddress = "3400.BV5", OutputAddresses = new List<string> { "17831.AO68098", "3400.BV4" }, SetPointAddress = "3400.AV5" }); //310(316)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV7", OutputAddresses = new List<string> { "17831.AO68097", "3400.BV10" }, SetPointAddress = "3400.AV7" }); //308(317)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV10", OutputAddresses = new List<string> { "17831.AO68096" }, SetPointAddress = "3400.AV10" }); //323
+			lightZones.Add(new LightZone { InputAddress = "3400.BV15", OutputAddresses = new List<string> { "17831.AO68608" }, SetPointAddress = "3400.AV15" }); //329
+			lightZones.Add(new LightZone { InputAddress = "3400.BV18", OutputAddresses = new List<string> { "17831.AO68102" }, SetPointAddress = "3400.AV18" }); //306(332)
+			lightZones.Add(new LightZone { InputAddress = "3400.BV23", OutputAddresses = new List<string> { "17831.AO68355" }, SetPointAddress = "3400.AV23" }); //311A(339)
+			// Контроллер 4300 кабинеты
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1103", OutputAddresses = new List<string> { "17842.AO68610" }, SetPointAddress = "4300.AV1103" }); //419(408)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1104", OutputAddresses = new List<string> { "17842.AO68609" }, SetPointAddress = "4300.AV1104" }); //418(409)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1105", OutputAddresses = new List<string> { "17842.AO68608" }, SetPointAddress = "4300.AV1105" }); //417(410)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1106", OutputAddresses = new List<string> { "17842.AO68357" }, SetPointAddress = "4300.AV1106" }); //416(411)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1107", OutputAddresses = new List<string> { "17842.AO68358" }, SetPointAddress = "4300.AV1107" }); //415(412)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1301", OutputAddresses = new List<string> { "17842.AO68615" }, SetPointAddress = "4300.AV1301" }); //410(430)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1302", OutputAddresses = new List<string> { "17842.AO68614" }, SetPointAddress = "4300.AV1302" }); //411(431)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1303", OutputAddresses = new List<string> { "17842.AO68613" }, SetPointAddress = "4300.AV1303" }); //413(432)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1204", OutputAddresses = new List<string> { "17842.AO68097" }, SetPointAddress = "4300.AV1204" }); //402(416)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1202", OutputAddresses = new List<string> { "17842.AO68099" }, SetPointAddress = "4300.AV1202" }); //412B(415)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1208", OutputAddresses = new List<string> { "17842.AO68096" }, SetPointAddress = "4300.AV1208" }); //412A(417)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1108", OutputAddresses = new List<string> { "17842.AO68098" }, SetPointAddress = "4300.AV1108" }); //414(413)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1101", OutputAddresses = new List<string> { "17842.AO68612" }, SetPointAddress = "4300.AV1101" }); //421(405)
+			lightZones.Add(new LightZone { InputAddress = "4300.BV1102", OutputAddresses = new List<string> { "17842.AO68611" }, SetPointAddress = "4300.AV1102" }); //420(406)
+			// Контроллер 4400 кабинеты
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1101", OutputAddresses = new List<string> { "17841.AO68099" }, SetPointAddress = "4400.AV1101" }); //402(401)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1102", OutputAddresses = new List<string> { "17841.AO68100" }, SetPointAddress = "4400.AV1102" }); //401(402)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1105", OutputAddresses = new List<string> { "17841.AO68098" }, SetPointAddress = "4400.AV1105" }); //404(420)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1106", OutputAddresses = new List<string> { "17841.AO68097" }, SetPointAddress = "4400.AV1106" }); //403(421)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1107", OutputAddresses = new List<string> { "17841.AO68096" }, SetPointAddress = "4400.AV1107" }); //407(422)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1201", OutputAddresses = new List<string> { "17841.AO68355" }, SetPointAddress = "4400.AV1201" }); //409(424)
+			lightZones.Add(new LightZone { InputAddress = "4400.BV1202", OutputAddresses = new List<string> { "17841.AO68356" }, SetPointAddress = "4400.AV1202" }); //408(425)
 			return lightZones;
 		}
 	}
