@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/LigtService.Common" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/LigtService.Common" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+  <xs:complexType name="ArrayOfLightZone">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="LightZone" nillable="true" type="tns:LightZone" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfLightZone" nillable="true" type="tns:ArrayOfLightZone" />
+  <xs:complexType name="LightZone">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="InputAddress" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="InputValue" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LastSettedValue" nillable="true" type="xs:string" />
+      <xs:element xmlns:q1="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="OutputAddresses" nillable="true" type="q1:ArrayOfstring" />
+      <xs:element xmlns:q2="http://schemas.microsoft.com/2003/10/Serialization/Arrays" minOccurs="0" name="OutputAlarmAddresses" nillable="true" type="q2:ArrayOfstring" />
+      <xs:element minOccurs="0" name="SetPointAddress" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SetPointValue" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="LightZone" nillable="true" type="tns:LightZone" />
+</xs:schema>
