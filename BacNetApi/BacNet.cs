@@ -43,12 +43,13 @@ namespace BacNetApi
 
     public class BacNet : IBacNetServices
     {
-        private bool                         _initialized;
-        private BaseAppServiceProvider       _bacNetProvider;
-        private readonly List<BacNetDevice>  _deviceList = new List<BacNetDevice>();
-        private readonly List<BacNetRequest> _requests = new List<BacNetRequest>();
-        public readonly object               SyncRoot = new Object();
+        private bool                          _initialized;
+        private BaseAppServiceProvider        _bacNetProvider;
+        private readonly List<BacNetDevice>   _deviceList = new List<BacNetDevice>();
+        private readonly List<BacNetRequest>  _requests = new List<BacNetRequest>();
+        public readonly object                SyncRoot = new Object();
         internal readonly DeviceManager       Manager;
+        internal readonly BacNetConfig        Config;
         public event NotificationEventHandler NotificationEvent;
 
         public event NetworkModelChangedEventHandler NetworkModelChangedEvent;
@@ -59,9 +60,17 @@ namespace BacNetApi
             if (handler != null) handler();
         }
 
+        public BacNet()
+        {
+            Config = new BacNetConfig();
+            InitializeProvider(Config.IpAddress);
+            Manager = new DeviceManager(this);
+        }
+
         public BacNet(string address)
         {
-            InitializeProvider(address);
+            Config = new BacNetConfig {IpAddress = address};
+            InitializeProvider(Config.IpAddress);
             Manager = new DeviceManager(this);
         }
 
