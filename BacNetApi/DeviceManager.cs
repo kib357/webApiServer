@@ -18,14 +18,21 @@ namespace BacNetApi
         private readonly ObservableCollection<uint> _search = new ObservableCollection<uint>();
         private readonly object SyncRoot = new object();
         private volatile bool _searchLostDevices = false;
+        private volatile bool _searchingAllDevices = false;
 
 
         public DeviceManager(BacNet network)
         {
             _network = network;
-            _search.CollectionChanged += SearchListChanged;
-            Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);
+            _search.CollectionChanged += SearchListChanged;            
+            SearchAllDevices();
             Task.Factory.StartNew(StartDeviceServices, TaskCreationOptions.LongRunning);
+        }
+
+        internal void SearchAllDevices()
+        {
+            if (!_searchingAllDevices)
+                Task.Factory.StartNew(Search, TaskCreationOptions.LongRunning);               
         }
 
         private void SearchListChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -75,7 +82,7 @@ namespace BacNetApi
         {
             while (true)
             {
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.ManageDeviceServicesInterval));
                 Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> iterationDevices;
                 lock (SyncRoot)
                 {
@@ -92,7 +99,8 @@ namespace BacNetApi
                 }
                 foreach (var d in iterationDevices)
                 {
-                    if (_network[d.Key].Status == DeviceStatus.Standby)
+                    if (_network[d.Key].Status == DeviceStatus.Standby &&
+                        (_network[d.Key].SubscriptionState != SubscriptionStatus.Stopped || _network.Config.TrackUnsubscribedDevices))
                         _network[d.Key].StartTracking();
                 }
                 foreach (var d in iterationDevices)
@@ -106,8 +114,10 @@ namespace BacNetApi
 
         private void Search()
         {
+            _searchingAllDevices = true;
+
             _network.WhoIs();
-            Thread.Sleep(TimeSpan.FromSeconds(3));
+            Thread.Sleep(TimeSpan.FromSeconds(_network.Config.SendWhoIsInterval));
 
             List<uint> iterationDevices;
             lock (SyncRoot)
@@ -122,19 +132,21 @@ namespace BacNetApi
                 if (min < iDev - 1)
                 {
                     _network.WhoIs((min + 1), (iDev - 1));
-                    Thread.Sleep(TimeSpan.FromSeconds(3));
+                    Thread.Sleep(TimeSpan.FromSeconds(_network.Config.SendWhoIsInterval));
                 }
                 min = iDev;
             }
             if (min < 4194303)
                 _network.WhoIs(min + 1, 4194303);
+
+            _searchingAllDevices = false;
         }
 
         private void SearchLostDevices()
         {
             while (_searchLostDevices)
             {
-                Thread.Sleep(TimeSpan.FromSeconds(60));
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.LostDevicesSearchInterval));
                 List<uint> iterationDevices;
                 lock (SyncRoot)
                 {

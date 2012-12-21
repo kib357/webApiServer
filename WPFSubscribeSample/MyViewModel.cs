@@ -72,7 +72,7 @@ namespace WPFSubscribeSample
 
         private bool CanCreateAndSubscribe()
         {
-            return SelectedDevice != null && SelectedDevice.Status == DeviceStatus.Online && CanChangeSelectedDevice;
+            return SelectedDevice != null && SelectedDevice.Status != DeviceStatus.NotInitialized && CanChangeSelectedDevice;
         }
 
         private void OnNetworkModelChanged()

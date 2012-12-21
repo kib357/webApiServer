@@ -79,6 +79,10 @@ namespace BacNetApi
             IPAddress ipAddress;
             if (IPAddress.TryParse(address, out ipAddress))
                 StartProvider(ipAddress);
+            else
+            {
+                throw new Exception("Invalid Ip address configuration");
+            }
         }
 
         private void StartProvider(IPAddress address)
@@ -114,8 +118,10 @@ namespace BacNetApi
             }
         }
 
-        public int IamCount { get;set; }
-        private List<uint> iam = new List<uint>();
+        public void SearchAllDevices()
+        {
+            Manager.SearchAllDevices();
+        }
 
         public List<BacNetDevice> OnlineDevices
         {
@@ -328,7 +334,7 @@ namespace BacNetApi
                 request.InvokeId = _bacNetProvider.SendMessage(bacAddress, confirmedRequest);
             if (waitForResponse)
             {
-                request.ResetEvent.WaitOne(5000);
+                request.ResetEvent.WaitOne(TimeSpan.FromSeconds(Config.RequestTimeOut));
                 RemoveRequest(request);
                 return request.State;
             }           

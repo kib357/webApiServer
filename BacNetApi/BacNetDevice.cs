@@ -271,38 +271,43 @@ namespace BacNetApi
 
         #region Services
 
+        private bool CanNotSendRequest
+        {
+            get { return _status == DeviceStatus.Fault || _status == DeviceStatus.NotInitialized; }
+        }
+
         public bool CreateObject(BacNetObject bacNetObject, List<BACnetPropertyValue> data)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return false;
+            if (CanNotSendRequest) return false;
             return _network.CreateObject(Address, bacNetObject.Id, data, ApduSetting) != null;
         }
 
         public bool DeleteObject(BacNetObject bacNetObject)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return false;
+            if (CanNotSendRequest) return false;
             return _network.DeleteObject(Address, bacNetObject.Id) != null;
         }
 
         public List<BACnetDataType> ReadProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, int arrayIndex = -1)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return null;
+            if (CanNotSendRequest) return null;
             return _network.ReadProperty(Address, bacNetObject.Id, propertyId, arrayIndex);
         }        
 
         public bool WriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return false;
+            if (CanNotSendRequest) return false;
             return _network.WriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
 
         public void BeginWriteProperty(BacNetObject bacNetObject, BacnetPropertyId propertyId, object value)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return;
+            if (CanNotSendRequest) return;
             _network.BeginWriteProperty(Address, bacNetObject, propertyId, value, ApduSetting);
         }
 
@@ -318,7 +323,7 @@ namespace BacNetApi
         public bool WritePropertyMultiple(Dictionary<string, Dictionary<BacnetPropertyId, object>> objectIdWithValues)
         {
             Initialize();
-            if (_status != DeviceStatus.Online) return false;
+            if (CanNotSendRequest) return false;
             return _network.WritePropertyMultiple(Address, objectIdWithValues, ApduSetting);
         }
 
