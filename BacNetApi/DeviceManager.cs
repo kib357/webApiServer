@@ -14,11 +14,11 @@ namespace BacNetApi
     internal class DeviceManager
     {
         private readonly BacNet _network;
-        public readonly Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> _finded = new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>();
+        private readonly Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> _finded = new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>();
         private readonly ObservableCollection<uint> _search = new ObservableCollection<uint>();
-        private readonly object SyncRoot = new object();
-        private volatile bool _searchLostDevices = false;
-        private volatile bool _searchingAllDevices = false;
+        private readonly object _syncRoot = new object();
+        private volatile bool _searchLostDevices;
+        private volatile bool _searchingAllDevices;
 
 
         public DeviceManager(BacNet network)
@@ -51,7 +51,7 @@ namespace BacNetApi
 
         public void SearchDevice(uint instance)
         {
-            lock (SyncRoot)
+            lock (_syncRoot)
             {
                 if (_finded.ContainsKey(instance))
                     _network[instance].SetAddress(_finded[instance].Item1, _finded[instance].Item2,
@@ -66,7 +66,7 @@ namespace BacNetApi
 
         public void DeviceLocated(uint instance, BACnetRemoteAddress source, BACnetEnumerated segmentationSupported, ApduSettings settings)
         {
-            lock (SyncRoot)
+            lock (_syncRoot)
             {
                 if (_search.Contains(instance))
                     _search.Remove(instance);
@@ -84,7 +84,7 @@ namespace BacNetApi
             {
                 Thread.Sleep(TimeSpan.FromSeconds(_network.Config.ManageDeviceServicesInterval));
                 Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>> iterationDevices;
-                lock (SyncRoot)
+                lock (_syncRoot)
                 {
                     iterationDevices =
                         new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>(_finded);
@@ -120,7 +120,7 @@ namespace BacNetApi
             Thread.Sleep(TimeSpan.FromSeconds(_network.Config.SendWhoIsInterval));
 
             List<uint> iterationDevices;
-            lock (SyncRoot)
+            lock (_syncRoot)
             {
                 iterationDevices =
                     new Dictionary<uint, Tuple<BACnetRemoteAddress, BACnetEnumerated, ApduSettings>>(_finded).Keys.OrderBy(k => k).ToList();
@@ -148,7 +148,7 @@ namespace BacNetApi
             {
                 Thread.Sleep(TimeSpan.FromSeconds(_network.Config.LostDevicesSearchInterval));
                 List<uint> iterationDevices;
-                lock (SyncRoot)
+                lock (_syncRoot)
                 {
                     iterationDevices = new List<uint>(_search);                        
                 }
