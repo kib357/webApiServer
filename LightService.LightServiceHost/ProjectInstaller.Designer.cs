@@ -1,4 +1,4 @@
-﻿namespace LightService
+﻿namespace LightService.LightServiceHost
 {
 	partial class ProjectInstaller
 	{

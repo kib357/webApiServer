@@ -55,7 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Service References\LightControl\Reference.cs">
+    <Compile Include="Service References\LightControlReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -91,30 +91,25 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Properties\DataSources\LightService.Common.LightZone.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="Service References\LightControl\item.xsd">
+    <None Include="Service References\LightControlReference\item.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\LightControl\item1.xsd">
+    <None Include="Service References\LightControlReference\item1.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\LightControl\item2.xsd">
+    <None Include="Service References\LightControlReference\item2.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\LightControl\item3.xsd">
+    <None Include="Service References\LightControlReference\item3.xsd">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Service References\LightControl\item4.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Service References\LightControl\LightService.Monitor.LightControl.CompositeType.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\LightControl\ServiceControl.wsdl" />
+    <None Include="Service References\LightControlReference\ServiceControl.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -125,28 +120,28 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadataStorage Include="Service References\LightControl\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LightControl\item.disco" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LightControl\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LightControl\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\LightControl\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\LightService.Common\LightService.Common.csproj">
       <Project>{689d439a-9ba7-4734-ae86-fb6367bbd207}</Project>
       <Name>LightService.Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\LightControlReference\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\LightControlReference\item.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\LightControlReference\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\LightControlReference\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\LightControlReference\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
