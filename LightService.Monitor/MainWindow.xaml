@@ -1,8 +1,69 @@
 ﻿<Window x:Class="LightService.Monitor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        <Button Click="Button_Click_1">Nya!</Button>
-    </Grid>
+        Title="MainWindow" Height="350" Width="1000">
+
+	<StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+		<StackPanel Orientation="Horizontal">
+			<TextBlock Text="Input address" Width="150"/>
+			<TextBlock Text="Input value" Width="150"/>
+			<TextBlock Text="Output addresses" Width="150"/>
+			<TextBlock Text="Output alarm addresses" Width="150"/>
+			<TextBlock Text="Setpoint address" Width="150"/>
+			<TextBlock Text="Setpoint value" Width="150"/>
+		</StackPanel>
+		<ScrollViewer Height="500">
+			<ListView ItemsSource="{Binding LightZones}" Width="900" Background="#AAAAAA" Name="LightZonesListView">
+				<ListView.ItemsPanel>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel Orientation="Vertical"/>
+					</ItemsPanelTemplate>
+				</ListView.ItemsPanel>
+				<ListView.ItemTemplate>
+					<DataTemplate>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="150"/>
+								<ColumnDefinition Width="150"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Text="{Binding Path=InputAddress}" Grid.Column="0"/>
+							<TextBlock Text="{Binding Path=InputValue}" Grid.Column="1"/>
+							<ListView ItemsSource="{Binding OutputAddresses}" Width="900" Background="#AAAAAA" Name="OutputAddressesListView" Grid.Column="2">
+								<ListView.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel Orientation="Vertical"/>
+									</ItemsPanelTemplate>
+								</ListView.ItemsPanel>
+								<ListView.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Path=.}"/>
+									</DataTemplate>
+								</ListView.ItemTemplate>
+							</ListView>
+							<ListView ItemsSource="{Binding OutputAlarmAddresses}" Width="900" Background="#AAAAAA" Name="OutputAlarmAddressesListView" Grid.Column="3">
+								<ListView.ItemsPanel>
+									<ItemsPanelTemplate>
+										<VirtualizingStackPanel Orientation="Vertical"/>
+									</ItemsPanelTemplate>
+								</ListView.ItemsPanel>
+								<ListView.ItemTemplate>
+									<DataTemplate>
+										<TextBlock Text="{Binding Path=.}"/>
+									</DataTemplate>
+								</ListView.ItemTemplate>
+							</ListView>
+							<TextBlock Text="{Binding Path=SetpointAddress}" Grid.Column="4"/>
+							<TextBlock Text="{Binding Path=SetpointValue}" Grid.Column="5"/>
+						</Grid>
+					</DataTemplate>
+				</ListView.ItemTemplate>
+			</ListView>
+		</ScrollViewer>
+	</StackPanel>
+	<!--<Button Click="Button_Click_1">Nya!</Button>-->
+
 </Window>

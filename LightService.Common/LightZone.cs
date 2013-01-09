@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -12,9 +13,9 @@ namespace LightService.Common
 		[XmlAttribute]
 		public string InputValue { get; set; }
 		[XmlArray]
-		public List<string> OutputAddresses { get; set; }
+		public ObservableCollection<string> OutputAddresses { get; set; }
 		[XmlArray]
-		public List<string> OutputAlarmAddresses { get; set; }
+		public ObservableCollection<string> OutputAlarmAddresses { get; set; }
 		[XmlAttribute]
 		public string SetPointAddress { get; set; }
 		[XmlAttribute]
@@ -23,8 +24,8 @@ namespace LightService.Common
 
 		public LightZone()
 		{
-			OutputAddresses = new List<string>();
-			OutputAlarmAddresses = new List<string>();
+			OutputAddresses = new ObservableCollection<string>();
+			OutputAlarmAddresses = new ObservableCollection<string>();
 		}
 
 		public override bool Equals(object obj)

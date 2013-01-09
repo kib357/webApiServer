@@ -83,12 +83,12 @@ namespace WPFBacNetApiSample
 			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
 
 			//var lc = new LightControl();
-	        InitializeCabinetesList();
+			_cabinetes = new Dictionary<string, string>();
+	        InitializeCabinetesList1Floor();
         }
 
-		private void InitializeCabinetesList()
-		{
-			_cabinetes = new Dictionary<string, string>();
+		private void InitializeCabinetesList1Floor()
+		{			
 			//_cabinetes.Add("101(104)", "1310");
 			//_cabinetes.Add("113(107)", "1312");
 			_cabinetes.Add("(123)", string.Empty);
@@ -127,6 +127,37 @@ namespace WPFBacNetApiSample
 			//_cabinetes.Add("(144)", "1350");
 			//_cabinetes.Add("(138)", "1350");
 			//_cabinetes.Add("(139)", "1350");
+		}
+
+		private void InitializeCabinetesList2Floor()
+		{
+			//2300
+			_cabinetes.Add("202A(229)", "2358");
+			_cabinetes.Add("202(228)", "2357");
+			_cabinetes.Add("(204a1)", "2357");
+			_cabinetes.Add("(204a2)", "2352");
+			_cabinetes.Add("201A(201)", "2354");
+			_cabinetes.Add("201(202)", "2352");
+			_cabinetes.Add("(2041)", "2351");
+			_cabinetes.Add("(2042)", "2349");
+			_cabinetes.Add("218(205)", "2349");
+			_cabinetes.Add("216(206)", "2345");
+			_cabinetes.Add("214(208)", "2340");
+			_cabinetes.Add("213(209)", "2338");
+			_cabinetes.Add("213A(210)", "2336");
+			_cabinetes.Add("(240b1)", "2338");
+			_cabinetes.Add("(204b2)", "2341");
+			_cabinetes.Add("212A(211)", "2333");
+			_cabinetes.Add("217A(227)", string.Empty);
+			_cabinetes.Add("(222)", string.Empty);
+			_cabinetes.Add("(221)", "2350");
+			_cabinetes.Add("217(220)", "2346");
+			_cabinetes.Add("215(219)", "2342");
+			_cabinetes.Add("(213)", "2341");
+			_cabinetes.Add("(214)", string.Empty);
+			//2400
+			_cabinetes.Add("(242)", string.Empty);
+			_cabinetes.Add("(221)", "2350");
 		}
 
         private void OnValueChanged(string address, string value)
@@ -258,6 +289,10 @@ namespace WPFBacNetApiSample
 			string tmpStr = string.Empty;
 			foreach (var chr in tmp)
 			{
+				if(chr=='A' || chr=='a')
+					tmpStr = tmpStr + 1;
+				if (chr == 'B' || chr == 'b')
+					tmpStr = tmpStr + 2;
 				tmpStr = tmpStr + chr;
 			}
 			string createdObject = obj + tmpStr + objNumber;

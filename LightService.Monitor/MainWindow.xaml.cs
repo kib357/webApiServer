@@ -3,7 +3,8 @@ using System.IO;
 using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
-using LightService.Common;
+using LightService.Monitor.LightControl;
+using LightZone = LightService.Common.LightZone;
 
 //using LightService.Monitor.LightControl;
 
@@ -14,9 +15,13 @@ namespace LightService.Monitor
 	/// </summary>
 	public partial class MainWindow : Window
 	{
+		public List<LightZone> LightZones { get; set; };
+		private AstoriaLightServiceControlClient _client;
+
 		public MainWindow()
 		{
 			InitializeComponent();
+			_client = new AstoriaLightServiceControlClient();
 		}
 
 		private void Button_Click_1(object sender, RoutedEventArgs e)
