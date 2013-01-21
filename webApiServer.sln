@@ -8,6 +8,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFBacNetApiSample", "WPFBacNetApiSample\WPFBacNetApiSample.csproj", "{AEF1613E-7055-42B9-A3B7-A50B55548ABC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPFSubscribeSample", "WPFSubscribeSample\WPFSubscribeSample.csproj", "{FB6C8888-0E84-436C-AE30-A8B020DD0457}"
+	ProjectSection(ProjectDependencies) = postProject
+		{15B3E0D2-6217-493A-A690-158C497F5318} = {15B3E0D2-6217-493A-A690-158C497F5318}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LightService", "LightService", "{7AD02555-2C95-477C-AA09-AD2B040D5773}"
 EndProject
