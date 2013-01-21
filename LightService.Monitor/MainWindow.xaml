@@ -13,7 +13,7 @@
 			<TextBlock Text="Setpoint value" Width="150"/>
 		</StackPanel>
 		<ScrollViewer Height="500">
-			<ListView ItemsSource="{Binding LightZones}" Width="900" Background="#AAAAAA" Name="LightZonesListView">
+			<ListView ItemsSource="{Binding LightZones}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#AAAAAA" Name="LightZonesListView">
 				<ListView.ItemsPanel>
 					<ItemsPanelTemplate>
 						<VirtualizingStackPanel Orientation="Vertical"/>
@@ -56,8 +56,8 @@
 									</DataTemplate>
 								</ListView.ItemTemplate>
 							</ListView>
-							<TextBlock Text="{Binding Path=SetpointAddress}" Grid.Column="4"/>
-							<TextBlock Text="{Binding Path=SetpointValue}" Grid.Column="5"/>
+							<TextBlock Text="{Binding Path=SetPointAddress}" Grid.Column="4"/>
+							<TextBlock Text="{Binding Path=SetPointValue}" Grid.Column="5"/>
 						</Grid>
 					</DataTemplate>
 				</ListView.ItemTemplate>

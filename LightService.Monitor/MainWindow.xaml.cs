@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Serialization;
-using LightService.Monitor.LightControl;
+using LightService.Common;
+using LightService.Monitor.LightControlReference;
 using LightZone = LightService.Common.LightZone;
 
 //using LightService.Monitor.LightControl;
@@ -15,13 +19,30 @@ namespace LightService.Monitor
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public List<LightZone> LightZones { get; set; };
-		private AstoriaLightServiceControlClient _client;
+		public ObservableCollection<LightZone> LightZones { get; set; }
+		private readonly AstoriaLightServiceControlClient _client;
+		private DispatcherTimer _updateTimer; 
 
 		public MainWindow()
 		{
-			InitializeComponent();
 			_client = new AstoriaLightServiceControlClient();
+			LightZones = new ObservableCollection<LightZone>(_client.GetControlledObjects());
+			_updateTimer = new DispatcherTimer();
+			_updateTimer.Interval = new TimeSpan(0, 0, 5);
+			_updateTimer.Tick += UpdateLightZones;
+			InitializeComponent();
+			_updateTimer.Start();
+			DataContext = this;
+		}
+
+		private void UpdateLightZones(object sender, EventArgs e)
+		{
+			LightZones.Clear();
+			foreach (var lightZone in _client.GetControlledObjects())
+			{
+				LightZones.Add(lightZone);
+			}
+			//LightZones = new ObservableCollection<LightZone>(_client.GetControlledObjects());
 		}
 
 		private void Button_Click_1(object sender, RoutedEventArgs e)

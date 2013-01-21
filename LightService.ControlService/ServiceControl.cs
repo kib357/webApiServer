@@ -10,6 +10,8 @@ namespace LightService.ControlService
 	{
 		private readonly LightControl _control;
 
+		public ServiceControl()
+		{}
 
 		public ServiceControl(LightControl control)
 		{
