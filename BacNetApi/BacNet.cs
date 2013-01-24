@@ -38,7 +38,12 @@ namespace BacNetApi
         Running = 2
     }
 
-    public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
+	public enum BacnetUnits
+	{
+		
+	}
+
+	public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
     public delegate void NetworkModelChangedEventHandler();
 
     public class BacNet : IBacNetServices
@@ -212,6 +217,8 @@ namespace BacNetApi
         {
             if (propertyId == BacnetPropertyId.ObjectName)
                 return new List<BACnetDataType> {new BACnetCharacterString(value as string)};
+			if (propertyId == BacnetPropertyId.Units)
+				return new List<BACnetDataType> {ConvertValueToBacnetUnits(value)};
             var objType = new Regex(@"[a-z\-A-Z]+").Match(bacNetObjectId).Value;
             objType = objType.ToUpper();
             if (objType == "AI" || objType == "AO" || objType == "AV")
@@ -300,6 +307,38 @@ namespace BacNetApi
             }
             return null;
         }
+
+		private BACnetDataType ConvertValueToBacnetUnits(object value)
+		{
+			var res = new BACnetEnumerated();
+			switch (value.ToString())
+			{
+				case "m/s2":
+					res = new BACnetEnumerated(166);
+					break;
+				case "m2":
+					res = new BACnetEnumerated(0);
+					break;
+				case "sm2":
+					res = new BACnetEnumerated(116);
+					break;
+				case "ft2":
+					res = new BACnetEnumerated(1);
+					break;
+				case "°C":
+					res = new BACnetEnumerated(62);
+					break;
+				case "":
+					res = new BACnetEnumerated(95);
+					break;
+				case "%":
+					res = new BACnetEnumerated(98);
+					break;
+			}
+			return res;
+		}
+
+	    
 
         internal object CreateObject(BACnetRemoteAddress bacAddress, string address, List<BACnetPropertyValue> data, ApduSettings settings)
         {
