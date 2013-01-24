@@ -51,10 +51,10 @@ namespace AstoriaControlService.Common.Light
 				Console.WriteLine("{0:H:mm:ss:ffff}: {1}", DateTime.Now, "Resubscribing...");
 			lock (this)
 			{
-				var zonesToRemove = _lightZones.Where(l => !lightZones.Contains(l)).ToList();
+				var zonesToRemove = _lightZones.Where(l => lightZones.All(z => !z.Equals(l))).ToList();
 				zonesToRemove.ForEach(RemoveZone);
 
-				var zonesToAdd = lightZones.Where(l => !_lightZones.Contains(l)).ToList();
+				var zonesToAdd = lightZones.Where(l => !_lightZones.All(z => z.Equals(l))).ToList();
 				zonesToAdd.ForEach(AddZone);
 			}
 			if (HasConsole)
