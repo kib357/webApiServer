@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
-using System.Configuration;
+using System.Collections.Generic;
 using System.Configuration.Install;
 using System.Linq;
 using System.ServiceProcess;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace LightService.LightServiceHost
+namespace AstoriaControlService.ControlServiceHost
 {
 	static class Program
 	{
@@ -14,10 +16,7 @@ namespace LightService.LightServiceHost
 		/// </summary>
 		static void Main(string[] args)
 		{
-			MainService service = null;;
-			Array.Resize(ref args, 1);
-			args[0] = "/c";
-
+			MainService service = null;
 			if (args != null && args.Any())
 			{
 				if (args.Contains("/c"))

@@ -31,6 +31,9 @@ namespace WPFBacNetApiSample
 
 		public static event ValuesChangedEventHandler ValuesChanged;
 
+	    private List<uint> Chast;
+	    private ObjectAddresses _oa;
+
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
@@ -74,59 +77,155 @@ namespace WPFBacNetApiSample
             SetValueCommand = new DelegateCommand(SetValue);
             GetValueCommand = new DelegateCommand(GetValue);
             SchValues = new List<string>();
+			Chast = new List<uint>();
+			for (int i = 61; i < 80; i++)
+				Chast.Add((uint)i);
 
 			
 
-			Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
-			Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
+			//Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
+			//Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
 
-			Bacnet[17811].Objects["AO1104"].ValueChangedEvent += OnBacnetValueChanged;
+			Bacnet[100].Objects["MV1"].ValueChangedEvent += OnBacnetValueChanged;
 
 			//var lc = new LightControl();
-	        InitializeCabinetesList();
+			_cabinetes = new Dictionary<string, string>();
+	        InitializeCabinetesList1Floor();
+			_oa = new ObjectAddresses(1300, InitializeCabinetesList1Floor());
+			
         }
 
-		private void InitializeCabinetesList()
+		private List<string> get1FloorCabinetesList()
 		{
-			_cabinetes = new Dictionary<string, string>();
-			//_cabinetes.Add("101(104)", "1310");
-			//_cabinetes.Add("113(107)", "1312");
-			_cabinetes.Add("(123)", string.Empty);
-			//_cabinetes.Add("118(109)", "1317");
-			//_cabinetes.Add("117(110)", "1320");
-			//_cabinetes.Add("(111)", "1322");
-			//_cabinetes.Add("116(112)", "1322");
-			//_cabinetes.Add("114(122)", "1350");
-			_cabinetes.Add("(136)", string.Empty);
+			var cab = new List<string>();
+			cab.Add("101(104)");
+			cab.Add("113(107)");
+			cab.Add("(123)");
+			cab.Add("118(109)");
+			cab.Add("117(110)");
+			cab.Add("(111)");
+			cab.Add("116(112)");
+			cab.Add("114(122)");
+			cab.Add("(136)");
 
-			_cabinetes.Add("(137)", string.Empty);
-			//_cabinetes.Add("(145)", "1350");
-			//_cabinetes.Add("111(113)", "1301");
-			//_cabinetes.Add("110(127)", "1351");
-			_cabinetes.Add("(133)", string.Empty);
-			//_cabinetes.Add("106(129)", "1302");
-			//_cabinetes.Add("104(130)", "1303");
-			//_cabinetes.Add("(132)", "1305");
-			//_cabinetes.Add("103(101)", "1306");
-			//_cabinetes.Add("102(102)", "1308");
-			_cabinetes.Add("107(128)", string.Empty);
-			_cabinetes.Add("105(131)", string.Empty);
-			//_cabinetes.Add("(1321)", "1350");
-			//_cabinetes.Add("109(119)", "1350");
-			//_cabinetes.Add("108(118)", "1350");
-			//_cabinetes.Add("112(117)", "1313");
-			//_cabinetes.Add("113(116)", "1313");
-			//_cabinetes.Add("(115)", "1314");
-			//_cabinetes.Add("115(114)", "1314");
-			_cabinetes.Add("(120)", string.Empty);
-			//_cabinetes.Add("(146)", "1350");
-			_cabinetes.Add("(142)", string.Empty);
-			_cabinetes.Add("(141)", string.Empty);
-			_cabinetes.Add("(140)", string.Empty);
-			_cabinetes.Add("(143)", string.Empty);
-			//_cabinetes.Add("(144)", "1350");
-			//_cabinetes.Add("(138)", "1350");
-			//_cabinetes.Add("(139)", "1350");
+			cab.Add("(137)");
+			cab.Add("(145)");
+			cab.Add("111(113)");
+			cab.Add("110(127)");
+			cab.Add("(133)");
+			cab.Add("106(129)");
+			cab.Add("104(130)");
+			cab.Add("(132)");
+			cab.Add("103(101)");
+			cab.Add("102(102)");
+			cab.Add("107(128)");
+			cab.Add("105(131)");
+			cab.Add("(1321)");
+			cab.Add("109(119)");
+			cab.Add("108(118)");
+			cab.Add("112(117)");
+			cab.Add("113(116)");
+			cab.Add("(115)");
+			cab.Add("115(114)");
+			cab.Add("(120)");
+			cab.Add("(146)");
+			cab.Add("(142)");
+			cab.Add("(141)");
+			cab.Add("(140)");
+			cab.Add("(143)");
+			cab.Add("(144)");
+			cab.Add("(138)");
+			cab.Add("(139)");
+			return cab;
+		}
+
+		private void ClearErrors()
+		{
+			foreach (var c in Chast)
+			{
+				Bacnet[c].Objects["BV17"].BeginSet(1);
+			}
+			foreach (var c in Chast)
+			{
+				Bacnet[c].Objects["BV17"].BeginSet(0);
+			}
+		}
+
+		private Dictionary<string, uint?> InitializeCabinetesList1Floor()
+		{
+			var res = new Dictionary<string, uint?>
+				          {
+					          {"101(104)", 1310},
+					          {"113(107)", 1312},
+					          {"(123)", null},
+					          {"118(109)", 1317},
+					          {"117(110)", 1320},
+					          {"(111)", 1322},
+					          {"116(112)", 1322},
+					          {"114(122)", 1350},
+					          {"(136)", null},
+					          {"(137)", null},
+					          {"(145)", 1350},
+					          {"111(113)", 1301},
+					          {"110(127)", 1351},
+					          {"(133)", null},
+					          {"106(129)", 1302},
+					          {"104(130)", 1303},
+					          {"(132)", 1305},
+					          {"103(101)", 1306},
+					          {"102(102)", 1308},
+					          {"107(128)", null},
+					          {"105(131)", null},
+					          {"(1321)", 1350},
+					          {"109(119)", 1350},
+					          {"108(118)", 1350},
+					          {"112(117)", 1313},
+					          {"113(116)", 1313},
+					          {"(115)", 1314},
+					          {"115(114)", 1314},
+					          {"(120)", null},
+					          {"(146)", 1350},
+					          {"(142)", null},
+					          {"(141)", null},
+					          {"(140)", null},
+					          {"(143)", null},
+					          {"(144)", 1350},
+					          {"(138)", 1350},
+					          {"(139)", 1350}
+				          };
+
+			return res;
+		}
+
+		private void InitializeCabinetesList2Floor()
+		{
+			//2300
+			_cabinetes.Add("202A(229)", "2358");
+			_cabinetes.Add("202(228)", "2357");
+			_cabinetes.Add("(204a1)", "2357");
+			_cabinetes.Add("(204a2)", "2352");
+			_cabinetes.Add("201A(201)", "2354");
+			_cabinetes.Add("201(202)", "2352");
+			_cabinetes.Add("(2041)", "2351");
+			_cabinetes.Add("(2042)", "2349");
+			_cabinetes.Add("218(205)", "2349");
+			_cabinetes.Add("216(206)", "2345");
+			_cabinetes.Add("214(208)", "2340");
+			_cabinetes.Add("213(209)", "2338");
+			_cabinetes.Add("213A(210)", "2336");
+			_cabinetes.Add("(240b1)", "2338");
+			_cabinetes.Add("(204b2)", "2341");
+			_cabinetes.Add("212A(211)", "2333");
+			_cabinetes.Add("217A(227)", string.Empty);
+			_cabinetes.Add("(222)", string.Empty);
+			_cabinetes.Add("(221)", "2350");
+			_cabinetes.Add("217(220)", "2346");
+			_cabinetes.Add("215(219)", "2342");
+			_cabinetes.Add("(213)", "2341");
+			_cabinetes.Add("(214)", string.Empty);
+			//2400
+			_cabinetes.Add("(242)", string.Empty);
+			_cabinetes.Add("(221)", "2350");
 		}
 
         private void OnValueChanged(string address, string value)
@@ -179,6 +278,8 @@ namespace WPFBacNetApiSample
 
         private void GetValue()
         {
+	        _oa.WriteAllObjectsToController();
+			/*
 	        foreach (var cabinete in _cabinetes)
 	        {
 				//if(string.IsNullOrEmpty(cabinete.Value)) continue;
@@ -215,12 +316,12 @@ namespace WPFBacNetApiSample
 				CreateObj(cabinete.Value, "AV", cabinete.Key, "MaxLightLevel", "34");
 				CreateObj(cabinete.Value, "BV", cabinete.Key, "WaitLightSensorResponse", "91");
 				//CreateObj(cabinete.Value, "CO", cabinete.Key, "TActuatorPID", "91");
-				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");*/
+				CreateObj(cabinete.Value, "AV", cabinete.Key, "LCDCurrentPage", "91");
 				WriteCOV("1300", cabinete.Key, "11", "16");
 				WriteCOV("1300", cabinete.Key, "12", "16");
 				//WriteCOV(cabinete.Value, cabinete.Key, "34", "16");
 				//WriteCOV(cabinete.Value, cabinete.Key, "14", "26");
-	        }
+	        }*/
         }
 
 		private void WriteCOV(string device, string cabinete, string objNumber, string value)
@@ -258,6 +359,10 @@ namespace WPFBacNetApiSample
 			string tmpStr = string.Empty;
 			foreach (var chr in tmp)
 			{
+				if(chr=='A' || chr=='a')
+					tmpStr = tmpStr + 1;
+				if (chr == 'B' || chr == 'b')
+					tmpStr = tmpStr + 2;
 				tmpStr = tmpStr + chr;
 			}
 			string createdObject = obj + tmpStr + objNumber;

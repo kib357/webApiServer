@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace LightService.Common
+namespace AstoriaControlService.Common.Light
 {
 	public class LightZone
 	{

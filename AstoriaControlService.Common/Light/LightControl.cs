@@ -4,13 +4,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using BacNetApi;
 
-namespace LightService.Common
+namespace AstoriaControlService.Common.Light
 {
-	public class LightControl
+	public class LightControl : CommonControl
 	{
 		private readonly List<LightZone> _lightZones = new List<LightZone>();
 		private readonly BacNet _network;
-		public static volatile bool HasConsole;
 
 		public LightControl(BacNet network, List<LightZone> lightZones)
 		{
@@ -52,10 +51,10 @@ namespace LightService.Common
 				Console.WriteLine("{0:H:mm:ss:ffff}: {1}", DateTime.Now, "Resubscribing...");
 			lock (this)
 			{
-				var zonesToRemove = _lightZones.Where(l => !lightZones.Contains(l)).ToList();
+				var zonesToRemove = _lightZones.Where(l => lightZones.All(z => !z.Equals(l))).ToList();
 				zonesToRemove.ForEach(RemoveZone);
 
-				var zonesToAdd = lightZones.Where(l => !_lightZones.Contains(l)).ToList();
+				var zonesToAdd = lightZones.Where(l => !_lightZones.All(z => z.Equals(l))).ToList();
 				zonesToAdd.ForEach(AddZone);
 			}
 			if (HasConsole)

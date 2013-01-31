@@ -4,65 +4,45 @@
     <xsd:schema targetNamespace="http://tempuri.org/Imports">
       <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd0" namespace="http://tempuri.org/" />
       <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
-      <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/LightService.ControlService" />
-      <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/LigtService.Common" />
-      <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/LightService.Common" />
+      <xsd:import schemaLocation="http://localhost:8733/LightControl/?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
     </xsd:schema>
   </wsdl:types>
-  <wsdl:message name="IAstoriaLightServiceControl_GetData_InputMessage">
-    <wsdl:part name="parameters" element="tns:GetData" />
-  </wsdl:message>
-  <wsdl:message name="IAstoriaLightServiceControl_GetData_OutputMessage">
-    <wsdl:part name="parameters" element="tns:GetDataResponse" />
-  </wsdl:message>
-  <wsdl:message name="IAstoriaLightServiceControl_GetDataUsingDataContract_InputMessage">
-    <wsdl:part name="parameters" element="tns:GetDataUsingDataContract" />
-  </wsdl:message>
-  <wsdl:message name="IAstoriaLightServiceControl_GetDataUsingDataContract_OutputMessage">
-    <wsdl:part name="parameters" element="tns:GetDataUsingDataContractResponse" />
-  </wsdl:message>
   <wsdl:message name="IAstoriaLightServiceControl_UpdateControlledObjects_InputMessage">
     <wsdl:part name="parameters" element="tns:UpdateControlledObjects" />
   </wsdl:message>
   <wsdl:message name="IAstoriaLightServiceControl_UpdateControlledObjects_OutputMessage">
     <wsdl:part name="parameters" element="tns:UpdateControlledObjectsResponse" />
   </wsdl:message>
+  <wsdl:message name="IAstoriaLightServiceControl_GetControlledObjects_InputMessage">
+    <wsdl:part name="parameters" element="tns:GetControlledObjects" />
+  </wsdl:message>
+  <wsdl:message name="IAstoriaLightServiceControl_GetControlledObjects_OutputMessage">
+    <wsdl:part name="parameters" element="tns:GetControlledObjectsResponse" />
+  </wsdl:message>
   <wsdl:portType name="IAstoriaLightServiceControl">
-    <wsdl:operation name="GetData">
-      <wsdl:input wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetData" message="tns:IAstoriaLightServiceControl_GetData_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetDataResponse" message="tns:IAstoriaLightServiceControl_GetData_OutputMessage" />
-    </wsdl:operation>
-    <wsdl:operation name="GetDataUsingDataContract">
-      <wsdl:input wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetDataUsingDataContract" message="tns:IAstoriaLightServiceControl_GetDataUsingDataContract_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetDataUsingDataContractResponse" message="tns:IAstoriaLightServiceControl_GetDataUsingDataContract_OutputMessage" />
-    </wsdl:operation>
     <wsdl:operation name="UpdateControlledObjects">
       <wsdl:input wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/UpdateControlledObjects" message="tns:IAstoriaLightServiceControl_UpdateControlledObjects_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/UpdateControlledObjectsResponse" message="tns:IAstoriaLightServiceControl_UpdateControlledObjects_OutputMessage" />
     </wsdl:operation>
+    <wsdl:operation name="GetControlledObjects">
+      <wsdl:input wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetControlledObjects" message="tns:IAstoriaLightServiceControl_GetControlledObjects_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IAstoriaLightServiceControl/GetControlledObjectsResponse" message="tns:IAstoriaLightServiceControl_GetControlledObjects_OutputMessage" />
+    </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="BasicHttpBinding_IAstoriaLightServiceControl" type="tns:IAstoriaLightServiceControl">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
-    <wsdl:operation name="GetData">
-      <soap:operation soapAction="http://tempuri.org/IAstoriaLightServiceControl/GetData" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="GetDataUsingDataContract">
-      <soap:operation soapAction="http://tempuri.org/IAstoriaLightServiceControl/GetDataUsingDataContract" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
     <wsdl:operation name="UpdateControlledObjects">
       <soap:operation soapAction="http://tempuri.org/IAstoriaLightServiceControl/UpdateControlledObjects" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetControlledObjects">
+      <soap:operation soapAction="http://tempuri.org/IAstoriaLightServiceControl/GetControlledObjects" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
