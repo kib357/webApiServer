@@ -29,7 +29,7 @@ namespace WPFSubscribeSample
             WriteObjectsCommand = new DelegateCommand(OnWriteObjects, CanWriteObjects);
             StopWriteObjectsCommand = new DelegateCommand(OnStopWrite);
 
-            _bacnet = new BacNet("192.168.0.168");//"10.81.32.211");
+            _bacnet = new BacNet("192.168.0.86");//"10.81.32.211");
             _bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             Sensors = new ObservableCollection<int>();
             for (var i = 0; i < 100; i++)
