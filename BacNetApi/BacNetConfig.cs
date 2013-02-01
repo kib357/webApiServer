@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Web.Hosting;
@@ -113,7 +114,7 @@ namespace BacNetApi
         public static string GetMappedPath(string path)
         {
             if (HostingEnvironment.IsHosted && !Path.IsPathRooted(path))
-                    return HostingEnvironment.MapPath(path);
+                return HostingEnvironment.MapPath("~/" + path);
             return path;
         }
     }
