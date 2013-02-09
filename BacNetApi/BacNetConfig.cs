@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Web.Hosting;
 using BACsharp.DataLink;
 using Nini.Config;
 
@@ -30,7 +33,7 @@ namespace BacNetApi
         {
             try
             {
-                _configSource = new XmlConfigSource("BACnet.xml") { AutoSave = true };
+                _configSource = new XmlConfigSource(GetMappedPath("BACnet.xml")) { AutoSave = true };
             }
             catch (Exception ex)
             {
@@ -59,7 +62,7 @@ namespace BacNetApi
 
             try
             {
-                _configSource.Save("BACnet.xml");
+                _configSource.Save(GetMappedPath("BACnet.xml"));
             }
             catch { }
         }
@@ -106,6 +109,13 @@ namespace BacNetApi
             if (!_configSource.Configs["Searching"].Contains("LostDevicesSearchInterval"))
                 _configSource.Configs["Searching"].Set("LostDevicesSearchInterval", DefaultLostDevicesSearchInterval);
             LostDevicesSearchInterval = _configSource.Configs["Searching"].GetInt("LostDevicesSearchInterval");
+        }
+
+        public static string GetMappedPath(string path)
+        {
+            if (HostingEnvironment.IsHosted && !Path.IsPathRooted(path))
+                return HostingEnvironment.MapPath("~/" + path);
+            return path;
         }
     }
 }
