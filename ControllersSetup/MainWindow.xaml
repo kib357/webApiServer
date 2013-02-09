@@ -1,0 +1,55 @@
+﻿<Window x:Class="ControllersSetup.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Width="700" Height="615">
+	<Grid>
+		<StackPanel Orientation="Vertical">
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="IP address: "/>
+				<TextBox Name="ip" Width="75" Text="{Binding IP, Mode=TwoWay}"/>
+				<Button Content="Start bacnet provider" Command="{Binding StartProviderCommand}"/>
+			</StackPanel>
+			<ScrollViewer Height="500">
+				<ListView ItemsSource="{Binding Devices}" Width="700" Name="myDevListView" BorderBrush="Black" BorderThickness="1">
+					<ListView.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel Orientation="Vertical"/>
+						</ItemsPanelTemplate>
+					</ListView.ItemsPanel>
+					<ListView.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="160"/>
+									<ColumnDefinition Width="140"/>
+									<ColumnDefinition Width="100"/>
+									<ColumnDefinition Width="100"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Text="{Binding Path=Id}" Grid.Column="0"/>
+								<TextBlock Text="{Binding Path=Title}" Grid.Column="1"/>
+								<TextBlock Text="{Binding Path=LastUpdated}" Grid.Column="2"/>
+								<TextBlock Text="{Binding Path=Status}" Grid.Column="3"/>
+								<TextBlock Text="{Binding Path=SubscriptionState}" Grid.Column="4"/>
+							</Grid>
+						</DataTemplate>
+					</ListView.ItemTemplate>
+				</ListView>
+			</ScrollViewer>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Devices count: "/>
+				<TextBlock Text="{Binding Path=DeviceCount}"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<TextBlock Text="Destination folder for programs: "/>
+				<TextBox Text="{Binding Path=ProgramsPath, Mode=TwoWay}" Width="200"/>
+				<Button Content="Generate and save programs" Command="{Binding GenerateProgramsCommand}"/>
+				<TextBlock Text=" All programs saved" Visibility="{Binding SavedPGTextBlockVisibility}"/>
+			</StackPanel>
+			<StackPanel Orientation="Horizontal">
+				<Button Content="Create all objects" Command="{Binding CreateAllObjectsCommand}"/>
+				<TextBlock Text=" All objects created" Visibility="{Binding CreatedAllObjectsTextBlockVisibility}"/>
+			</StackPanel>
+		</StackPanel>
+	</Grid>
+</Window>

@@ -9,13 +9,11 @@ using BACsharp;
 using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
-using BacNetApi;
 
-namespace WPFBacNetApiSample
+namespace ControllersSetup
 {
-	class ObjectAddresses
+	class ControllersObjects
 	{
-
 		private readonly Dictionary<string, string> _controllerAddresses;
 		private readonly Dictionary<string, string> _vavAddresses; 
 
@@ -24,7 +22,7 @@ namespace WPFBacNetApiSample
 		private readonly uint _controller;
 		public uint Controller { get { return _controller; } }
 
-		public ObjectAddresses(uint controller)
+		public ControllersObjects(uint controller)
 		{
 			_controllerAddresses = InitializeControllerAddresses();
 			_vavAddresses = InitializeVAVAddresses();
@@ -32,7 +30,7 @@ namespace WPFBacNetApiSample
 			
 		}
 
-		public ObjectAddresses(uint controller, Dictionary<string, uint?> cabinetes)
+		public ControllersObjects(uint controller, Dictionary<string, uint?> cabinetes)
 		{
 			_controllerAddresses = InitializeControllerAddresses();
 			_vavAddresses = InitializeVAVAddresses();
@@ -85,16 +83,12 @@ namespace WPFBacNetApiSample
 			return res;
 		}
 
-		public void CreateAllObjects(string dir = @"C:\ControllersPrograms")
+		public void CreateAllObjects()
 		{
 			foreach (var cabinete in Cabinetes)
 			{
 				CreateCabineteObjects(cabinete);
 			}
-			var controllerDir = dir + "\\" + Controller.ToString(CultureInfo.InvariantCulture);
-			if (!Directory.Exists(controllerDir))
-				Directory.CreateDirectory(controllerDir);
-			CreateAllPG(controllerDir);
 		}
 
 		public void WriteAllUnitsAndCovToObjects()
@@ -107,6 +101,9 @@ namespace WPFBacNetApiSample
 
 		public void CreateAllPG(string dir = @"C:\ControllersPrograms")
 		{
+			dir = dir + "\\" + Controller.ToString(CultureInfo.InvariantCulture);
+			if (!Directory.Exists(dir))
+				Directory.CreateDirectory(dir);
 			foreach (var cab in Cabinetes)
 			{
 				var cabDir = dir + "\\" + cab.Key;
@@ -199,7 +196,7 @@ namespace WPFBacNetApiSample
 
 			string tmpStr = GenCabNumber(cabinete);
 			string createdObject = writedObject + tmpStr;
-			MyViewModel.Bacnet[controller].Objects[createdObject].Create(objProperties);
+			ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].Create(objProperties);
 		}
 
 		private void WriteObject(uint controller, string objectDescription, string cabinete, string writedObject)
@@ -209,40 +206,51 @@ namespace WPFBacNetApiSample
 
 			if (objectDescription.Contains("Temperature") && writedObject.Contains("AV"))
 			{
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet(0.5, BacnetPropertyId.COVIncrement);
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet("°C", BacnetPropertyId.Units);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet(0.5, BacnetPropertyId.COVIncrement);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet("°C", BacnetPropertyId.Units);
 			}
 			if (objectDescription == "TemperatureSetpointMin")
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet(16);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet(16);
 			if (objectDescription == "TemperatureSetpointMax")
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet(26);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet(26);
 			if (objectDescription == "VentilationSetpoint" || objectDescription == "VentilationLCDSetpoint"
 				|| objectDescription == "LightLevelLCDSetpont" || objectDescription == "LCDCurrentPage"
 				|| objectDescription == "ConditionerLevelSetpoint" || objectDescription == "ShutterLevelSetpoint")
 			{
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet("", BacnetPropertyId.Units);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet("", BacnetPropertyId.Units);
 			}
 			if (objectDescription == "MinLightLevel" || objectDescription == "MaxLightLevel"
 				|| objectDescription == "CurrentLightLevel")
 			{
-				MyViewModel.Bacnet[controller].Objects[createdObject].BeginSet("lx", BacnetPropertyId.Units);
+				ControllerSetupViewModel.Bacnet[controller].Objects[createdObject].BeginSet("lx", BacnetPropertyId.Units);
 			}
 		}
 
 		private string GenCabNumber(string cabinete)
 		{
-			int start = cabinete.IndexOf('(');
-			int end = cabinete.IndexOf(')');
-			char[] tmp = new char[0];
+			var start = cabinete.IndexOf('(');
+			var end = cabinete.IndexOf(')');
+			var tmp = new char[0];
 			Array.Resize(ref tmp, end - start - 1);
 			cabinete.CopyTo(start + 1, tmp, 0, end - start - 1);
-			string tmpStr = string.Empty;
+			var tmpStr = string.Empty;
 			foreach (var chr in tmp)
 			{
 				if (chr == 'A' || chr == 'a')
+				{
 					tmpStr = tmpStr + "1";
+					continue;
+				}
 				if (chr == 'B' || chr == 'b')
+				{
 					tmpStr = tmpStr + "2";
+					continue;
+				}
+				if (chr == 'C' || chr == 'c')
+				{
+					tmpStr = tmpStr + "3";
+					continue;
+				}
 				tmpStr = tmpStr + chr;
 			}
 			return tmpStr;
