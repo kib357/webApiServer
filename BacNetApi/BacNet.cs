@@ -38,11 +38,6 @@ namespace BacNetApi
 		Running = 2
 	}
 
-	public enum BacnetUnits
-	{
-		
-	}
-
 	public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
 	public delegate void NetworkModelChangedEventHandler();
 
@@ -158,13 +153,13 @@ namespace BacNetApi
 			return readPropertyResponse.PropertyValues;
 		}
 
-		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, BacNetObject bacObject, BacnetPropertyId bacnetPropertyId)
+		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, BacnetPropertyId bacnetPropertyId)
 		{
 			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
 			SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest, bacObject, false);
 		}
 
-		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, List<BacNetObject> objectList, ApduSettings settings)
+		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, List<PrimitiveObject> objectList, ApduSettings settings)
 		{
 			var objList = new Dictionary<BACnetObjectId, List<BACnetPropertyReference>>();
 			foreach (var bacObject in objectList)
@@ -325,7 +320,10 @@ namespace BacNetApi
 					res = new BACnetEnumerated(1);
 					break;
 				case "°C":
-					res = new BACnetEnumerated(62);
+					res = new BACnetEnumerated((int)BacnetEngineeringUnits.DegreesCelsius);
+					break;
+				case "lx":
+					res = new BACnetEnumerated(37);
 					break;
 				case "":
 					res = new BACnetEnumerated(95);

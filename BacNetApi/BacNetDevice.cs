@@ -21,7 +21,7 @@ namespace BacNetApi
         private readonly BacNet                             _network;
         private volatile DeviceStatus                       _status;
         private volatile SubscriptionStatus                 _subscriptionStatus;
-        private readonly ObservableCollection<BacNetObject> _subscriptionList;
+		private readonly ObservableCollection<PrimitiveObject> _subscriptionList;
         public readonly object                              SyncRoot = new Object();
         private volatile bool                               _trackState;
 
@@ -60,7 +60,7 @@ namespace BacNetApi
             ObjectList = new List<string>();
             Status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
-            _subscriptionList = new ObservableCollection<BacNetObject>();
+			_subscriptionList = new ObservableCollection<PrimitiveObject>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
         }
 
@@ -238,7 +238,7 @@ namespace BacNetApi
             }
         }
 
-        public void AddSubscriptionObject(BacNetObject bacNetObject)
+		public void AddSubscriptionObject(PrimitiveObject bacNetObject)
         {
             lock (SyncRoot)
             {
@@ -247,7 +247,7 @@ namespace BacNetApi
             }
         }
 
-        public void RemoveSubscriptionObject(BacNetObject bacNetObject)
+		public void RemoveSubscriptionObject(PrimitiveObject bacNetObject)
         {
             lock (SyncRoot)
             {
