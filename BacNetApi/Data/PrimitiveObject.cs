@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using BACsharp;
@@ -8,70 +9,38 @@ namespace BacNetApi.Data
 {
     public class PrimitiveObject : BacNetObject
     {
-        public DateTime LastUpdated { get; protected set; }
+        public PrimitivePropertyIndexer Properties { get; set; } 
 
         public PrimitiveObject(BacNetDevice device, string id)
         {
             _device = device;
             Id = id;
-            _synchronizationContext = SynchronizationContext.Current;
+            Properties = new PrimitivePropertyIndexer(this);
+            SynchronizationContext = SynchronizationContext.Current;
         }
+        
 
-        private string _stringValue;
-        public string StringValue
-        {
-            get { return _stringValue; }
-            set
-            {
-                _device.LastUpdated = LastUpdated = DateTime.Now;
-                if (CheckValueChanges(value))
-                {
-                    _stringValue = value;
-                    if (_synchronizationContext != null)
-                        _synchronizationContext.Post(OnValueChangedEvent, _stringValue);
-                    else
-                        OnValueChangedEvent(_stringValue);
-                }
-            }
-        }
+        //#region Events
 
-        private bool CheckValueChanges(string value)
-        {
-            double oldValue, newValue;
-            if (double.TryParse(value.Replace(',', '.'), out newValue) &&
-                double.TryParse(_stringValue, out oldValue) &&
-                Math.Abs(newValue - oldValue) >= 0.1)
-                return true;
-            return _stringValue != value;
-        }
-
-        #region Events
-        private readonly List<ValueChangedEventHandler> _valueChangedSubscribers = new List<ValueChangedEventHandler>();
-        private event ValueChangedEventHandler _valueChangedEvent;
         public event ValueChangedEventHandler ValueChangedEvent
         {
             add
             {
-                _valueChangedEvent += value;
-                _valueChangedSubscribers.Add(value);
-                _device.AddSubscriptionObject(this);
+                Properties[(int)BacnetPropertyId.PresentValue].ValueChangedEvent += value;
             }
             remove
             {
-                _valueChangedEvent -= value;
-                _valueChangedSubscribers.Remove(value);
-                if (_valueChangedSubscribers.Count == 0)
-                    _device.RemoveSubscriptionObject(this);
+                Properties[(int)BacnetPropertyId.PresentValue].ValueChangedEvent -= value;
             }
         }
 
-        private void OnValueChangedEvent(object state)
-        {
-            ValueChangedEventHandler handler = _valueChangedEvent;
-            if (handler != null) handler(_device.Id + "." + Id, state.ToString());
-        }
+        //private void OnValueChangedEvent(object state)
+        //{
+        //    ValueChangedEventHandler handler = _valueChangedEvent;
+        //    if (handler != null) handler(_device.Id + "." + Id, state.ToString());
+        //}
 
-        #endregion
+        //#endregion
 
         #region Methods
 

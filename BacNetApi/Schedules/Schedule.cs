@@ -16,7 +16,7 @@ namespace BacNetApi.Schedules
         {
             _device = device;
             Id = "SCH" + id;
-            _synchronizationContext = SynchronizationContext.Current;
+            SynchronizationContext = SynchronizationContext.Current;
         }
 
 		private BacnetObjectType _objectType;

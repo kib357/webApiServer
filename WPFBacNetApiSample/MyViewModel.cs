@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Xml.Linq;
 using BACsharp;
@@ -12,7 +11,6 @@ using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
-using BacNetApi.AccessControl;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 
@@ -37,7 +35,7 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            Bacnet = new BacNet("10.81.32.199");//192.168.0.168");
+            Bacnet = new BacNet("192.168.0.168");//10.81.32.199");
             Bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
             /*Bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
             Bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
@@ -73,7 +71,7 @@ namespace WPFBacNetApiSample
             //Bacnet[100].Users[1].SubmitCards();
             //Bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
             //Bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
-            
+            Bacnet[600].Users[1].Create();
             SetValueCommand = new DelegateCommand(SetValue);
             GetValueCommand = new DelegateCommand(GetValue);
             SchValues = new List<string>();
@@ -278,7 +276,7 @@ namespace WPFBacNetApiSample
 
         private void GetValue()
         {
-	        _oa.WriteAllObjectsToController();
+	        //_oa.WriteAllObjectsToController();
 			/*
 	        foreach (var cabinete in _cabinetes)
 	        {

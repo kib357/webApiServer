@@ -21,7 +21,7 @@ namespace BacNetApi
         private readonly BacNet                             _network;
         private volatile DeviceStatus                       _status;
         private volatile SubscriptionStatus                 _subscriptionStatus;
-		private readonly ObservableCollection<PrimitiveObject> _subscriptionList;
+        private readonly ObservableCollection<PrimitiveProperty> _subscriptionList;
         public readonly object                              SyncRoot = new Object();
         private volatile bool                               _trackState;
 
@@ -60,7 +60,7 @@ namespace BacNetApi
             ObjectList = new List<string>();
             Status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
-			_subscriptionList = new ObservableCollection<PrimitiveObject>();
+			_subscriptionList = new ObservableCollection<PrimitiveProperty>();
             _subscriptionList.CollectionChanged += OnSubscriptionListChanged;
         }
 
@@ -187,6 +187,9 @@ namespace BacNetApi
             Task.Factory.StartNew(() =>
                 {
                     _subscriptionStatus = SubscriptionStatus.Running;
+                    if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOVProperty))
+                        COVPropertySubscription();
+
                     if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
                         COVSubscription();
                     else if (ServicesSupported.Contains(BacnetServicesSupported.ReadPropMultiple))
@@ -202,12 +205,12 @@ namespace BacNetApi
             {
                 lock (SyncRoot)
                 {
-                    foreach (var bacNetObject in _subscriptionList)
+                    foreach (var primitiveProperty in _subscriptionList)
                     {
-                        _network.BeginReadProperty(Address, bacNetObject, BacnetPropertyId.PresentValue);
+                        _network.BeginReadProperty(Address, primitiveProperty._primitiveObject, BacnetPropertyId.PresentValue);
                     }
                 }
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.ReadPropertyPollingInterval));
             }
         }
 
@@ -217,9 +220,9 @@ namespace BacNetApi
             {
                 lock (SyncRoot)
                 {
-                    _network.BeginReadPropertyMultiple(Address, _subscriptionList.ToList(), ApduSetting);
+                    _network.BeginReadPropertyMultiple(Address, _subscriptionList.Select(s => s._primitiveObject).ToList(), ApduSetting);
                 }
-                Thread.Sleep(TimeSpan.FromSeconds(10));
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.RPMPollingInterval));
             }
         }
 
@@ -229,30 +232,45 @@ namespace BacNetApi
             {
                 lock (SyncRoot)
                 {
-                    foreach (var bacNetObject in _subscriptionList)
+                    foreach (var primitiveProperty in _subscriptionList)
                     {
-                        _network.SubscribeCOV(Address, bacNetObject);
+                        _network.SubscribeCOV(Address, primitiveProperty._primitiveObject.Id);
                     }
                 }
-                Thread.Sleep(TimeSpan.FromSeconds(1800));
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.COVSubscriptionInterval));
             }
         }
 
-		public void AddSubscriptionObject(PrimitiveObject bacNetObject)
+        private void COVPropertySubscription()
         {
-            lock (SyncRoot)
+            while (_subscriptionStatus == SubscriptionStatus.Running)
             {
-                if (!_subscriptionList.Contains(bacNetObject))
-                    _subscriptionList.Add(bacNetObject);
+                lock (SyncRoot)
+                {
+                    foreach (var primitiveProperty in _subscriptionList)
+                    {
+                        _network.SubscribeCOVProperty(Address, primitiveProperty);
+                    }
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(_network.Config.COVSubscriptionInterval));
             }
         }
 
-		public void RemoveSubscriptionObject(PrimitiveObject bacNetObject)
+		public void AddSubscriptionObject(PrimitiveProperty primitiveProperty)
         {
             lock (SyncRoot)
             {
-                if (_subscriptionList.Contains(bacNetObject))
-                    _subscriptionList.Add(bacNetObject);
+                if (!_subscriptionList.Contains(primitiveProperty))
+                    _subscriptionList.Add(primitiveProperty);
+            }
+        }
+
+        public void RemoveSubscriptionObject(PrimitiveProperty primitiveProperty)
+        {
+            lock (SyncRoot)
+            {
+                if (_subscriptionList.Contains(primitiveProperty))
+                    _subscriptionList.Remove(primitiveProperty);
             }
         }
 
