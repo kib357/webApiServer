@@ -127,15 +127,15 @@ namespace BacNetApi
 
             if (!_configSource.Configs["DataExchange"].Contains("ReadPropertyPollingInterval"))
                 _configSource.Configs["DataExchange"].Set("ReadPropertyPollingInterval", DefaultReadPropertyPollingInterval);
-            LostDevicesSearchInterval = _configSource.Configs["DataExchange"].GetInt("ReadPropertyPollingInterval");
+            ReadPropertyPollingInterval = _configSource.Configs["DataExchange"].GetInt("ReadPropertyPollingInterval");
 
             if (!_configSource.Configs["DataExchange"].Contains("RPMPollingInterval"))
                 _configSource.Configs["DataExchange"].Set("RPMPollingInterval", DefaultRPMPollingInterval);
-            LostDevicesSearchInterval = _configSource.Configs["DataExchange"].GetInt("RPMPollingInterval");
+            RPMPollingInterval = _configSource.Configs["DataExchange"].GetInt("RPMPollingInterval");
 
             if (!_configSource.Configs["DataExchange"].Contains("COVSubscriptionInterval"))
                 _configSource.Configs["DataExchange"].Set("COVSubscriptionInterval", DefaultCOVSubscriptionInterval);
-            LostDevicesSearchInterval = _configSource.Configs["DataExchange"].GetInt("COVSubscriptionInterval");
+            COVSubscriptionInterval = _configSource.Configs["DataExchange"].GetInt("COVSubscriptionInterval");
         }
 
         public static string GetMappedPath(string path)

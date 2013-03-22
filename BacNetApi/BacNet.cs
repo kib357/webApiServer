@@ -35,7 +35,13 @@ namespace BacNetApi
 	{
 		Stopped = 0,
 		Initializing = 1,
-		Running = 2
+		CovProperty = 2,
+        CovAndRpm = 3,
+        CovAndRp = 4,
+        Rpm = 5,
+        Rp = 6,
+        Cov = 7,
+        NoServicesSupported = 8
 	}
 
 	public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
@@ -154,19 +160,19 @@ namespace BacNetApi
 			return readPropertyResponse.PropertyValues;
 		}
 
-		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, BacnetPropertyId bacnetPropertyId)
+		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, int bacnetPropertyId)
 		{
-			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
+			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), bacnetPropertyId);
 			SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest, bacObject, false);
 		}
 
-		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, List<PrimitiveObject> objectList, ApduSettings settings)
+		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, Dictionary<PrimitiveObject, List<PrimitiveProperty>> objectList, ApduSettings settings)
 		{
 			var objList = new Dictionary<BACnetObjectId, List<BACnetPropertyReference>>();
 			foreach (var bacObject in objectList)
 			{
-				objList.Add(BacNetObject.GetObjectIdByString(bacObject.Id),
-					new List<BACnetPropertyReference> { new BACnetPropertyReference((int)BacnetPropertyId.PresentValue) });
+			    objList.Add(BacNetObject.GetObjectIdByString(bacObject.Key.Id),
+			                bacObject.Value.Select(k => new BACnetPropertyReference(k.Id)).ToList());
 			}
 			var readPropertyMultipleRequest = new ReadPropertyMultipleRequest(objList);
 			SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadPropMultiple, readPropertyMultipleRequest, objectList, false, settings);
@@ -463,12 +469,12 @@ namespace BacNetApi
 				if (request.State == null)
 				{
 				}
-				if (request.State is List<PrimitiveObject>)
+				if (request.State is Dictionary<PrimitiveObject, List<PrimitiveProperty>>)
 				{
-					var objectList = request.State as List<PrimitiveObject>;
+                    var objectList = request.State as Dictionary<PrimitiveObject, List<PrimitiveProperty>>;
 					foreach (var bacObject in objectList)
 					{
-						var objId = BacNetObject.GetObjectIdByString(bacObject.Id);
+						var objId = BacNetObject.GetObjectIdByString(bacObject.Key.Id);
 
 						foreach (var readAccessResult in service.ReadAccessResults)
 						{
@@ -477,7 +483,7 @@ namespace BacNetApi
 								var resObject = readAccessResult.Value;
 							    foreach (var readResult in resObject)
 							    {
-							        bacObject.Properties[readResult.PropertyId.Value].Value = readResult.Values.First().ToString();
+							        bacObject.Key.Properties[readResult.PropertyId.Value].Value = readResult.Values.First().ToString();
 							    }
 							}
 						}
