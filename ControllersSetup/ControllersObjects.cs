@@ -15,10 +15,10 @@ namespace ControllersSetup
 	class ControllersObjects
 	{
 		private readonly Dictionary<string, string> _controllerAddresses;
-		private readonly Dictionary<string, string> _vavAddresses; 
+		private readonly Dictionary<string, string> _vavAddresses;
 
 
-		public Dictionary<string, uint?> Cabinetes { get; set; }
+		public Dictionary<string, KeyValuePair<uint?, string>> Cabinetes { get; set; }
 		private readonly uint _controller;
 		public uint Controller { get { return _controller; } }
 
@@ -30,7 +30,7 @@ namespace ControllersSetup
 			
 		}
 
-		public ControllersObjects(uint controller, Dictionary<string, uint?> cabinetes)
+		public ControllersObjects(uint controller, Dictionary<string, KeyValuePair<uint?, string>> cabinetes)
 		{
 			_controllerAddresses = InitializeControllerAddresses();
 			_vavAddresses = InitializeVAVAddresses();
@@ -42,20 +42,20 @@ namespace ControllersSetup
 		{
 			var res = new Dictionary<string, string>
 				          {
-					          {"TemperatureSetpoint", "AV11"},
-					          {"CurrentTemperature", "AV12"},
-					          {"TemperatureBacstatAllowed", "BV19"},
-					          {"VentilationSetpoint", "AV21"},
-					          {"CurrentVentilationLevel", "AV22"},
-					          {"VentilationBacstatAllowed", "BV29"},
-					          {"LightStateSetpoint", "BV31"},
-					          {"LightLevelSetpoint", "AV31"},
-					          {"AutoLightLevel", "BV32"},
-					          {"LightBacstatAllowed", "BV39"},
-					          {"ConditionerStateSetpoint", "BV41"},
-					          {"ConditionerLevelSetpoint", "AV41"},
-					          {"ShutterLevelSetpoint", "AV42"},
-					          {"ConditionerBacstatAllowed", "BV49"}
+					          {" Temperature setpoint", "AV11"},
+					          {" Current temperature", "AV12"},
+					          {" Temperature bacstat allowed", "BV19"},
+					          {" Ventilation setpoint", "AV21"},
+					          {" Current ventilation level", "AV22"},
+					          {" Ventilation bacstat allowed", "BV29"},
+					          {" Light state setpoint", "BV31"},
+					          {" Light level setpoint", "AV31"},
+					          {" Auto light level", "BV32"},
+					          {" Light bacstat allowed", "BV39"},
+					          {" Conditioner state setpoint", "BV41"},
+					          {" Conditioner level setpoint", "AV41"},
+					          {" Shutter level setpoint", "AV42"},
+					          {" Conditioner bacstat allowed", "BV49"}
 				          };
 
 			return res;
@@ -65,19 +65,19 @@ namespace ControllersSetup
 		{
 			var res = new Dictionary<string, string>
 				          {
-					          {"TemperatureSetpointMin", "AV13"},
-					          {"TemperatureSetpointMax", "AV14"},
-					          {"TActuator", "AV15"},
+					          {" Temperature setpoint min", "AV13"},
+					          {" Temperature setpoint max", "AV14"},
+					          {" TActuator", "AV15"},
 
-							  {"VentilationLCDSetpoint", "AV23"},
+							  {" Ventilation LCD setpoint", "AV23"},
 
-					          {"CurrentLightLevel", "AV32"},
-					          {"MinLightLevel", "AV33"},
-					          {"MaxLightLevel", "AV34"},
-					          {"LightLevelLCDSetpont", "AV35"},
+					          {" Current light level", "AV32"},
+					          {" Min light level", "AV33"},
+					          {" Max light level", "AV34"},
+					          {" Light level LCD setpont", "AV35"},
 
-					          {"WaitLightSensorResponse", "BV91"},
-					          {"LCDCurrentPage", "AV91"}
+					          {" Wait light sensor response", "BV91"},
+					          {" LCD current page", "AV91"}
 				          };
 
 			return res;
@@ -110,51 +110,52 @@ namespace ControllersSetup
 				if (!Directory.Exists(cabDir))
 					Directory.CreateDirectory(cabDir);
 				var controllerPGDir = cabDir + "\\ControllerPrograms";
-				var controllerVAVPGDir = cabDir + "\\VAVPrograms(" + cab.Value.ToString() + ")";
+				var controllerVAVPGDir = cabDir + "\\VAVPrograms(" + cab.Value.Key.ToString() + ")";
 				if (!Directory.Exists(controllerPGDir))
 					Directory.CreateDirectory(controllerPGDir);
 				if (!Directory.Exists(controllerVAVPGDir))
 					Directory.CreateDirectory(controllerVAVPGDir);
 
-				if (cab.Value != null)
+				if (cab.Value.Key != null)
 				{
 					var cabNumber = GenCabNumber(cab.Key);
 					var fileName = controllerPGDir + "\\" + cab.Key + "VariableControl.txt";
-					var tmp = CreateVariableControlPGForController(cabNumber, cab.Value.ToString());
+					var tmp = CreateVariableControlPGForController(cabNumber, cab.Value.Key.ToString());
 					File.WriteAllLines(fileName, tmp);
 
 					fileName = controllerVAVPGDir + "\\" + cab.Key + "VariableControl.txt";
 					tmp = CreateVariableControlPGForVAV(cabNumber);
 					File.WriteAllLines(fileName, tmp);
 
-					CreateLCDPG(cab.Key, controllerVAVPGDir);
+					CreateLCDPG(cab.Key, cab.Value.Value, controllerVAVPGDir);
 				}
 			}
 		}
 
-		private void CreateCabineteObjects(KeyValuePair<string, uint?> cabinete, bool create = true)
+		private void CreateCabineteObjects(KeyValuePair<string, KeyValuePair<uint?, string>> cabinete, bool create = true)
 		{
+			if(_controller!=cabinete.Value.Key)
+				foreach (var controllerAddress in _controllerAddresses)
+				{
+					if (create)
+						CreateObject(_controller, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
+					else
+						WriteObject(_controller, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
+				}
+			if (cabinete.Value.Key == null) return;
 			foreach (var controllerAddress in _controllerAddresses)
 			{
 				if (create)
-					CreateObject(_controller, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
+					CreateObject((uint) cabinete.Value.Key, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
 				else
-					WriteObject(_controller, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
-			}
-			if (cabinete.Value == null) return;
-			foreach (var controllerAddress in _controllerAddresses)
-			{
-				if (create)
-					CreateObject((uint) cabinete.Value, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
-				else
-					WriteObject((uint) cabinete.Value, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
+					WriteObject((uint) cabinete.Value.Key, controllerAddress.Key, cabinete.Key, controllerAddress.Value);
 			}
 			foreach (var vavAddress in _vavAddresses)
 			{
 				if (create)
-					CreateObject((uint) cabinete.Value, vavAddress.Key, cabinete.Key, vavAddress.Value);
+					CreateObject((uint) cabinete.Value.Key, vavAddress.Key, cabinete.Key, vavAddress.Value);
 				else
-					WriteObject((uint) cabinete.Value, vavAddress.Key, cabinete.Key, vavAddress.Value);
+					WriteObject((uint) cabinete.Value.Key, vavAddress.Key, cabinete.Key, vavAddress.Value);
 			}
 		}
 
@@ -363,37 +364,37 @@ namespace ControllersSetup
 			return new[] {sb.ToString()};
 		}
 
-		public void CreateLCDPG(string cabinete, string dir)
+		public void CreateLCDPG(string cabinete, string lcdAddress, string dir)
 		{
 			var cabNumber = GenCabNumber(cabinete);
 			dir = dir + "\\";
 
 			var fileName = dir  + cabinete + "LCDControl.txt";
-			var tmp = GenLCDPg(cabNumber);
+			var tmp = GenLCDPg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 
 			fileName = dir + cabinete + "LCDTemperature.txt";
-			tmp = GenLCDTemperaturePg(cabNumber);
+			tmp = GenLCDTemperaturePg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 
 			fileName = dir + cabinete + "LCDVentilation.txt";
-			tmp = GenLCDVentilationPg(cabNumber);
+			tmp = GenLCDVentilationPg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 
 			fileName = dir + cabinete + "LCDLight.txt";
-			tmp = GenLCDLightPg(cabNumber);
+			tmp = GenLCDLightPg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 
 			fileName = dir + cabinete + "LCDCondition.txt";
-			tmp = GenLCDConditionPg(cabNumber);
+			tmp = GenLCDConditionPg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 
 			fileName = dir + cabinete + "LCDConditionerShutter.txt";
-			tmp = GenLCDConditionerShutterPg(cabNumber);
+			tmp = GenLCDConditionerShutterPg(cabNumber, lcdAddress);
 			File.WriteAllLines(fileName, tmp);
 		}
 
-		private string[] GenLCDPg(string cabNumber)
+		private string[] GenLCDPg(string cabNumber, string lcdAddress)
 		{
 			var lcdCurrentPage = _vavAddresses["LCDCurrentPage"] + cabNumber;
 			var lcdTemperaturePG = "PG3" + cabNumber;
@@ -413,7 +414,7 @@ namespace ControllersSetup
 			sb.AppendLine("  " + lcdCurrentPage + " = 1");
 			sb.AppendLine("End If");
 			sb.AppendLine("");
-			sb.AppendLine("IfOnce LinkLCD1.KeyPress = 2 Then");
+			sb.AppendLine("IfOnce LCD" + lcdAddress + ".KeyPress = 2 Then");
 			sb.AppendLine("	" + lcdCurrentPage + " = " + lcdCurrentPage + " + 1");
 			sb.AppendLine("	If " + lcdCurrentPage + " > 5 Then");
 			sb.AppendLine("		" + lcdCurrentPage + " = 1");
@@ -441,7 +442,7 @@ namespace ControllersSetup
 			return new[] { sb.ToString() };
 		}
 
-		private string[] GenLCDTemperaturePg(string cabNumber)
+		private string[] GenLCDTemperaturePg(string cabNumber, string lcdAddress)
 		{
 			var temperatureSetpoint = _controllerAddresses["TemperatureSetpoint"] + cabNumber;
 			var currentTemperature = _controllerAddresses["CurrentTemperature"] + cabNumber;
@@ -452,30 +453,30 @@ namespace ControllersSetup
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine("Variable temperatureSetpoint As Real");
 			sb.AppendLine("");
-			sb.AppendLine("LinkLCD1.Line2 = " + "\" " + "\"");
-			sb.AppendLine("LinkLCD1.Cooling = 0");
-			sb.AppendLine("LinkLCD1.Heating = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2 = " + "\" " + "\"");
+			sb.AppendLine("LCD" + lcdAddress + ".Cooling = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Heating = 0");
 			sb.AppendLine("temperatureSetpoint = " + temperatureSetpoint);
 			sb.AppendLine("If " + temperatureBacstatAllowed + " On Then");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 3 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 3 Then");
 			sb.AppendLine("		temperatureSetpoint = temperatureSetpoint - 0.5");
 			sb.AppendLine("	End If");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 4 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 4 Then");
 			sb.AppendLine("		temperatureSetpoint = temperatureSetpoint + 0.5");
 			sb.AppendLine("	End If");
 			sb.AppendLine("End If");
 			sb.AppendLine("temperatureSetpoint = Limit (temperatureSetpoint, " + temperatureSetpointMin + ", " + temperatureSetpointMax + ")");
 			sb.AppendLine(temperatureSetpoint + " = temperatureSetpoint");
-			sb.AppendLine("LinkLCD1.Line2 = " + currentTemperature);
-			sb.AppendLine("LinkLCD1.Line3 = temperatureSetpoint & \"^C\"");
-			sb.AppendLine("LinkLCD1.Fan = 0");
-			sb.AppendLine("LinkLCD1.Sun = 0");
-			sb.AppendLine("LinkLCD1.Line2Units = 1");
-			sb.AppendLine("LinkLCD1.Line3Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2 = " + currentTemperature);
+			sb.AppendLine("LCD" + lcdAddress + ".Line3 = temperatureSetpoint & \"^C\"");
+			sb.AppendLine("LCD" + lcdAddress + ".Fan = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Sun = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2Units = 1");
+			sb.AppendLine("LCD" + lcdAddress + ".Line3Units = 0");
 			return new[] { sb.ToString() };
 		}
 
-		private string[] GenLCDVentilationPg(string cabNumber)
+		private string[] GenLCDVentilationPg(string cabNumber, string lcdAddress)
 		{
 			var ventilationSetpoint = _controllerAddresses["VentilationSetpoint"] + cabNumber;
 			var ventilationBacstatAllowed = _controllerAddresses["VentilationBacstatAllowed"] + cabNumber;
@@ -483,31 +484,31 @@ namespace ControllersSetup
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine("Variable ventilationSetpoint As Integer");
 			sb.AppendLine("");
-			sb.AppendLine("LinkLCD1.Line2 = " + "\"BEH\"");
-			sb.AppendLine("LinkLCD1.Cooling = 0");
-			sb.AppendLine("LinkLCD1.Heating = 0");
-			sb.AppendLine("LinkLCD1.Line2Units = 0");
-			sb.AppendLine("LinkLCD1.Line3Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2 = " + "\"BEH\"");
+			sb.AppendLine("LCD" + lcdAddress + ".Cooling = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Heating = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line3Units = 0");
 			sb.AppendLine("ventilationSetpoint = " + ventilationSetpoint);
 			sb.AppendLine("If " + ventilationBacstatAllowed + " On Then");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 3 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 3 Then");
 			sb.AppendLine("		ventilationSetpoint = ventilationSetpoint - 1");
 			sb.AppendLine("	End If");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 4 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 4 Then");
 			sb.AppendLine("		ventilationSetpoint = ventilationSetpoint + 1");
 			sb.AppendLine("	End If");
 			sb.AppendLine("End If");
 			sb.AppendLine("ventilationSetpoint = Limit (ventilationSetpoint, - 3, 3)");
 			sb.AppendLine(ventilationSetpoint + " = ventilationSetpoint");
 			sb.AppendLine("If ventilationSetpoint = 0 Then");
-			sb.AppendLine("	LinkLCD1.Line3 = \"auto\"");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = \"auto\"");
 			sb.AppendLine("Else");
-			sb.AppendLine("	LinkLCD1.Line3 = ventilationSetpoint");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = ventilationSetpoint");
 			sb.AppendLine("End If");
 			return new[] { sb.ToString() };
 		}
 
-		private string[] GenLCDLightPg(string cabNumber)
+		private string[] GenLCDLightPg(string cabNumber, string lcdAddress)
 		{
 			var lightLevelLCDSetpont = _vavAddresses["LightLevelLCDSetpont"] + cabNumber;
 			var lightLevel = _controllerAddresses["LightLevelSetpoint"] + cabNumber;
@@ -519,19 +520,19 @@ namespace ControllersSetup
 			sb.AppendLine("Variable lightLevelSetpoint As Integer");
 			sb.AppendLine("Variable autoLightLevelSetpoint As Integer");
 			sb.AppendLine("");
-			sb.AppendLine("	LinkLCD1.Line2 = \"CBE\"");
-			sb.AppendLine("	LinkLCD1.Cooling = 0");
-			sb.AppendLine("	LinkLCD1.Heating = 0");
-			sb.AppendLine("	LinkLCD1.Line2Units = 0");
-			sb.AppendLine("	LinkLCD1.Line3Units = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line2 = \"CBE\"");
+			sb.AppendLine("	LCD" + lcdAddress + ".Cooling = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Heating = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line2Units = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3Units = 0");
 			sb.AppendLine("	lightLevelLCDSetpoint = " + lightLevelLCDSetpont);
 			sb.AppendLine("	lightLevelSetpoint = " + lightLevel);
 			sb.AppendLine("	AutoLightLevelSetpoint = " + autoLightLevelSetpont);
 			sb.AppendLine("	If " + lightBacstatAllowed + " On Then");
-			sb.AppendLine("		IfOnce LinkLCD1.KeyPress = 3 Then");
+			sb.AppendLine("		IfOnce LCD" + lcdAddress + ".KeyPress = 3 Then");
 			sb.AppendLine("			lightLevelLCDSetpoint = lightLevelLCDSetpoint - 1");
 			sb.AppendLine("		End If");
-			sb.AppendLine("		IfOnce LinkLCD1.KeyPress = 4 Then");
+			sb.AppendLine("		IfOnce LCD" + lcdAddress + ".KeyPress = 4 Then");
 			sb.AppendLine("			lightLevelLCDSetpoint = lightLevelLCDSetpoint + 1");
 			sb.AppendLine("		End If");
 			sb.AppendLine("		lightLevelLCDSetpoint = Limit (lightLevelLCDSetpoint, - 3, 3)");
@@ -561,15 +562,15 @@ namespace ControllersSetup
 			sb.AppendLine("	" + lightLevel + " = lightLevelSetpoint");
 			sb.AppendLine("	" + autoLightLevelSetpont + " = autoLightLevelSetpoint");
 			sb.AppendLine("	If lightLevelLCDSetpoint = 0 Then");
-			sb.AppendLine("		LinkLCD1.Line3 = \"auto\"");
+			sb.AppendLine("		LCD" + lcdAddress + ".Line3 = \"auto\"");
 			sb.AppendLine("	Else");
-			sb.AppendLine("		LinkLCD1.Line3 = lightLevelLCDSetpoint");
+			sb.AppendLine("		LCD" + lcdAddress + ".Line3 = lightLevelLCDSetpoint");
 			sb.AppendLine("	End If");
-			sb.AppendLine(" LinkLCD1.Line2Units = 0");
+			sb.AppendLine(" LCD" + lcdAddress + ".Line2Units = 0");
 			return new[] { sb.ToString() };
 		}
 
-		private string[] GenLCDConditionPg(string cabNumber)
+		private string[] GenLCDConditionPg(string cabNumber, string lcdAddress)
 		{
 			var conditionerLevelSetpoint = _controllerAddresses["ConditionerLevelSetpoint"] + cabNumber;
 			var conditionerBacstatAllowed = _controllerAddresses["ConditionerBacstatAllowed"] + cabNumber;
@@ -577,29 +578,29 @@ namespace ControllersSetup
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine("Variable conditionerSetpoint As Integer");
 			sb.AppendLine("");
-			sb.AppendLine("LinkLCD1.Line2 = \"KOH\"");
-			sb.AppendLine("LinkLCD1.Line2Units = 0");
-			sb.AppendLine("LinkLCD1.Line3Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2 = \"KOH\"");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line3Units = 0");
 			sb.AppendLine("conditionerSetpoint = " + conditionerLevelSetpoint);
 			sb.AppendLine("If " + conditionerBacstatAllowed + " Then");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 3 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 3 Then");
 			sb.AppendLine("		conditionerSetpoint = Limit (conditionerSetpoint - 1, 0, 4)");
 			sb.AppendLine("	End If");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 4 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 4 Then");
 			sb.AppendLine("		conditionerSetpoint = Limit (conditionerSetpoint + 1, 0, 4)");
 			sb.AppendLine("	End If");
 			sb.AppendLine("End If");
 			sb.AppendLine(conditionerLevelSetpoint + " = conditionerSetpoint");
 			sb.AppendLine("If conditionerSetpoint = 0 Then");
-			sb.AppendLine("	LinkLCD1.Line3 = Off");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = Off");
 			sb.AppendLine("Else");
-			sb.AppendLine("	LinkLCD1.Line3 = conditionerSetpoint");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = conditionerSetpoint");
 			sb.AppendLine("End If");
-			sb.AppendLine("LinkLCD1.Fan = conditionerSetpoint");
+			sb.AppendLine("LCD" + lcdAddress + ".Fan = conditionerSetpoint");
 			return new[] {sb.ToString()};
 		}
 
-		private string[] GenLCDConditionerShutterPg(string cabNumber)
+		private string[] GenLCDConditionerShutterPg(string cabNumber, string lcdAddress)
 		{
 			var shutterLevelSetpoint = _controllerAddresses["ShutterLevelSetpoint"] + cabNumber;
 			var conditionerBacstatAllowed = _controllerAddresses["ConditionerBacstatAllowed"] + cabNumber;
@@ -607,38 +608,38 @@ namespace ControllersSetup
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine("Variable shutterLevel As Integer");
 			sb.AppendLine("");
-			sb.AppendLine("LinkLCD1.Line2 = \"KO2\"");
-			sb.AppendLine("LinkLCD1.Line2Units = 0");
-			sb.AppendLine("LinkLCD1.Line3Units = 4");
-			sb.AppendLine("LinkLCD1.Cooling = 0");
-			sb.AppendLine("LinkLCD1.Heating = 0");
-			sb.AppendLine("LinkLCD1.Fan = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2 = \"KO2\"");
+			sb.AppendLine("LCD" + lcdAddress + ".Line2Units = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Line3Units = 4");
+			sb.AppendLine("LCD" + lcdAddress + ".Cooling = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Heating = 0");
+			sb.AppendLine("LCD" + lcdAddress + ".Fan = 0");
 			sb.AppendLine("shutterLevel = " + shutterLevelSetpoint);
 			sb.AppendLine("If " + conditionerBacstatAllowed + " Then");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 3 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 3 Then");
 			sb.AppendLine("		shutterLevel = Limit (shutterLevel - 1, 1, 5)");
 			sb.AppendLine("	End If");
-			sb.AppendLine("	IfOnce LinkLCD1.KeyPress = 4 Then");
+			sb.AppendLine("	IfOnce LCD" + lcdAddress + ".KeyPress = 4 Then");
 			sb.AppendLine("		shutterLevel = Limit (shutterLevel + 1, 1, 5)");
 			sb.AppendLine("	End If");
 			sb.AppendLine("End If");
 			sb.AppendLine(shutterLevelSetpoint + " = shutterLevel");
 			sb.AppendLine("If shutterLevel = 1 Then");
-			sb.AppendLine("	LinkLCD1.Line3Units = 0");
-			sb.AppendLine("	LinkLCD1.Line3 = \"Hor\"");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3Units = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = \"Hor\"");
 			sb.AppendLine("End If");
 			sb.AppendLine("If shutterLevel = 2 Then");
-			sb.AppendLine("	LinkLCD1.Line3 = 60");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = 60");
 			sb.AppendLine("End If");
 			sb.AppendLine("If shutterLevel = 3 Then");
-			sb.AppendLine("	LinkLCD1.Line3 = 80");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = 80");
 			sb.AppendLine("End If");
 			sb.AppendLine("If shutterLevel = 4 Then");
-			sb.AppendLine("	LinkLCD1.Line3 = 100");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = 100");
 			sb.AppendLine("End If");
 			sb.AppendLine("If shutterLevel = 5 Then");
-			sb.AppendLine("	LinkLCD1.Line3Units = 0");
-			sb.AppendLine("	LinkLCD1.Line3 = \"Sw\"");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3Units = 0");
+			sb.AppendLine("	LCD" + lcdAddress + ".Line3 = \"Sw\"");
 			sb.AppendLine("End If");
 			return new[] {sb.ToString()};
 		}

@@ -53,7 +53,7 @@ namespace ControllersSetup
 				var xlWorkSheet = (Worksheet) xlWorkBook.Worksheets.Item[1];
 				var range = xlWorkSheet.Range["A1", Missing.Value];
 				var controller = range.Text;
-				var cabs = new Dictionary<string, uint?>();
+				var cabs = new Dictionary<string, KeyValuePair<uint?, string>>();
 				var i = 1;
 				while (true)
 				{
@@ -62,8 +62,11 @@ namespace ControllersSetup
 					if (string.IsNullOrEmpty(cab))
 						break;
 					range = xlWorkSheet.Range["C" + i, Missing.Value];
-					var vav = range.Text;
-					cabs.Add(cab, string.IsNullOrEmpty(vav) ? null : Convert.ToUInt32(vav));
+					var vav = string.IsNullOrEmpty(range.Text) ? null : Convert.ToUInt32(range.Text);
+					range = xlWorkSheet.Range["D" + i, Missing.Value];
+					string lcd = string.IsNullOrWhiteSpace(range.Text) ? "101" : range.Text;
+					var kvp = new KeyValuePair<uint?, string>(vav, lcd);
+					cabs.Add(cab, kvp);
 					i++;
 				}
 				//xlWorkBook.Close(Missing.Value, Missing.Value, Missing.Value);

@@ -170,7 +170,7 @@ namespace AstoriaControlService.Common.Light
 			// Контроллер 1300 кабинеты
 			lightZones.Add(new LightZone { InputAddress = "1300.BV31104", OutputAddresses = new ObservableCollection<string> { "17812.AO68097" }, SetPointAddress = "1300.AV31104" }); //101(104)
 			lightZones.Add(new LightZone { InputAddress = "1300.BV31122", OutputAddresses = new ObservableCollection<string> { "17812.AO68352" }, SetPointAddress = "1300.AV31122" }); //114a(122a)
-			lightZones.Add(new LightZone { InputAddress = "1300.BV31122", OutputAddresses = new ObservableCollection<string> { "17812.AO68353" }, SetPointAddress = "1300.AV31122" }); //114b(122b)
+			lightZones.Add(new LightZone { InputAddress = "1300.BV33122", OutputAddresses = new ObservableCollection<string> { "17812.AO68353" }, SetPointAddress = "1300.AV31122" }); //114b(122b)
 			lightZones.Add(new LightZone { InputAddress = "1300.BV31109", OutputAddresses = new ObservableCollection<string> { "17812.AO68608" }, SetPointAddress = "1300.AV31109" }); //118(109)
 			lightZones.Add(new LightZone { InputAddress = "1300.BV31107", OutputAddresses = new ObservableCollection<string> { "17812.AO68096" }, SetPointAddress = "1300.AV31107" }); //113(107b)
 			lightZones.Add(new LightZone { InputAddress = "1300.BV31112", OutputAddresses = new ObservableCollection<string> { "17812.AO68612" }, SetPointAddress = "1300.AV31122" }); //116(112)
@@ -221,10 +221,12 @@ namespace AstoriaControlService.Common.Light
 			lightZones.Add(new LightZone { InputAddress = "2400.BV31224", OutputAddresses = new ObservableCollection<string> { "17821.AO1000" }, SetPointAddress = "2400.AV31224" }); //224
 			lightZones.Add(new LightZone { InputAddress = "2400.BV31230", OutputAddresses = new ObservableCollection<string> { "17821.AO1200" }, SetPointAddress = "2400.AV31230" }); //230
 			// Контроллер 2400 коридоры
-			lightZones.Add(new LightZone { InputAddress = "2400.BV312351", OutputAddresses = new ObservableCollection<string> { "17821.AO1101" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1109" }, SetPointAddress = "2400.AV312351" }); //2351
+			lightZones.Add(new LightZone { InputAddress = "2400.BV312351", OutputAddresses = new ObservableCollection<string> { "17821.AO1102" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1109" }, SetPointAddress = "2400.AV312351" }); //2351
 			lightZones.Add(new LightZone { InputAddress = "2400.BV312352", OutputAddresses = new ObservableCollection<string> { "17821.AO1100" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1110" }, SetPointAddress = "2400.AV312352" }); //2352
 			lightZones.Add(new LightZone { InputAddress = "2400.BV312353", OutputAddresses = new ObservableCollection<string> { "17821.AO1103" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1111" }, SetPointAddress = "2400.AV312353" }); //2353
 			lightZones.Add(new LightZone { InputAddress = "2400.BV312354", OutputAddresses = new ObservableCollection<string> { "17821.AO1108" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1112" }, SetPointAddress = "2400.AV312354" }); //2354
+			lightZones.Add(new LightZone { InputAddress = "2400.BV312355", OutputAddresses = new ObservableCollection<string> { "17821.AO1101" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1113" }, SetPointAddress = "2400.AV312355" }); //2355
+			lightZones.Add(new LightZone { InputAddress = "2400.BV312356", OutputAddresses = new ObservableCollection<string> { "17821.AO1104" }, OutputAlarmAddresses = new ObservableCollection<string> { "17821.AO1114" }, SetPointAddress = "2400.AV312356" }); //2356
 			// Контроллер 3300 кабинеты
 			lightZones.Add(new LightZone { InputAddress = "3300.BV31310", OutputAddresses = new ObservableCollection<string> { "17832.AO68611" }, SetPointAddress = "3300.AV31310" }); //313A(310)
 			lightZones.Add(new LightZone { InputAddress = "3300.BV31309", OutputAddresses = new ObservableCollection<string> { "17832.AO68355" }, SetPointAddress = "3300.AV31309" }); //314A(309)
@@ -266,10 +268,12 @@ namespace AstoriaControlService.Common.Light
 			lightZones.Add(new LightZone { InputAddress = "3400.BV31342", OutputAddresses = new ObservableCollection<string> { "17832.AO68613" }, SetPointAddress = "3400.AV31342" }); //312A(342)
 			lightZones.Add(new LightZone { InputAddress = "3400.BV31311", OutputAddresses = new ObservableCollection<string> { "17832.AO68612" }, SetPointAddress = "3400.AV31311" }); //313(311)
 			// Контроллер 3400 коридоры
-			lightZones.Add(new LightZone { InputAddress = "3400.BV313361", OutputAddresses = new ObservableCollection<string> { "17831.AO68353" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68359" }, SetPointAddress = "3400.AV313361" }); //3361
+			lightZones.Add(new LightZone { InputAddress = "3400.BV313361", OutputAddresses = new ObservableCollection<string> { "17831.AO68363" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68359" }, SetPointAddress = "3400.AV313361" }); //3361
 			lightZones.Add(new LightZone { InputAddress = "3400.BV313362", OutputAddresses = new ObservableCollection<string> { "17831.AO68352" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68360" }, SetPointAddress = "3400.AV313362" }); //3362
 			lightZones.Add(new LightZone { InputAddress = "3400.BV313363", OutputAddresses = new ObservableCollection<string> { "17831.AO68354" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68361" }, SetPointAddress = "3400.AV313363" }); //3363
 			lightZones.Add(new LightZone { InputAddress = "3400.BV313364", OutputAddresses = new ObservableCollection<string> { "17831.AO68358" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68362" }, SetPointAddress = "3400.AV313364" }); //3364
+			lightZones.Add(new LightZone { InputAddress = "3400.BV313365", OutputAddresses = new ObservableCollection<string> { "17831.AO68353" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68365" }, SetPointAddress = "3400.AV313365" }); //3365
+			lightZones.Add(new LightZone { InputAddress = "3400.BV313366", OutputAddresses = new ObservableCollection<string> { "17831.AO68364" }, OutputAlarmAddresses = new ObservableCollection<string> { "17831.AO68366" }, SetPointAddress = "3400.AV313366" }); //3366
 			// Контроллер 4300 кабинеты
 			lightZones.Add(new LightZone { InputAddress = "4300.BV31408", OutputAddresses = new ObservableCollection<string> { "17842.AO68610" }, SetPointAddress = "4300.AV31408" }); //419(408)
 			lightZones.Add(new LightZone { InputAddress = "4300.BV31409", OutputAddresses = new ObservableCollection<string> { "17842.AO68609" }, SetPointAddress = "4300.AV31409" }); //418(409)
@@ -300,9 +304,11 @@ namespace AstoriaControlService.Common.Light
 			lightZones.Add(new LightZone { InputAddress = "4400.BV31432", OutputAddresses = new ObservableCollection<string> { "17842.AO68613" }, SetPointAddress = "4400.AV31432" }); //413(432)
 			lightZones.Add(new LightZone { InputAddress = "4400.BV31415", OutputAddresses = new ObservableCollection<string> { "17842.AO68099" }, SetPointAddress = "4400.AV31415" }); //412B(415)
 			// Контроллер 4400 коридоры
-			lightZones.Add(new LightZone { InputAddress = "4400.BV314231", OutputAddresses = new ObservableCollection<string> { "17841.AO68353" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68357" }, SetPointAddress = "4400.AV314231" }); //4231
+			lightZones.Add(new LightZone { InputAddress = "4400.BV314231", OutputAddresses = new ObservableCollection<string> { "17841.AO68359" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68357" }, SetPointAddress = "4400.AV314231" }); //4231
 			lightZones.Add(new LightZone { InputAddress = "4400.BV314232", OutputAddresses = new ObservableCollection<string> { "17841.AO68352" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68358" }, SetPointAddress = "4400.AV314232" }); //4232
 			lightZones.Add(new LightZone { InputAddress = "4400.BV314233", OutputAddresses = new ObservableCollection<string> { "17841.AO68354" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68359" }, SetPointAddress = "4400.AV314233" }); //4233
+			lightZones.Add(new LightZone { InputAddress = "4400.BV314233", OutputAddresses = new ObservableCollection<string> { "17841.AO68353" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68361" }, SetPointAddress = "4400.AV314233" }); //4234
+			lightZones.Add(new LightZone { InputAddress = "4400.BV314233", OutputAddresses = new ObservableCollection<string> { "17841.AO68360" }, OutputAlarmAddresses = new ObservableCollection<string> { "17841.AO68362" }, SetPointAddress = "4400.AV314233" }); //4235
 			return lightZones;
 		}
 	}
