@@ -22,7 +22,7 @@ namespace BacNetApi.AccessControl
         {
             _device = device;
             Id = "AG" + id;
-            _synchronizationContext = SynchronizationContext.Current;
+            SynchronizationContext = SynchronizationContext.Current;
         }
 
         private List<AccessArea> _areas;

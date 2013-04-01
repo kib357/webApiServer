@@ -35,7 +35,13 @@ namespace BacNetApi
 	{
 		Stopped = 0,
 		Initializing = 1,
-		Running = 2
+		CovProperty = 2,
+        CovAndRpm = 3,
+        CovAndRp = 4,
+        Rpm = 5,
+        Rp = 6,
+        Cov = 7,
+        NoServicesSupported = 8
 	}
 
 	public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
@@ -94,6 +100,7 @@ namespace BacNetApi
 			_bacNetProvider.ReadPropertyMultipleAckEvent += OnReadPropertyMultipleAckReceived;
 			_bacNetProvider.ErrorEvent += OnErrorAckReceived;
 			_bacNetProvider.SubscribeCOVAckEvent += OnSubscribeCOVAck;
+		    _bacNetProvider.SubscribeCOVPropertyAckEvent += OnSubscribeCOVPropertyAck;
 			_bacNetProvider.UnconfirmedCOVNotificationRequestEvent += OnCOVNotification;
 			_bacNetProvider.UnconfirmedEventNotificationRequestEvent += OnEventNotification;
 			_bacNetProvider.CreateObjectAckEvent += OnCreateObjectAckReceived;
@@ -153,19 +160,19 @@ namespace BacNetApi
 			return readPropertyResponse.PropertyValues;
 		}
 
-		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, BacnetPropertyId bacnetPropertyId)
+		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, int bacnetPropertyId)
 		{
-			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), (int)bacnetPropertyId);
+			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(bacObject.Id), bacnetPropertyId);
 			SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest, bacObject, false);
 		}
 
-		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, List<PrimitiveObject> objectList, ApduSettings settings)
+		internal void BeginReadPropertyMultiple(BACnetRemoteAddress bacAddress, Dictionary<PrimitiveObject, List<PrimitiveProperty>> objectList, ApduSettings settings)
 		{
 			var objList = new Dictionary<BACnetObjectId, List<BACnetPropertyReference>>();
 			foreach (var bacObject in objectList)
 			{
-				objList.Add(BacNetObject.GetObjectIdByString(bacObject.Id),
-					new List<BACnetPropertyReference> { new BACnetPropertyReference((int)BacnetPropertyId.PresentValue) });
+			    objList.Add(BacNetObject.GetObjectIdByString(bacObject.Key.Id),
+			                bacObject.Value.Select(k => new BACnetPropertyReference(k.Id)).ToList());
 			}
 			var readPropertyMultipleRequest = new ReadPropertyMultipleRequest(objList);
 			SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadPropMultiple, readPropertyMultipleRequest, objectList, false, settings);
@@ -349,17 +356,24 @@ namespace BacNetApi
 			return SendConfirmedRequest(bacAddress, BacnetConfirmedService.DeleteObject, deleteObjectRequest);
 		}
 
-		internal object SubscribeCOV(BACnetRemoteAddress bacAddress, BacNetObject bacNetObject)
+		internal object SubscribeCOV(BACnetRemoteAddress bacAddress, string address)
 		{
-			var subscribeCOVRequest = new SubscribeCOVRequest(357, BacNetObject.GetObjectIdByString(bacNetObject.Id), false, 3600);
+            var subscribeCOVRequest = new SubscribeCOVRequest(357, BacNetObject.GetObjectIdByString(address), false, Config.COVSubscriptionInterval * 2);
 			return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOV, subscribeCOVRequest, false);
 		}
+
+        internal object SubscribeCOVProperty(BACnetRemoteAddress bacAddress, PrimitiveProperty property)
+        {
+            var properyRef = new BACnetPropertyReference(property.Id);
+            var subscribeCOVPropertyRequest = new SubscribeCOVPropertyRequest(357, BacNetObject.GetObjectIdByString(property._primitiveObject.Id), properyRef, false, Config.COVSubscriptionInterval * 2, property.COVIncrement);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOVProperty, subscribeCOVPropertyRequest, false);
+        }
 
 		#endregion
 
 		#region Request services
 
-		private object SendConfirmedRequest(BACnetRemoteAddress bacAddress, BacnetConfirmedService service, ConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
+		private object SendConfirmedRequest(BACnetRemoteAddress bacAddress, BacnetConfirmedService service, IConfirmedRequest confirmedRequest, object state = null, bool waitForResponse = true, ApduSettings settings = null)
 		{
 			if (!_initialized) throw new Exception("Network provider not initialized");
 			var request = CreateRequest(service, state);
@@ -418,7 +432,6 @@ namespace BacNetApi
 
 		private void OnReadPropertyAckReceived(object sender, AppServiceEventArgs e)
 		{
-
 			var service = e.Service as ReadPropertyAck;
 			if (service == null) return;
 			BacNetRequest request;
@@ -436,7 +449,7 @@ namespace BacNetApi
 				if (request.State is PrimitiveObject && service.PropertyValues.Count == 1)
 				{
 					var bacNetObject = request.State as PrimitiveObject;
-					bacNetObject.StringValue = service.PropertyValues[0].ToString();
+					bacNetObject.Properties[service.PropertyId.Value].Value = service.PropertyValues[0].ToString();
 					RemoveRequest(request);
 				}
 			}
@@ -456,20 +469,22 @@ namespace BacNetApi
 				if (request.State == null)
 				{
 				}
-				if (request.State is List<PrimitiveObject>)
+				if (request.State is Dictionary<PrimitiveObject, List<PrimitiveProperty>>)
 				{
-					var objectList = request.State as List<PrimitiveObject>;
+                    var objectList = request.State as Dictionary<PrimitiveObject, List<PrimitiveProperty>>;
 					foreach (var bacObject in objectList)
 					{
-						var objId = BacNetObject.GetObjectIdByString(bacObject.Id);
+						var objId = BacNetObject.GetObjectIdByString(bacObject.Key.Id);
 
 						foreach (var readAccessResult in service.ReadAccessResults)
 						{
 							if (readAccessResult.Key.Instance == objId.Instance && readAccessResult.Key.ObjectType == objId.ObjectType)
 							{
 								var resObject = readAccessResult.Value;
-								if (resObject.Count > 0 && resObject[0].Values.Count > 0)
-									bacObject.StringValue = resObject.First().Values.First().ToString();
+							    foreach (var readResult in resObject)
+							    {
+							        bacObject.Key.Properties[readResult.PropertyId.Value].Value = readResult.Values.First().ToString();
+							    }
 							}
 						}
 					}
@@ -502,7 +517,7 @@ namespace BacNetApi
 				if (request.State is PrimitiveObject)
 				{
 					var bacNetObject = request.State as PrimitiveObject;
-					bacNetObject.StringValue = "Error";
+                //todo:show error in oject properties
 					RemoveRequest(request);
 				}
 			}
@@ -524,13 +539,26 @@ namespace BacNetApi
 			}
 		}
 
+        private void OnSubscribeCOVPropertyAck(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as SubscribeCOVPropertyAck;
+            if (service == null) return;
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                request.State = true;
+                request.ResetEvent.Set();
+            }
+        }
+
 		private void OnCOVNotification(object sender, AppServiceEventArgs e)
 		{
 			var service = e.Service as UnconfirmedCOVNotificationRequest;
 			if (service == null) return;
-			var pvPropertyIndex = service.PropertyValues.FindIndex(s => s.PropertyId.Value == 85);
-			if (pvPropertyIndex < 0 || service.PropertyValues[pvPropertyIndex].Values.Count != 1) return;
-			var value = service.PropertyValues[pvPropertyIndex].Values[0].ToString();
 
 			BacNetDevice dev;
 			lock (_deviceList)
@@ -541,8 +569,9 @@ namespace BacNetApi
 			{
 				string objId = BacNetObject.GetStringId((BacnetObjectType)service.ObjectId.ObjectType) +
 							   service.ObjectId.Instance;
-				if (dev.Objects.Contains(objId))
-					dev.Objects[objId].StringValue = value;
+			    if (!dev.Objects.Contains(objId)) return;
+			    foreach (var propertyValue in service.PropertyValues)
+			        dev.Objects[objId].Properties[propertyValue.PropertyId.Value].Value = propertyValue.Values.First().ToString();
 			}
 		}
 

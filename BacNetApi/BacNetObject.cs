@@ -12,9 +12,9 @@ namespace BacNetApi
     public delegate void ValueChangedEventHandler(string address, string value);
     public abstract class BacNetObject
     {
-        protected BacNetDevice _device;
+        internal BacNetDevice _device;
         public string Id { get; set; }
-        protected SynchronizationContext _synchronizationContext;        
+        protected SynchronizationContext SynchronizationContext;        
 
         public string Name
         {

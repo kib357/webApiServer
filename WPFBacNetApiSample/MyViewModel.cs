@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Xml.Linq;
 using BACsharp;
@@ -12,7 +11,6 @@ using BACsharp.Types;
 using BACsharp.Types.Constructed;
 using BACsharp.Types.Primitive;
 using BacNetApi;
-using BacNetApi.AccessControl;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 
@@ -37,62 +35,9 @@ namespace WPFBacNetApiSample
         public MyViewModel()
         {
             _sensors = new ObservableCollection<sensor>();
-            Bacnet = new BacNet("10.81.32.199");//192.168.0.168");
+            Bacnet = new BacNet();//10.81.32.199");
             Bacnet.NetworkModelChangedEvent += OnNetworkModelChanged;
-            /*Bacnet[600].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[600].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[600].Objects["AV5432"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[600].Objects["BV1"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[600].Objects["BV2"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[1700].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[1700].Objects["AV2"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[1701].Objects["AV1"].ValueChangedEvent += OnBacnetValueChanged;
-            Bacnet[1701].Objects["AV3"].ValueChangedEvent += OnBacnetValueChanged;*/
-            //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)85);
-            //Bacnet[600].Objects["SCH1"].Get((BacnetPropertyId)123);
-            //var dev = Bacnet[100].Objects["AV1"].Get();
-            //var users = Bacnet[100].Users.Get();
-            //var areas = Bacnet[100].AccessGroups[1].Areas;
-            //Bacnet[100].AccessGroups[1].SubmitAreas();
-            //var exceptions = Bacnet[100].AccessGroups[1].Exceptions;
-            //Bacnet[100].AccessGroups[1].Exceptions.Add(new AccessArea() {InstanceNumber = 206002, Type = BacnetObjectType.Door});
-            //Bacnet[100].AccessGroups[1].SubmitExceptions();
-            ////Bacnet[100].Users[1].WriteCard();
-            //var k = Bacnet[100].Users[1].Cards;
-            ////var g = Bacnet[100].Users[1].AccessGroups;
-            //var name = Bacnet[100].Users[1].Name;
-            //Bacnet[100].Users[1].Name = name + " вот";
-            //Bacnet[100].Users[1].AccessGroups.Add(3);
-            //Bacnet[100].Users[1].SubmitAccessGroups();
-            ////Bacnet[100].Users[1].AccessGroups.Clear();
-            ////Bacnet[100].Users[1].SubmitAccessGroups();
-            //Bacnet[100].Users[1].Cards.Clear();
-            //Bacnet[100].Users[1].Cards.Add(new Card() {Number = 123456, SiteCode = 11, Status = 0});
-            //Bacnet[100].Users[1].Cards.Add(new Card() { Number = 654321, SiteCode = 11, Status = 0 });
-            //Bacnet[100].Users[1].Cards.Add(new Card() { Number = 200000, SiteCode = 11, Status = 0 });
-            //Bacnet[100].Users[1].SubmitCards();
-            //Bacnet[600].Objects["AV102"].ValueChangedEvent += OnBacnetValueChanged;
-            //Bacnet[600].Objects["AV202"].ValueChangedEvent += OnBacnetValueChanged;
-            
-            SetValueCommand = new DelegateCommand(SetValue);
-            GetValueCommand = new DelegateCommand(GetValue);
-            SchValues = new List<string>();
-			Chast = new List<uint>();
-			for (int i = 61; i < 80; i++)
-				Chast.Add((uint)i);
-
-			
-
-			//Bacnet[1400].Objects["AV1102"].ValueChangedEvent += OnBacnetValueChanged;
-			//Bacnet[1400].Objects["BV1102"].ValueChangedEvent += OnBacnetValueChanged;
-
-			Bacnet[100].Objects["MV1"].ValueChangedEvent += OnBacnetValueChanged;
-
-			//var lc = new LightControl();
-			_cabinetes = new Dictionary<string, string>();
-	        InitializeCabinetesList1Floor();
-			_oa = new ObjectAddresses(1300, InitializeCabinetesList1Floor());
-			
+            Bacnet[17800].Objects["AO3"].Properties[103].ValueChangedEvent += OnValueChanged;
         }
 
 		private List<string> get1FloorCabinetesList()
@@ -278,7 +223,7 @@ namespace WPFBacNetApiSample
 
         private void GetValue()
         {
-	        _oa.WriteAllObjectsToController();
+	        //_oa.WriteAllObjectsToController();
 			/*
 	        foreach (var cabinete in _cabinetes)
 	        {

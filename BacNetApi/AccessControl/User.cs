@@ -29,7 +29,7 @@ namespace BacNetApi.AccessControl
         {
             _device = device;
             Id = "CU" + id;
-            _synchronizationContext = SynchronizationContext.Current;
+            SynchronizationContext = SynchronizationContext.Current;
         }
 
         private List<Card> _cards; 

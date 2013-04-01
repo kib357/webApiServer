@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Web.Hosting;
@@ -19,6 +18,9 @@ namespace BacNetApi
         private const int DefaultManageDeviceServicesInterval = 5;
         private const int DefaultSendWhoIsInterval = 3;
         private const int DefaultLostDevicesSearchInterval = 60;
+        private const int DefaultReadPropertyPollingInterval = 60;
+        private const int DefaultRPMPollingInterval = 60;
+        private const int DefaultCOVSubscriptionInterval = 1800;
 
         public string IpAddress { get; set; }
         public bool TrackUnsubscribedDevices { get; set; }
@@ -28,6 +30,9 @@ namespace BacNetApi
         public int ManageDeviceServicesInterval { get; set; }
         public int SendWhoIsInterval { get; set; }
         public int LostDevicesSearchInterval { get; set; }
+        public int ReadPropertyPollingInterval { get; set; }
+        public int RPMPollingInterval { get; set; }
+        public int COVSubscriptionInterval { get; set; }
 
         public BacNetConfig()
         {
@@ -60,6 +65,11 @@ namespace BacNetApi
             _configSource.Configs["Searching"].Set("SendWhoIsInterval", DefaultSendWhoIsInterval);
             _configSource.Configs["Searching"].Set("LostDevicesSearchInterval", DefaultLostDevicesSearchInterval);
 
+            _configSource.AddConfig("DataExchange");
+            _configSource.Configs["DataExchange"].Set("ReadPropertyPollingInterval", DefaultReadPropertyPollingInterval);
+            _configSource.Configs["DataExchange"].Set("RPMPollingInterval", DefaultRPMPollingInterval);
+            _configSource.Configs["DataExchange"].Set("COVSubscriptionInterval", DefaultCOVSubscriptionInterval);
+
             try
             {
                 _configSource.Save(GetMappedPath("BACnet.xml"));
@@ -78,6 +88,11 @@ namespace BacNetApi
 
         private void Initialize()
         {
+            if (_configSource.Configs["BACnet"] == null) _configSource.AddConfig("BACnet");
+            if (_configSource.Configs["Tracking"] == null) _configSource.AddConfig("Tracking");
+            if (_configSource.Configs["Searching"] == null) _configSource.AddConfig("Searching");
+            if (_configSource.Configs["DataExchange"] == null) _configSource.AddConfig("DataExchange");
+
             if (!_configSource.Configs["BACnet"].Contains("IpAddress"))
                 _configSource.Configs["BACnet"].Set("IpAddress", GetDefaultIpAddress());
             IpAddress = _configSource.Configs["BACnet"].Get("IpAddress");
@@ -109,6 +124,18 @@ namespace BacNetApi
             if (!_configSource.Configs["Searching"].Contains("LostDevicesSearchInterval"))
                 _configSource.Configs["Searching"].Set("LostDevicesSearchInterval", DefaultLostDevicesSearchInterval);
             LostDevicesSearchInterval = _configSource.Configs["Searching"].GetInt("LostDevicesSearchInterval");
+
+            if (!_configSource.Configs["DataExchange"].Contains("ReadPropertyPollingInterval"))
+                _configSource.Configs["DataExchange"].Set("ReadPropertyPollingInterval", DefaultReadPropertyPollingInterval);
+            ReadPropertyPollingInterval = _configSource.Configs["DataExchange"].GetInt("ReadPropertyPollingInterval");
+
+            if (!_configSource.Configs["DataExchange"].Contains("RPMPollingInterval"))
+                _configSource.Configs["DataExchange"].Set("RPMPollingInterval", DefaultRPMPollingInterval);
+            RPMPollingInterval = _configSource.Configs["DataExchange"].GetInt("RPMPollingInterval");
+
+            if (!_configSource.Configs["DataExchange"].Contains("COVSubscriptionInterval"))
+                _configSource.Configs["DataExchange"].Set("COVSubscriptionInterval", DefaultCOVSubscriptionInterval);
+            COVSubscriptionInterval = _configSource.Configs["DataExchange"].GetInt("COVSubscriptionInterval");
         }
 
         public static string GetMappedPath(string path)
