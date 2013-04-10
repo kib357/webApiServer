@@ -98,6 +98,7 @@ namespace BacNetApi
 			_bacNetProvider.IAmRequestEvent += OnIamReceived;
 			_bacNetProvider.ReadPropertyAckEvent += OnReadPropertyAckReceived;
 			_bacNetProvider.ReadPropertyMultipleAckEvent += OnReadPropertyMultipleAckReceived;
+		    _bacNetProvider.WritePropertyMultipleAckEvent += OnWritePropertyMultipleAckReceived;
 			_bacNetProvider.ErrorEvent += OnErrorAckReceived;
 			_bacNetProvider.SubscribeCOVAckEvent += OnSubscribeCOVAck;
 		    _bacNetProvider.SubscribeCOVPropertyAckEvent += OnSubscribeCOVPropertyAck;
@@ -109,7 +110,7 @@ namespace BacNetApi
 			_initialized = true;
 		}
 
-		public BacNetDevice this[uint i]
+	    public BacNetDevice this[uint i]
 		{
 			get
 			{
@@ -454,6 +455,25 @@ namespace BacNetApi
 				}
 			}
 		}
+
+        private void OnWritePropertyMultipleAckReceived(object sender, AppServiceEventArgs e)
+        {
+            var service = e.Service as ReadPropertyAck;
+            if (service == null) return;
+            BacNetRequest request;
+            lock (SyncRoot)
+            {
+                request = _requests.FirstOrDefault(r => r.InvokeId == e.InvokeID);
+            }
+            if (request != null)
+            {
+                if (request.State == null)
+                {
+                    request.State = service;
+                    request.ResetEvent.Set();
+                }
+            }
+        }
 
 		private void OnReadPropertyMultipleAckReceived(object sender, AppServiceEventArgs e)
 		{
