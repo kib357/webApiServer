@@ -33,7 +33,24 @@ namespace BacNetApi
         public UserIndexer Users { get; private set; }
         public AccessGroupIndexer AccessGroups { get; private set; }
         public ScheduleIndexer Schedules { get; private set; }
-        public List<string> ObjectList { get; private set; }
+
+        private List<string> _objectList = new List<string>(); 
+        public List<string> ObjectList
+        {
+            get { return _objectList; }
+            private set { _objectList = value; }
+        }
+
+        public void UpdateObjectList()
+        {
+            var responce = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectList);
+            var res = new List<string>();
+            if (responce != null)
+                    foreach (BACnetObjectId objectId in responce.Where(s => s is BACnetObjectId))
+                        res.Add(objectId.ToString2());
+            ObjectList = res;
+        }
+
         public BacnetSegmentation Segmentation { get; set; }
         public List<BacnetServicesSupported> ServicesSupported { get; set; }
         public ApduSettings ApduSetting { get; set; }
@@ -57,7 +74,6 @@ namespace BacNetApi
             Users = new UserIndexer(this);
             AccessGroups = new AccessGroupIndexer(this);
             Schedules = new ScheduleIndexer(this);
-            ObjectList = new List<string>();
             Status = DeviceStatus.NotInitialized;
             _subscriptionStatus = SubscriptionStatus.Stopped;
             _subscriptionList = new ObservableCollection<PrimitiveProperty>();
@@ -148,21 +164,9 @@ namespace BacNetApi
                         _network.OnNetworkModelChangedEvent();
                     }
                 }
-                //if (_trackCount % 6 == 0 || _trackCount == 1)
-                //    GetObjectList();
+                if (_trackCount % 12 == 0 || _trackCount == 1)
+                    UpdateObjectList();
                 Thread.Sleep(TimeSpan.FromSeconds(5));
-            }
-        }
-
-        private void GetObjectList()
-        {
-            ObjectList.Clear();
-            var responce = _network.ReadProperty(Address, Id + ".DEV" + Id, BacnetPropertyId.ObjectList);
-            if (responce == null) return;
-            foreach (BACnetObjectId objectId in responce)
-            {
-                if (objectId != null)
-                    ObjectList.Add(objectId.ToString2());
             }
         }
 

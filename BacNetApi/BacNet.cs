@@ -157,8 +157,7 @@ namespace BacNetApi
 		{
 			var readPropertyRequest = new ReadPropertyRequest(BacNetObject.GetObjectIdByString(address), (int)bacnetPropertyId, arrayIndex);
 			var readPropertyResponse = SendConfirmedRequest(bacAddress, BacnetConfirmedService.ReadProperty, readPropertyRequest) as ReadPropertyAck;
-			if (readPropertyResponse == null) return null;
-			return readPropertyResponse.PropertyValues;
+			return readPropertyResponse == null ? null : readPropertyResponse.PropertyValues;
 		}
 
 		internal void BeginReadProperty(BACnetRemoteAddress bacAddress, PrimitiveObject bacObject, int bacnetPropertyId)
@@ -254,8 +253,9 @@ namespace BacNetApi
 			}
 			if (objType == "SCH")
 			{
-				if (propertyId == BacnetPropertyId.WeeklySchedule)
-					return value as List<BACnetDataType>;
+                if (propertyId == BacnetPropertyId.WeeklySchedule &&
+                    value is List<BACnetDailySchedule>)
+					return (value as List<BACnetDailySchedule>).Cast<BACnetDataType>().ToList();
 				if (propertyId == BacnetPropertyId.ListOfObjectPropertyReferences &&
 					value is List<BACnetDeviceObjectPropertyReference>)
 					return (value as List<BACnetDeviceObjectPropertyReference>).Cast<BACnetDataType>().ToList();
