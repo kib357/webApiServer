@@ -14,14 +14,12 @@ namespace BacNetApi
     {
         internal BacNetDevice _device;
         public string Id { get; set; }
-        protected SynchronizationContext SynchronizationContext;        
+        protected SynchronizationContext SynchronizationContext;
 
-        public string Name
+        private string _name;
+        public virtual string Name
         {
-            get
-            {
-                return _device.ReadProperty(this, BacnetPropertyId.ObjectName)[0].ToString();
-            }
+            get { return _name ?? (_name = _device.ReadProperty(this, BacnetPropertyId.ObjectName)[0].ToString()); }
             set { WriteUsingWpm(BacnetPropertyId.ObjectName, value); }
         }
 
