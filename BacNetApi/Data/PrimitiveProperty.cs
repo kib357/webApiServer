@@ -33,7 +33,7 @@ namespace BacNetApi.Data
 
         public PrimitiveProperty(PrimitiveObject primitiveObject, int id)
         {
-            COVIncrement = (float)0.1;
+            COVIncrement = (float)1;
             _primitiveObject = primitiveObject;
             Id = id;
             SynchronizationContext = SynchronizationContext.Current;
