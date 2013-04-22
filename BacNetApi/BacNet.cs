@@ -41,7 +41,8 @@ namespace BacNetApi
         Rpm = 5,
         Rp = 6,
         Cov = 7,
-        NoServicesSupported = 8
+        NoServicesSupported = 8,
+	    CovAndCovProperty
 	}
 
 	public delegate void NotificationEventHandler(UnconfirmedEventNotificationRequest notification);
@@ -94,6 +95,7 @@ namespace BacNetApi
 		private void StartProvider(IPAddress address)
 		{
 			if (_initialized) return;
+		    BACnetInit.MaxSegmentsAccepted = 20;
 			_bacNetProvider = new BaseAppServiceProvider(new DataLinkPort(address));
 			_bacNetProvider.IAmRequestEvent += OnIamReceived;
 			_bacNetProvider.ReadPropertyAckEvent += OnReadPropertyAckReceived;
@@ -367,7 +369,13 @@ namespace BacNetApi
         {
             var properyRef = new BACnetPropertyReference(property.Id);
             var subscribeCOVPropertyRequest = new SubscribeCOVPropertyRequest(357, BacNetObject.GetObjectIdByString(property._primitiveObject.Id), properyRef, false, Config.COVSubscriptionInterval * 2, property.COVIncrement);
-            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOVProperty, subscribeCOVPropertyRequest, false);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOVProperty, subscribeCOVPropertyRequest, null, false);
+        }
+
+        internal object SubscribeCOVProperty(BACnetRemoteAddress bacAddress, string objectId, BACnetPropertyReference property, object state = null)
+        {
+            var subscribeCOVPropertyRequest = new SubscribeCOVPropertyRequest(357, BacNetObject.GetObjectIdByString(objectId), property, false, Config.COVSubscriptionInterval * 2);
+            return SendConfirmedRequest(bacAddress, BacnetConfirmedService.SubscribeCOVProperty, subscribeCOVPropertyRequest, state, false);
         }
 
 		#endregion

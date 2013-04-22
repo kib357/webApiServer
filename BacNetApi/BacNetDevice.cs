@@ -166,7 +166,7 @@ namespace BacNetApi
                 }
                 if (_trackCount % 12 == 0 || _trackCount == 1)
                     UpdateObjectList();
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                Thread.Sleep(TimeSpan.FromSeconds(10));
             }
         }
 
@@ -190,7 +190,12 @@ namespace BacNetApi
         {            
             if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOVProperty))
             {
-                _subscriptionStatus = SubscriptionStatus.CovProperty;
+                _subscriptionStatus = SubscriptionStatus.CovProperty;                
+                if (ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV))
+                {
+                    _subscriptionStatus = SubscriptionStatus.CovAndCovProperty;
+                    Task.Factory.StartNew(COVSubscription, TaskCreationOptions.LongRunning);
+                }
                 Task.Factory.StartNew(COVPropertySubscription, TaskCreationOptions.LongRunning);
                 return;
             }
@@ -278,9 +283,13 @@ namespace BacNetApi
             while (_subscriptionStatus != SubscriptionStatus.Stopped && _subscriptionStatus != SubscriptionStatus.Initializing)
             {
                 lock (SyncRoot)
-                    covObjects = _subscriptionList.ToList();
+                    covObjects = ServicesSupported.Contains(BacnetServicesSupported.SubscribeCOV)
+                        ? _subscriptionList.Where(p => p.Id != (int) BacnetPropertyId.PresentValue).ToList()
+                        : _subscriptionList.ToList();
                 foreach (var primitiveProperty in covObjects)
                     _network.SubscribeCOVProperty(Address, primitiveProperty);
+                //_network.SubscribeCOVProperty(Address, "DEV" + Id,
+                //    new BACnetPropertyReference((int) BacnetPropertyId.ObjectList), this);
                 Thread.Sleep(TimeSpan.FromSeconds(_network.Config.COVSubscriptionInterval));
             }
         }
