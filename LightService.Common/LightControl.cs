@@ -90,6 +90,10 @@ namespace LightService.Common
 					{
 						WriteToNetwork(output, zoneWithChangedSetpoint.SetPointValue);
 					}
+
+					if (zoneWithChangedSetpoint.OutputAlarmAddresses != null && zoneWithChangedSetpoint.OutputAlarmAddresses.Count > 0)
+						foreach (var alarmAddress in zoneWithChangedSetpoint.OutputAlarmAddresses)
+							WriteToNetwork(alarmAddress, zoneWithChangedSetpoint.SetPointValue == "0" ? "100" : "0");
 				}
 				return;
 			}
@@ -105,7 +109,7 @@ namespace LightService.Common
 			string setpoint;
 			if (zoneWithChangedInput.InputValue == "1")
 			{
-				setpoint = string.IsNullOrWhiteSpace(zoneWithChangedInput.SetPointValue)
+				setpoint = string.IsNullOrWhiteSpace(zoneWithChangedInput.SetPointValue) || (zoneWithChangedInput.SetPointValue == "0")
 							   ? "100"
 							   : zoneWithChangedInput.SetPointValue;
 				foreach (var output in zoneWithChangedInput.OutputAddresses.Where(o => o.Contains("AO")))

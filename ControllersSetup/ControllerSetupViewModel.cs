@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using BacNetApi;
 using Microsoft.Office.Interop.Excel;
@@ -44,7 +42,7 @@ namespace ControllersSetup
 
 		private void LoadCabinetes()
 		{
-			var path = _dir + @"\Cabinetes";
+			var path = _dir + @"\Rooms";
 			if (!Directory.Exists(path)) return;
 			foreach (var fileName in Directory.GetFiles(path).Where(f => f.EndsWith(".xlsx")))
 			{
@@ -53,20 +51,20 @@ namespace ControllersSetup
 				var xlWorkSheet = (Worksheet) xlWorkBook.Worksheets.Item[1];
 				var range = xlWorkSheet.Range["A1", Missing.Value];
 				var controller = range.Text;
-				var cabs = new Dictionary<string, KeyValuePair<uint?, string>>();
+				var rooms = new Dictionary<string, KeyValuePair<uint?, string>>();
 				var i = 1;
 				while (true)
 				{
 					range = xlWorkSheet.Range["B" + i, Missing.Value];
-					var cab = range.Text;
-					if (string.IsNullOrEmpty(cab))
+					var room = range.Text;
+					if (string.IsNullOrEmpty(room))
 						break;
 					range = xlWorkSheet.Range["C" + i, Missing.Value];
 					var vav = string.IsNullOrEmpty(range.Text) ? null : Convert.ToUInt32(range.Text);
 					range = xlWorkSheet.Range["D" + i, Missing.Value];
 					string lcd = string.IsNullOrWhiteSpace(range.Text) ? "101" : range.Text;
 					var kvp = new KeyValuePair<uint?, string>(vav, lcd);
-					cabs.Add(cab, kvp);
+					rooms.Add(room, kvp);
 					i++;
 				}
 				//xlWorkBook.Close(Missing.Value, Missing.Value, Missing.Value);
@@ -74,7 +72,7 @@ namespace ControllersSetup
 				ReleaseObject(xlWorkSheet);
 				ReleaseObject(xlWorkBook);
 				ReleaseObject(xlApp);
-				_co.Add(new ControllersObjects(Convert.ToUInt32(controller), cabs));
+				_co.Add(new ControllersObjects(Convert.ToUInt32(controller), rooms));
 			}
 		}
 
